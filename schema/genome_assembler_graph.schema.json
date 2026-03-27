@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/genome-assembler-graph.schema.json",
+  "title": "Genome Assembler Knowledge Graph",
+  "type": "object",
+  "required": ["title", "description", "lanes", "nodes", "edges", "pipelines", "sources"],
+  "properties": {
+    "title": { "type": "string" },
+    "description": { "type": "string" },
+    "lanes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/lane" }
+    },
+    "nodes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/node" }
+    },
+    "edges": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/edge" }
+    },
+    "pipelines": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/pipeline" }
+    },
+    "sources": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/source" }
+    }
+  },
+  "$defs": {
+    "id_list": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "lane": {
+      "type": "object",
+      "required": ["id", "label"],
+      "properties": {
+        "id": { "type": "string" },
+        "label": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "node": {
+      "type": "object",
+      "required": ["id", "label", "kind", "lane", "row"],
+      "properties": {
+        "id": { "type": "string" },
+        "label": { "type": "string" },
+        "kind": { "type": "string" },
+        "lane": { "type": "string" },
+        "row": { "type": "integer", "minimum": 0 },
+        "summary": { "type": "string" },
+        "source_ids": { "$ref": "#/$defs/id_list" }
+      },
+      "additionalProperties": false
+    },
+    "edge": {
+      "type": "object",
+      "required": ["id", "source", "target", "kind"],
+      "properties": {
+        "id": { "type": "string" },
+        "source": { "type": "string" },
+        "target": { "type": "string" },
+        "kind": { "type": "string" },
+        "source_ids": { "$ref": "#/$defs/id_list" }
+      },
+      "additionalProperties": false
+    },
+    "pipeline": {
+      "type": "object",
+      "required": ["id", "label", "tagline", "description", "focus", "step_ids", "node_ids", "edge_ids", "source_ids"],
+      "properties": {
+        "id": { "type": "string" },
+        "label": { "type": "string" },
+        "tagline": { "type": "string" },
+        "description": { "type": "string" },
+        "focus": { "type": "string" },
+        "step_ids": { "$ref": "#/$defs/id_list" },
+        "node_ids": { "$ref": "#/$defs/id_list" },
+        "edge_ids": { "$ref": "#/$defs/id_list" },
+        "source_ids": { "$ref": "#/$defs/id_list" }
+      },
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "object",
+      "required": ["id", "label", "url"],
+      "properties": {
+        "id": { "type": "string" },
+        "label": { "type": "string" },
+        "url": { "type": "string", "format": "uri" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

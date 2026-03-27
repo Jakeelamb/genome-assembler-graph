@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Genome Assembler Knowledge Graph</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="sidebar-block">
+        <p class="eyebrow">Genome Assembly</p>
+        <h1>Knowledge Graph</h1>
+        <p class="lede">
+          A curated map of how modern assemblers combine read types, algorithmic primitives, reusable modules, and pipeline stages.
+        </p>
+      </div>
+
+      <div class="sidebar-block">
+        <label class="field-label" for="search">Search nodes or pipelines</label>
+        <input id="search" class="search-input" type="search" placeholder="Try hifiasm, graph cleanup, seeding / indexing">
+      </div>
+
+      <div class="sidebar-block">
+        <div class="section-title-row">
+          <h2>Pipelines</h2>
+          <button id="clear-selection" class="secondary-button" type="button">Show full graph</button>
+        </div>
+        <div id="pipeline-list" class="pipeline-list"></div>
+      </div>
+
+      <div class="sidebar-block">
+        <h2>Selection</h2>
+        <div id="details" class="details-panel"></div>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <div class="workspace-header">
+        <div>
+          <p class="eyebrow">Interactive View</p>
+          <h2>Algorithms, Modules, And Steps</h2>
+        </div>
+        <div id="legend" class="legend"></div>
+      </div>
+
+      <div class="graph-frame">
+        <svg id="graph" class="graph" role="img" aria-label="Genome assembler knowledge graph"></svg>
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>
