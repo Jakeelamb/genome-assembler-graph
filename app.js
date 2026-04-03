@@ -7,6 +7,30 @@ const METRIC_KEYS = [
   "_reachability_ratio",
 ];
 
+const DEFAULT_NODE_ID = "tool_hifiasm";
+const START_HERE_ITEMS = [
+  {
+    id: "tool_hifiasm",
+    title: "Start with hifiasm",
+    description: "Trace the HiFi-first phased assembly branch.",
+  },
+  {
+    id: "tool_verkko",
+    title: "Compare Verkko",
+    description: "Jump to the hybrid HiFi plus ONT ultra-long path.",
+  },
+  {
+    id: "support_hic",
+    title: "Inspect Hi-C",
+    description: "See where long-range contact data enters scaffolding and phasing.",
+  },
+  {
+    id: "output_chr_anchor",
+    title: "Follow the endpoint",
+    description: "Look at the chromosome-scale assembly target and what feeds it.",
+  },
+];
+
 const CATEGORY_COLORS = {
   goal: "#f2c86b",
   property: "#f59f86",
@@ -39,6 +63,7 @@ const state = {
   showDependents: false,
   settingsOpen: false,
   graphError: null,
+  selectionSource: null,
 };
 
 const refs = {
@@ -91,10 +116,15 @@ async function boot() {
     state.graphError = error;
     console.warn("Graph renderer unavailable:", error);
   }
-  applyUrlState();
+  if (!applyUrlState()) {
+    applyLandingSelection();
+  }
   renderLegend();
   if (state.graph) {
     rebuildGraph({ zoom: true });
+    if (state.primarySelectionId) {
+      scheduleSelectionFocus();
+    }
   } else {
     renderStats();
   }
@@ -180,12 +210,13 @@ function initUi() {
   refs.resetBtn.addEventListener("click", () => {
     refs.search.value = "";
     state.searchQuery = "";
-    clearSelection();
     state.layout = "force";
     refs.layoutSelect.value = "force";
+    applyLandingSelection();
     rebuildGraph({ zoom: true });
     renderPanels();
     syncControls();
+    scheduleSelectionFocus();
   });
 
   refs.screenshotBtn.addEventListener("click", downloadScreenshot);
@@ -540,35 +571,35 @@ function overviewInfoHtml() {
   return `
     <div class="detail-stack">
       <div>
-        <h2 class="detail-heading">A target-style explorer for genome assembly workflows.</h2>
+        <h2 class="detail-heading">Start with one assembler, then fan out through the graph.</h2>
         <p class="info-copy">
-          This rebuild swaps the old lane diagram for a full graph navigator: search, layout switching,
-          metric-driven coloring, multi-selection, and recursive upstream/downstream context across
-          assemblers, scaffolders, polishers, historical strategies, validation tools, failure modes,
-          genome-scale edge cases, metagenome-assembly branches, hybrid metagenome clustering,
-          metagenome benchmarking, long-read HiFi metagenome assembly, phage recovery and host prediction,
-          viral recovery and viral QC, MAG recovery, curation, and taxonomy branches, organelle-recovery
-          workflows, plastome-specialized assembly, transcript-guided scaffolding, transcript-backed
-          annotation repair, assembly-graph inspection, sequence-to-graph alignment, neural basecalling,
-          transformer-based read correction, learned long-read variant calling, legacy and modern
-          single-cell assembly branches, eukaryotic metagenome recovery and annotation, ML-driven viral and
-          eukaryotic classifiers, pangenome-construction workflows, and older scaffolding and finishing
-          lineages that still matter historically, including hybrid assembly, graph-native downstream tooling,
-          and redundancy-reduction branches.
+          This explorer maps how modern assembly workflows connect reads, support data, algorithmic ideas,
+          reusable modules, tools, stages, outputs, metrics, and case studies. Pick a starting node and
+          then walk upstream into prerequisites or downstream into what that choice enables.
         </p>
       </div>
 
       <div class="summary-grid">
         <div class="summary-card"><strong>${nodes}</strong><span>Curated nodes</span></div>
         <div class="summary-card"><strong>${edges}</strong><span>Directed edges</span></div>
-        <div class="summary-card"><strong>${pipelines}</strong><span>Highlightable pipelines</span></div>
+        <div class="summary-card"><strong>${pipelines}</strong><span>Curated workflows</span></div>
       </div>
+
+      <section class="info-section">
+        <h3>Start Here</h3>
+        <p class="info-copy">
+          If you are new to the graph, start with a familiar assembler, compare it to a hybrid branch,
+          or jump straight to a chromosome-scale endpoint.
+        </p>
+        ${startHereButtonsHtml()}
+      </section>
 
       <section class="info-section">
         <h3>How To Read It</h3>
         <p class="info-copy">
           Nodes represent assembly goals, read types, support data, algorithms, reusable modules,
-          tools, pipeline stages, and outputs. Click a node to inspect its prerequisites and dependents.
+          tools, pipeline stages, outputs, metrics, and case studies. Click a node to inspect its
+          prerequisites and dependents, or shift-click to build a comparison set.
         </p>
       </section>
 
@@ -588,8 +619,8 @@ function overviewInfoHtml() {
 
       <section class="spotlight-card">
         <p>
-          Best first clicks: <strong>Dorado</strong>, <strong>DeepConsensus</strong>,
-          <strong>DeepVariant</strong>, <strong>DeepVirFinder</strong>, and <strong>Tiara</strong>.
+          Reset always returns to <strong>hifiasm</strong>, which is the default landing node for the
+          public site.
         </p>
       </section>
     </div>
@@ -653,6 +684,28 @@ function overviewAnalyticsHtml() {
 function nodeInfoHtml(node) {
   const topPipeline = node.pipelines[0];
   const pipelineMeta = topPipeline?.focus ? pipelineFocusBadgesHtml(topPipeline) : "";
+  const landingIntro =
+    state.selectionSource === "default" && node.id === DEFAULT_NODE_ID
+      ? `
+        <section class="spotlight-card">
+          <p>
+            <strong>Start here.</strong> ${escapeHtml(node.label)} is the default landing node because it
+            sits close to the center of the modern HiFi assembly story: phased assembly graphs, support
+            data, downstream scaffolding, and chromosome-scale finishing all connect through this branch.
+          </p>
+        </section>
+
+        <section class="info-section">
+          <h3>Try Next</h3>
+          <p class="info-copy">
+            Use these jumps to compare a hybrid assembler, inspect long-range support data, or follow the
+            path to a chromosome-scale result.
+          </p>
+          ${startHereButtonsHtml(START_HERE_ITEMS.filter((item) => item.id !== DEFAULT_NODE_ID))}
+        </section>
+      `
+      : "";
+
   return `
     <div class="detail-stack">
       <div>
@@ -676,6 +729,8 @@ function nodeInfoHtml(node) {
           ${node.ancestorIds.size} recursive prerequisites and ${node.descendantIds.size} recursive dependents.
         </p>
       </section>
+
+      ${landingIntro}
 
       ${
         node.pipelines.length
@@ -863,14 +918,7 @@ function bindPanelActions() {
       if (!id || !state.prepared.nodeMap.has(id)) {
         return;
       }
-      state.selectedNodeIds = new Set([id]);
-      state.primarySelectionId = id;
-      state.layout = state.layout === "radial" ? "radial" : state.layout;
-      syncUrlState();
-      renderPanels();
-      refreshGraphStyles();
-      focusNode(id);
-      syncControls();
+      selectSingleNode(id);
     });
   });
 
@@ -905,6 +953,7 @@ function handleNodeClick(node, event) {
       state.selectedNodeIds = new Set([node.id]);
       state.primarySelectionId = node.id;
     }
+    state.selectionSource = "user";
     state.layout = "radial";
     syncControls();
     renderPanels();
@@ -922,6 +971,7 @@ function handleNodeClick(node, event) {
       state.selectedNodeIds = new Set([node.id]);
       state.primarySelectionId = node.id;
     }
+    state.selectionSource = "user";
 
     if (state.layout === "radial" && !state.primarySelectionId) {
       state.layout = "force";
@@ -1299,6 +1349,7 @@ function showToast(message) {
 function clearSelection() {
   state.selectedNodeIds = new Set();
   state.primarySelectionId = null;
+  state.selectionSource = null;
   if (state.layout === "radial") {
     state.layout = "force";
   }
@@ -1315,8 +1366,12 @@ function applyUrlState() {
     if (ids.length) {
       state.selectedNodeIds = new Set(ids);
       state.primarySelectionId = ids[ids.length - 1];
+      state.selectionSource = "url";
+      return true;
     }
   }
+
+  return false;
 }
 
 function syncUrlState() {
@@ -1357,6 +1412,68 @@ function selectionIdsFromParams(params) {
   }
 
   return [];
+}
+
+function applyLandingSelection() {
+  if (!state.prepared.nodeMap.has(DEFAULT_NODE_ID)) {
+    clearSelection();
+    return;
+  }
+  state.selectedNodeIds = new Set([DEFAULT_NODE_ID]);
+  state.primarySelectionId = DEFAULT_NODE_ID;
+  state.selectionSource = "default";
+  clearUrlSelectionState();
+}
+
+function selectSingleNode(id) {
+  state.selectedNodeIds = new Set([id]);
+  state.primarySelectionId = id;
+  state.selectionSource = "user";
+  state.layout = state.layout === "radial" ? "radial" : state.layout;
+  syncUrlState();
+  renderPanels();
+  refreshGraphStyles();
+  focusNode(id);
+  syncControls();
+}
+
+function scheduleSelectionFocus() {
+  if (!state.graph || !state.primarySelectionId) {
+    return;
+  }
+  window.setTimeout(() => focusNode(state.primarySelectionId), 720);
+}
+
+function clearUrlSelectionState() {
+  const url = new URL(window.location.href);
+  url.searchParams.delete("node");
+  url.searchParams.delete("nodes");
+  url.hash = "";
+  window.history.replaceState({}, "", url);
+}
+
+function startHereButtonsHtml(items = START_HERE_ITEMS) {
+  const cards = items
+    .map((item) => {
+      const node = state.prepared.nodeMap.get(item.id);
+      if (!node) {
+        return "";
+      }
+      return `
+        <button type="button" data-node-target="${escapeHtml(node.id)}">
+          <strong>${escapeHtml(item.title)}</strong><br>
+          ${escapeHtml(item.description)}
+        </button>
+      `;
+    })
+    .filter(Boolean)
+    .join("");
+
+  if (!cards) {
+    return `<p class="info-copy">Starter views are unavailable in this dataset.</p>`;
+  }
+
+  return `<div class="action-grid">${cards}</div>`;
 }
 
 function resolveSources(sourceIds = []) {
