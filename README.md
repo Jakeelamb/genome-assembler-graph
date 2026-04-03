@@ -2,12 +2,12 @@
 
 A standalone, ontology-first map of modern genome assemblers.
 
-This repository starts with a lightweight static web app and a curated graph dataset so you can:
+This repository ships as a lightweight static web app plus a curated graph dataset so you can:
 
 - see how assembly tools decompose into data types, algorithmic primitives, functional modules, and stages
-- highlight individual pipelines such as `hifiasm`, `Verkko`, `Flye`, `LJA`, `HiCanu`, and `Shasta`
+- inspect how curated assemblers and workflows such as `hifiasm`, `Verkko`, `Flye`, `LJA`, `HiCanu`, and `Shasta` are represented in the graph
 - inspect how auxiliary data like `ONT ultra-long`, `Hi-C`, and `trio` plug into specific modules
-- share a specific pipeline or node view with a deep link
+- share a node or multi-node selection with a deep link
 - extend the graph into Neo4j, Memgraph, ArangoDB, or a backend API later
 
 ## Project Shape
@@ -19,9 +19,9 @@ This repository starts with a lightweight static web app and a curated graph dat
 - `app.js`: graph rendering, selection state, and highlighting logic
 - `scripts/validate_graph.py`: structural and referential-integrity checks
 
-## Running It
+## Running It Locally
 
-The app is dependency-free. You can either open `index.html` directly or serve the repo locally:
+The app is dependency-free, but it needs to be served over HTTP so the browser can load `data/genome_assembler_graph.json`:
 
 ```bash
 cd /home/jake/Projects/genome-assembler-graph
@@ -32,8 +32,23 @@ Then open `http://localhost:8000`.
 
 Deep links are supported:
 
-- `http://localhost:8000/?pipeline=pipeline_verkko_hifi_ul`
 - `http://localhost:8000/?node=tool_hifiasm`
+- `http://localhost:8000/?nodes=tool_hifiasm,tool_verkko`
+- `http://localhost:8000/#node=tool_hifiasm` (legacy hash format)
+
+## Publishing On GitHub Pages
+
+This repo is a plain static site, so GitHub Pages can publish it directly from the `main` branch root.
+
+1. Push the repo to GitHub and make the repository public.
+2. In GitHub, open `Settings` -> `Pages`.
+3. Under `Build and deployment`, choose `Deploy from a branch`.
+4. Set the branch to `main` and the folder to `/ (root)`.
+5. Save the settings.
+
+For the current remote, the published site URL will be:
+
+- `https://jakeelamb.github.io/genome-assembler-graph/`
 
 Before changing the dataset, validate it:
 
@@ -47,13 +62,17 @@ python3 scripts/validate_graph.py
 The graph is organized into these lanes:
 
 1. `Assembly Goal`
-2. `Primary Reads`
-3. `Support Data`
-4. `Algorithmic Primitive`
-5. `Functional Module`
-6. `Assembler`
-7. `Pipeline Stage`
-8. `Output`
+2. `Genome Property`
+3. `Primary Reads`
+4. `Support Data`
+5. `Algorithmic Primitive`
+6. `Assembly Concept`
+7. `Functional Module`
+8. `Tool`
+9. `Pipeline Stage`
+10. `Output`
+11. `Evaluation Metric`
+12. `Case Study`
 
 The initial dataset is intentionally curated rather than exhaustive. The priority is interpretability:
 
