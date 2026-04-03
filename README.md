@@ -17,6 +17,7 @@ This repository ships as a lightweight static web app plus a curated graph datas
 - `index.html`: single-page interface
 - `styles.css`: layout and visual system
 - `app.js`: graph rendering, selection state, and highlighting logic
+- `vendor/force-graph/`: vendored `force-graph` runtime (`1.51.2`) plus license text
 - `scripts/validate_graph.py`: structural and referential-integrity checks
 
 ## Running It Locally
@@ -29,6 +30,8 @@ python3 -m http.server 8000
 ```
 
 Then open `http://localhost:8000`.
+
+The interactive graph runtime is vendored locally, so the site no longer depends on a third-party CDN at runtime.
 
 Deep links are supported:
 
