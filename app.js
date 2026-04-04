@@ -61,6 +61,7 @@ const state = {
   nodeSizeMode: "default",
   showPrerequisites: true,
   showDependents: false,
+  activePipelineId: null,
   settingsOpen: false,
   graphError: null,
   selectionSource: null,
@@ -316,7 +317,25 @@ function prepareData(raw) {
     nodeMap.get(link.target).from.push(link.source);
   });
 
-  raw.pipelines.forEach((pipeline) => {
+  const edgeMap = new Map(links.map((link) => [link.id, link]));
+  const pipelines = raw.pipelines.map((pipeline) => {
+    const resolvedNodeIds = pipeline.node_ids.filter((nodeId) => nodeMap.has(nodeId));
+    const resolvedStepIds = (pipeline.step_ids || []).filter((nodeId) => nodeMap.has(nodeId));
+    const resolvedEdgeIds = (pipeline.edge_ids || []).filter((edgeId) => edgeMap.has(edgeId));
+    return {
+      ...pipeline,
+      nodes: resolvedNodeIds.map((nodeId) => nodeMap.get(nodeId)),
+      stepNodes: resolvedStepIds.map((nodeId) => nodeMap.get(nodeId)),
+      edges: resolvedEdgeIds.map((edgeId) => edgeMap.get(edgeId)),
+      nodeSet: new Set(resolvedNodeIds),
+      stepSet: new Set(resolvedStepIds),
+      edgeSet: new Set(resolvedEdgeIds),
+      sources: resolveSourceRefs(pipeline.source_ids, sourceMap),
+    };
+  });
+  const pipelineMap = new Map(pipelines.map((pipeline) => [pipeline.id, pipeline]));
+
+  pipelines.forEach((pipeline) => {
     pipeline.node_ids.forEach((nodeId) => {
       const node = nodeMap.get(nodeId);
       if (node) {
@@ -381,7 +400,10 @@ function prepareData(raw) {
     nodes,
     nodeMap,
     links,
+    edgeMap,
     sourceMap,
+    pipelines,
+    pipelineMap,
     categories,
     metricRanges,
   };
@@ -682,8 +704,8 @@ function overviewAnalyticsHtml() {
 }
 
 function nodeInfoHtml(node) {
-  const topPipeline = node.pipelines[0];
-  const pipelineMeta = topPipeline?.focus ? pipelineFocusBadgesHtml(topPipeline) : "";
+  const currentPipeline = activePipelineForNode(node);
+  const pipelineMeta = currentPipeline?.focus ? pipelineFocusBadgesHtml(currentPipeline) : "";
   const landingIntro =
     state.selectionSource === "default" && node.id === DEFAULT_NODE_ID
       ? `
@@ -705,6 +727,20 @@ function nodeInfoHtml(node) {
         </section>
       `
       : "";
+  const pipelineChooser =
+    node.pipelines.length > 0
+      ? `
+        <section class="info-section">
+          <h3>Workflow Paths</h3>
+          <p class="info-copy">
+            Choose a curated path to highlight how this tool is typically used, what support data it relies on,
+            and which techniques shape the resulting assembly.
+          </p>
+          ${pipelineChooserHtml(node, currentPipeline)}
+        </section>
+      `
+      : "";
+  const pipelineBreakdown = currentPipeline ? pipelineBreakdownHtml(currentPipeline) : "";
 
   return `
     <div class="detail-stack">
@@ -730,58 +766,59 @@ function nodeInfoHtml(node) {
         </p>
       </section>
 
-      ${landingIntro}
+      ${pipelineChooser}
 
       ${
-        node.pipelines.length
-          ? `
-            <section class="info-section">
-              <h3>Appears In</h3>
-              <ul class="pipeline-list">
-                ${node.pipelines
-                  .slice(0, 6)
-                  .map(
-                    (pipeline) => `
-                      <li>
-                        <strong>${escapeHtml(pipeline.label)}</strong><br>
-                        ${escapeHtml(pipeline.tagline)}
-                        ${pipelineFocusLineHtml(pipeline)}
-                      </li>
-                    `
-                  )
-                  .join("")}
-              </ul>
-            </section>
-          `
-          : ""
-      }
-
-      ${
-        topPipeline
+        currentPipeline
           ? `
             <section class="spotlight-card">
               ${pipelineMeta}
               <p>
                 Pipeline spotlight:
-                <strong>${escapeHtml(topPipeline.label)}</strong><br>
-                ${escapeHtml(topPipeline.description)}
+                <strong>${escapeHtml(currentPipeline.label)}</strong><br>
+                ${escapeHtml(currentPipeline.description)}
               </p>
             </section>
           `
           : ""
       }
+
+      ${landingIntro}
+      ${pipelineBreakdown}
     </div>
   `;
 }
 
 function nodeAnalyticsHtml(node) {
+  const currentPipeline = activePipelineForNode(node);
   return `
     <div class="analytics-body">
       <div class="badge-row">
         <span class="info-badge">Depth: ${node.depth}</span>
         <span class="info-badge">Direct prerequisites: ${node.from.length}</span>
         <span class="info-badge">Direct dependents: ${node.to.length}</span>
+        ${
+          currentPipeline
+            ? `<span class="info-badge">Path steps: ${currentPipeline.stepNodes.length}</span>`
+            : ""
+        }
       </div>
+
+      ${
+        currentPipeline
+          ? `
+            <section class="analytics-block">
+              <h3>Active Path</h3>
+              <div class="metrics-grid">
+                ${metricCardHtml("Workflow", currentPipeline.label)}
+                ${metricCardHtml("Focus", currentPipeline.focus || "Curated path")}
+                ${metricCardHtml("Nodes in path", String(currentPipeline.nodes.length))}
+                ${metricCardHtml("Edges in path", String(currentPipeline.edges.length))}
+              </div>
+            </section>
+          `
+          : ""
+      }
 
       <section class="analytics-block">
         <h3>Graph Metrics</h3>
@@ -834,6 +871,112 @@ function pipelineFocusBadgesHtml(pipeline) {
       </div>
     `
     : "";
+}
+
+function pipelineChooserHtml(node, currentPipeline) {
+  const visiblePipelines = sortedPipelinesForNode(node).slice(0, 6);
+  return `
+    <div class="pipeline-switcher">
+      ${visiblePipelines
+        .map((pipeline) => {
+          const active = currentPipeline?.id === pipeline.id;
+          return `
+            <button
+              type="button"
+              class="pipeline-button ${active ? "is-active" : ""}"
+              data-pipeline-target="${escapeHtml(pipeline.id)}"
+            >
+              <strong>${escapeHtml(pipeline.label)}</strong><br>
+              ${escapeHtml(pipeline.tagline)}
+              ${pipelineFocusLineHtml(pipeline)}
+            </button>
+          `;
+        })
+        .join("")}
+    </div>
+    ${
+      node.pipelines.length > visiblePipelines.length
+        ? `<p class="pipeline-meta">Showing the top ${visiblePipelines.length} curated paths for this node.</p>`
+        : ""
+    }
+  `;
+}
+
+function pipelineBreakdownHtml(pipeline) {
+  const techniques = pipeline.stepNodes.filter((node) =>
+    ["algorithm", "concept", "module"].includes(node.kind)
+  );
+  const inputs = pipeline.stepNodes.filter((node) => ["primary", "support"].includes(node.kind));
+  const outputs = pipeline.stepNodes.filter((node) => ["output", "stage"].includes(node.kind));
+
+  return `
+    <section class="info-section">
+      <h3>Path Ingredients</h3>
+      <p class="info-copy">
+        This highlighted path emphasizes ${escapeHtml((pipeline.focus || pipeline.tagline || "a curated workflow").toLowerCase())}.
+      </p>
+      ${pipelineNodeGroupHtml("Inputs and support data", inputs)}
+      ${pipelineNodeGroupHtml("Core techniques and modules", techniques)}
+      ${pipelineNodeGroupHtml("Stages and outputs", outputs)}
+    </section>
+  `;
+}
+
+function pipelineNodeGroupHtml(title, nodes) {
+  if (!nodes.length) {
+    return "";
+  }
+
+  return `
+    <div class="pipeline-node-group">
+      <h4>${escapeHtml(title)}</h4>
+      <div class="pipeline-node-list">
+        ${nodes
+          .map(
+            (node) => `
+              <button type="button" class="pipeline-node-chip" data-node-target="${escapeHtml(node.id)}">
+                ${escapeHtml(node.label)}
+              </button>
+            `
+          )
+          .join("")}
+      </div>
+    </div>
+  `;
+}
+
+function sortedPipelinesForNode(node) {
+  return [...node.pipelines].sort((left, right) => {
+    const scoreDelta = pipelineRelevanceScore(right, node) - pipelineRelevanceScore(left, node);
+    if (scoreDelta !== 0) {
+      return scoreDelta;
+    }
+    const stepDelta = left.stepNodes.length - right.stepNodes.length;
+    if (stepDelta !== 0) {
+      return stepDelta;
+    }
+    return left.label.localeCompare(right.label);
+  });
+}
+
+function pipelineRelevanceScore(pipeline, node) {
+  const label = pipeline.label.toLowerCase();
+  const focus = (pipeline.focus || "").toLowerCase();
+  const target = node.label.toLowerCase();
+  let score = 0;
+  if (label.includes(target)) {
+    score += 6;
+  }
+  if (label.startsWith(target)) {
+    score += 3;
+  }
+  if (focus.includes(target)) {
+    score += 1;
+  }
+  if (pipeline.stepSet.has(node.id)) {
+    score += 2;
+  }
+  return score;
 }
 
 function groupInfoHtml(selection) {
@@ -922,6 +1065,16 @@ function bindPanelActions() {
     });
   });
 
+  document.querySelectorAll("[data-pipeline-target]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const id = button.getAttribute("data-pipeline-target");
+      if (!id || !state.prepared.pipelineMap.has(id)) {
+        return;
+      }
+      activatePipeline(id);
+    });
+  });
+
   const prereqToggle = document.querySelector("#toggle-prerequisites");
   const dependentToggle = document.querySelector("#toggle-dependents");
 
@@ -954,6 +1107,7 @@ function handleNodeClick(node, event) {
       state.primarySelectionId = node.id;
     }
     state.selectionSource = "user";
+    state.activePipelineId = defaultPipelineIdForNode(node);
     state.layout = "radial";
     syncControls();
     renderPanels();
@@ -967,9 +1121,11 @@ function handleNodeClick(node, event) {
     if (event.shiftKey) {
       state.selectedNodeIds.add(node.id);
       state.primarySelectionId = node.id;
+      state.activePipelineId = null;
     } else {
       state.selectedNodeIds = new Set([node.id]);
       state.primarySelectionId = node.id;
+      state.activePipelineId = defaultPipelineIdForNode(node);
     }
     state.selectionSource = "user";
 
@@ -1043,9 +1199,20 @@ function nodeColor(node) {
   const selected = state.selectedNodeIds.has(node.id);
   const context = selectionContext();
   const isMatch = isSearchMatch(node);
+  const pipeline = activePipeline();
 
   if (selected) {
     return "#f5fbff";
+  }
+
+  if (pipeline) {
+    if (pipeline.stepSet.has(node.id)) {
+      return categoryColor(node);
+    }
+    if (pipeline.nodeSet.has(node.id)) {
+      return colorWithAlpha(categoryColor(node), 0.64);
+    }
+    return "rgba(88, 109, 124, 0.14)";
   }
 
   if (state.primarySelectionId) {
@@ -1071,9 +1238,18 @@ function nodeColor(node) {
 
 function nodeValue(node) {
   let value = state.nodeSizeMode === "default" ? node.defaultVal : metricSize(node, state.nodeSizeMode);
+  const pipeline = activePipeline();
 
   if (state.selectedNodeIds.has(node.id)) {
     value *= 1.45;
+  } else if (pipeline) {
+    if (pipeline.stepSet.has(node.id)) {
+      value *= 1.34;
+    } else if (pipeline.nodeSet.has(node.id)) {
+      value *= 1.08;
+    } else {
+      value *= 0.56;
+    }
   } else if (state.primarySelectionId) {
     const context = selectionContext();
     const active =
@@ -1093,6 +1269,17 @@ function linkColor(link) {
   const sourceId = getLinkSourceId(link);
   const targetId = getLinkTargetId(link);
   const matches = matchingNodeIds();
+  const pipeline = activePipeline();
+
+  if (pipeline) {
+    if (pipeline.edgeSet.has(link.id)) {
+      return "rgba(242, 200, 107, 0.96)";
+    }
+    if (pipeline.nodeSet.has(sourceId) && pipeline.nodeSet.has(targetId)) {
+      return "rgba(126, 195, 255, 0.34)";
+    }
+    return "rgba(82, 98, 111, 0.08)";
+  }
 
   if (state.primarySelectionId) {
     const context = selectionContext();
@@ -1125,6 +1312,14 @@ function linkColor(link) {
 }
 
 function linkWidth(link) {
+  const pipeline = activePipeline();
+  if (pipeline) {
+    if (pipeline.edgeSet.has(link.id)) {
+      return 3.2;
+    }
+    return 0.25;
+  }
+
   if (isActiveLink(link)) {
     return 2.8;
   }
@@ -1141,6 +1336,11 @@ function linkWidth(link) {
 }
 
 function isActiveLink(link) {
+  const pipeline = activePipeline();
+  if (pipeline) {
+    return pipeline.edgeSet.has(link.id);
+  }
+
   const sourceId = getLinkSourceId(link);
   const targetId = getLinkTargetId(link);
   const context = selectionContext();
@@ -1350,6 +1550,7 @@ function clearSelection() {
   state.selectedNodeIds = new Set();
   state.primarySelectionId = null;
   state.selectionSource = null;
+  state.activePipelineId = null;
   if (state.layout === "radial") {
     state.layout = "force";
   }
@@ -1360,12 +1561,30 @@ function applyUrlState() {
   const params = selectionParamsFromLocation();
   const nodesParam = params.get("nodes");
   const nodeParam = params.get("node");
+  const pipelineParam = params.get("pipeline");
+
+  if (pipelineParam && state.prepared.pipelineMap.has(pipelineParam)) {
+    state.activePipelineId = pipelineParam;
+  }
 
   if (nodesParam || nodeParam) {
     const ids = selectionIdsFromParams(params);
     if (ids.length) {
       state.selectedNodeIds = new Set(ids);
       state.primarySelectionId = ids[ids.length - 1];
+      state.selectionSource = "url";
+      if (!state.activePipelineId && ids.length === 1) {
+        state.activePipelineId = defaultPipelineIdForNode(state.prepared.nodeMap.get(ids[0]));
+      }
+      return true;
+    }
+  }
+
+  if (state.activePipelineId) {
+    const leadId = pipelineLeadNodeId(state.prepared.pipelineMap.get(state.activePipelineId));
+    if (leadId) {
+      state.selectedNodeIds = new Set([leadId]);
+      state.primarySelectionId = leadId;
       state.selectionSource = "url";
       return true;
     }
@@ -1378,10 +1597,14 @@ function syncUrlState() {
   const url = new URL(window.location.href);
   url.searchParams.delete("node");
   url.searchParams.delete("nodes");
+  url.searchParams.delete("pipeline");
   if (state.selectedNodeIds.size > 1) {
     url.searchParams.set("nodes", [...state.selectedNodeIds].join(","));
   } else if (state.primarySelectionId) {
     url.searchParams.set("node", state.primarySelectionId);
+  }
+  if (state.activePipelineId) {
+    url.searchParams.set("pipeline", state.activePipelineId);
   }
   url.hash = "";
   window.history.replaceState({}, "", url);
@@ -1422,13 +1645,16 @@ function applyLandingSelection() {
   state.selectedNodeIds = new Set([DEFAULT_NODE_ID]);
   state.primarySelectionId = DEFAULT_NODE_ID;
   state.selectionSource = "default";
+  state.activePipelineId = defaultPipelineIdForNode(state.prepared.nodeMap.get(DEFAULT_NODE_ID));
   clearUrlSelectionState();
 }
 
 function selectSingleNode(id) {
+  const node = state.prepared.nodeMap.get(id);
   state.selectedNodeIds = new Set([id]);
   state.primarySelectionId = id;
   state.selectionSource = "user";
+  state.activePipelineId = defaultPipelineIdForNode(node);
   state.layout = state.layout === "radial" ? "radial" : state.layout;
   syncUrlState();
   renderPanels();
@@ -1448,8 +1674,63 @@ function clearUrlSelectionState() {
   const url = new URL(window.location.href);
   url.searchParams.delete("node");
   url.searchParams.delete("nodes");
+  url.searchParams.delete("pipeline");
   url.hash = "";
   window.history.replaceState({}, "", url);
+}
+
+function activatePipeline(pipelineId) {
+  const pipeline = state.prepared.pipelineMap.get(pipelineId);
+  if (!pipeline) {
+    return;
+  }
+  state.activePipelineId = pipelineId;
+  if (!state.primarySelectionId || !pipeline.nodeSet.has(state.primarySelectionId)) {
+    const leadId = pipelineLeadNodeId(pipeline);
+    if (leadId) {
+      state.selectedNodeIds = new Set([leadId]);
+      state.primarySelectionId = leadId;
+    }
+  }
+  state.selectionSource = "user";
+  syncUrlState();
+  renderPanels();
+  refreshGraphStyles();
+  syncControls();
+  if (state.primarySelectionId) {
+    focusNode(state.primarySelectionId);
+  }
+}
+
+function activePipeline() {
+  return state.activePipelineId ? state.prepared.pipelineMap.get(state.activePipelineId) || null : null;
+}
+
+function activePipelineForNode(node) {
+  const pipeline = activePipeline();
+  if (pipeline && pipeline.nodeSet.has(node.id)) {
+    return pipeline;
+  }
+  return chooseDefaultPipeline(node);
+}
+
+function chooseDefaultPipeline(node) {
+  if (!node?.pipelines?.length) {
+    return null;
+  }
+  return sortedPipelinesForNode(node)[0] || null;
+}
+
+function defaultPipelineIdForNode(node) {
+  return chooseDefaultPipeline(node)?.id || null;
+}
+
+function pipelineLeadNodeId(pipeline) {
+  if (!pipeline) {
+    return null;
+  }
+  const toolNode = pipeline.stepNodes.find((node) => node.kind === "tool") || pipeline.nodes.find((node) => node.kind === "tool");
+  return toolNode?.id || pipeline.stepNodes[0]?.id || pipeline.nodes[0]?.id || null;
 }
 
 function startHereButtonsHtml(items = START_HERE_ITEMS) {
@@ -1478,6 +1759,10 @@ function startHereButtonsHtml(items = START_HERE_ITEMS) {
 
 function resolveSources(sourceIds = []) {
   return sourceIds.map((id) => state.prepared.sourceMap.get(id)).filter(Boolean);
+}
+
+function resolveSourceRefs(sourceIds = [], sourceMap) {
+  return sourceIds.map((id) => sourceMap.get(id)).filter(Boolean);
 }
 
 function metricColor(node, key) {
@@ -1801,6 +2086,25 @@ function deterministicCurvature(sourceId, targetId) {
   }
   const sign = hash % 2 === 0 ? 1 : -1;
   return sign * (0.04 + (hash % 5) * 0.02);
+}
+
+function colorWithAlpha(color, alpha) {
+  if (!color.startsWith("#")) {
+    return color;
+  }
+  const normalized = color.slice(1);
+  const expanded =
+    normalized.length === 3
+      ? normalized
+          .split("")
+          .map((character) => character + character)
+          .join("")
+      : normalized;
+  const value = Number.parseInt(expanded, 16);
+  const red = (value >> 16) & 255;
+  const green = (value >> 8) & 255;
+  const blue = value & 255;
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
 }
 
 function metricLabel(key) {
