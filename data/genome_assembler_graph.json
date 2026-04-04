@@ -8558,7 +8558,8 @@
         ],
         "concept_ids": [
           "concept_tetranucleotide_frequency",
-          "concept_mag"
+          "concept_mag",
+          "concept_contig_bin"
         ],
         "module_ids": [
           "module_tetranucleotide_coverage_clustering"
@@ -8613,7 +8614,8 @@
         ],
         "concept_ids": [
           "concept_marker_gene_lineage",
-          "concept_mag"
+          "concept_mag",
+          "concept_contig_bin"
         ],
         "module_ids": [
           "module_marker_gene_seeded_partitioning"
@@ -8719,7 +8721,8 @@
         ],
         "concept_ids": [
           "concept_marker_gene_lineage",
-          "concept_mag"
+          "concept_mag",
+          "concept_contig_bin"
         ],
         "module_ids": [
           "module_bin_consensus_scoring"
@@ -8809,6 +8812,7 @@
         ],
         "concept_ids": [
           "concept_curated_mag",
+          "concept_contig_bin",
           "concept_marker_gene_lineage",
           "concept_tetranucleotide_frequency",
           "concept_mag",
@@ -9460,6 +9464,7 @@
           "concept_complete_viral_genome",
           "concept_viral_bin",
           "concept_microdiversity",
+          "concept_contig_bin",
           "concept_uvig",
           "concept_viral_hallmark_gene",
           "concept_phage_component",
@@ -9535,7 +9540,8 @@
         ],
         "concept_ids": [
           "concept_viral_bin",
-          "concept_microdiversity"
+          "concept_microdiversity",
+          "concept_contig_bin"
         ],
         "module_ids": [
           "module_viral_bin_embedding"
@@ -9589,7 +9595,8 @@
         ],
         "concept_ids": [
           "concept_latent_bin_embedding",
-          "concept_mag"
+          "concept_mag",
+          "concept_contig_bin"
         ],
         "module_ids": [
           "module_latent_bin_embedding"
@@ -9647,7 +9654,8 @@
         ],
         "concept_ids": [
           "concept_latent_bin_embedding",
-          "concept_mag"
+          "concept_mag",
+          "concept_contig_bin"
         ],
         "module_ids": [
           "module_self_supervised_contig_embedding"
@@ -9700,7 +9708,8 @@
           "algorithm_manual_bin_curation"
         ],
         "concept_ids": [
-          "concept_curated_mag"
+          "concept_curated_mag",
+          "concept_contig_bin"
         ],
         "module_ids": [
           "module_manual_bin_refinement"
@@ -12111,7 +12120,8 @@
           "algorithm_iterative_marker_guided_refinement"
         ],
         "concept_ids": [
-          "concept_marker_consensus_bin"
+          "concept_marker_consensus_bin",
+          "concept_contig_bin"
         ],
         "module_ids": [
           "module_iterative_bin_refinement"
@@ -29714,6 +29724,47 @@
         "tiara_2021",
         "tiara_repo"
       ]
+    },
+    {
+      "id": "e_output_magbins_char_contigbin",
+      "source": "output_mag_bins",
+      "target": "concept_contig_bin",
+      "kind": "characterized_by",
+      "source_ids": [
+        "metabat2_2019",
+        "maxbin2_2016",
+        "concoct_2014",
+        "vamb_2021",
+        "semibin2_2023"
+      ]
+    },
+    {
+      "id": "e_output_refinedmags_char_contigbin",
+      "source": "output_refined_mag_bins",
+      "target": "concept_contig_bin",
+      "kind": "characterized_by",
+      "source_ids": [
+        "dastool_2018"
+      ]
+    },
+    {
+      "id": "e_output_curatedmag_char_contigbin",
+      "source": "output_curated_mag_set",
+      "target": "concept_contig_bin",
+      "kind": "characterized_by",
+      "source_ids": [
+        "anvio_2015",
+        "binny_2022"
+      ]
+    },
+    {
+      "id": "e_output_viralbins_char_contigbin",
+      "source": "output_viral_bins",
+      "target": "concept_contig_bin",
+      "kind": "characterized_by",
+      "source_ids": [
+        "coconet_2021"
+      ]
     }
   ],
   "pipelines": [
@@ -30043,6 +30094,7 @@
         "support_recovered_bins",
         "algorithm_manual_bin_curation",
         "concept_curated_mag",
+        "concept_contig_bin",
         "module_manual_bin_refinement",
         "tool_anvio",
         "tool_checkm",
@@ -30067,6 +30119,8 @@
         "e_tool_anvio_pair_checkm",
         "e_tool_anvio_stage_curate",
         "e_stage_curate_output_curatedmag",
+        "e_output_curatedmag_char_contigbin",
+        "e_output_refinedmags_char_contigbin",
         "e_output_curatedmag_char_curated",
         "e_output_curatedmag_case_humangut",
         "e_output_curatedmag_valid_checkm"
@@ -30089,7 +30143,8 @@
           "algorithm_manual_bin_curation"
         ],
         "concept_ids": [
-          "concept_curated_mag"
+          "concept_curated_mag",
+          "concept_contig_bin"
         ],
         "module_ids": [
           "module_manual_bin_refinement"
@@ -31292,6 +31347,7 @@
         "algorithm_viral_metagenome_binning",
         "concept_viral_bin",
         "concept_microdiversity",
+        "concept_contig_bin",
         "module_viral_bin_embedding",
         "tool_coconet",
         "tool_checkv",
@@ -31314,6 +31370,7 @@
         "e_tool_coconet_pair_checkv",
         "e_tool_coconet_stage_bin",
         "e_stage_bin_output_viralbinned",
+        "e_output_viralbins_char_contigbin",
         "e_output_viralbins_char_vbin",
         "e_output_viralbins_case_ocean",
         "e_output_viralbins_valid_checkv",
@@ -31339,7 +31396,8 @@
         ],
         "concept_ids": [
           "concept_viral_bin",
-          "concept_microdiversity"
+          "concept_microdiversity",
+          "concept_contig_bin"
         ],
         "module_ids": [
           "module_viral_bin_embedding"
@@ -31480,6 +31538,7 @@
         "algorithm_consensus_bin_refinement",
         "concept_marker_gene_lineage",
         "concept_mag",
+        "concept_contig_bin",
         "module_bin_consensus_scoring",
         "tool_das_tool",
         "tool_checkm",
@@ -31508,7 +31567,8 @@
         "e_stage_dedup_output_refinedmags",
         "e_output_refinedmags_char_mag",
         "e_output_refinedmags_case_sheep",
-        "e_output_refinedmags_valid_checkm"
+        "e_output_refinedmags_valid_checkm",
+        "e_output_refinedmags_char_contigbin"
       ],
       "source_ids": [
         "dastool_2018",
@@ -31529,7 +31589,8 @@
         ],
         "concept_ids": [
           "concept_marker_gene_lineage",
-          "concept_mag"
+          "concept_mag",
+          "concept_contig_bin"
         ],
         "module_ids": [
           "module_bin_consensus_scoring"
@@ -33969,6 +34030,7 @@
         "algorithm_marker_gene_binning",
         "concept_marker_gene_lineage",
         "concept_mag",
+        "concept_contig_bin",
         "module_marker_gene_seeded_partitioning",
         "tool_maxbin2",
         "tool_checkm",
@@ -33996,6 +34058,7 @@
         "e_tool_maxbin2_pair_checkm",
         "e_tool_maxbin2_stage_bin",
         "e_stage_bin_output_magbins",
+        "e_output_magbins_char_contigbin",
         "e_output_magbins_char_mag",
         "e_output_magbins_case_mock",
         "e_output_magbins_valid_checkm"
@@ -34022,7 +34085,8 @@
         ],
         "concept_ids": [
           "concept_marker_gene_lineage",
-          "concept_mag"
+          "concept_mag",
+          "concept_contig_bin"
         ],
         "module_ids": [
           "module_marker_gene_seeded_partitioning"
@@ -34388,6 +34452,7 @@
         "algorithm_composition_coverage_binning",
         "concept_tetranucleotide_frequency",
         "concept_mag",
+        "concept_contig_bin",
         "module_tetranucleotide_coverage_clustering",
         "tool_metabat2",
         "tool_checkm",
@@ -34413,6 +34478,7 @@
         "e_tool_metabat2_pair_checkm",
         "e_tool_metabat2_stage_bin",
         "e_stage_bin_output_magbins",
+        "e_output_magbins_char_contigbin",
         "e_output_magbins_char_mag",
         "e_output_magbins_case_sheep",
         "e_output_magbins_valid_checkm"
@@ -34438,7 +34504,8 @@
         ],
         "concept_ids": [
           "concept_tetranucleotide_frequency",
-          "concept_mag"
+          "concept_mag",
+          "concept_contig_bin"
         ],
         "module_ids": [
           "module_tetranucleotide_coverage_clustering"
@@ -37181,6 +37248,7 @@
         "prop_uneven_coverage",
         "case_marine_sediment",
         "concept_mag",
+        "concept_contig_bin",
         "prop_low_abundance_taxa"
       ],
       "edge_ids": [
@@ -37197,6 +37265,7 @@
         "e_tool_semibin2_pair_checkm",
         "e_tool_semibin2_stage_bin",
         "e_stage_bin_output_magbins",
+        "e_output_magbins_char_contigbin",
         "e_output_magbins_char_mag",
         "e_output_magbins_valid_checkm",
         "e_case_marinesed_lowabund"
@@ -37224,7 +37293,8 @@
         ],
         "concept_ids": [
           "concept_latent_bin_embedding",
-          "concept_mag"
+          "concept_mag",
+          "concept_contig_bin"
         ],
         "module_ids": [
           "module_self_supervised_contig_embedding"
@@ -38151,7 +38221,8 @@
         "prop_strain_heterogeneity",
         "case_human_gut_microbiome",
         "algorithm_composition_coverage_binning",
-        "concept_mag"
+        "concept_mag",
+        "concept_contig_bin"
       ],
       "edge_ids": [
         "e_output_metacontigs_draft",
@@ -38169,6 +38240,7 @@
         "e_tool_vamb_pair_checkm",
         "e_tool_vamb_stage_bin",
         "e_stage_bin_output_magbins",
+        "e_output_magbins_char_contigbin",
         "e_output_magbins_char_mag",
         "e_output_magbins_valid_checkm",
         "e_case_humangut_strain_vamb"
@@ -38195,7 +38267,8 @@
         ],
         "concept_ids": [
           "concept_latent_bin_embedding",
-          "concept_mag"
+          "concept_mag",
+          "concept_contig_bin"
         ],
         "module_ids": [
           "module_latent_bin_embedding"
@@ -39652,6 +39725,7 @@
         "support_multisample_coverage_profiles",
         "algorithm_iterative_marker_guided_refinement",
         "concept_marker_consensus_bin",
+        "concept_contig_bin",
         "module_iterative_bin_refinement",
         "tool_binny",
         "tool_checkm",
@@ -39678,7 +39752,8 @@
         "e_stage_bin_output_curatedmag",
         "e_output_curatedmag_metriccomp",
         "e_output_curatedmag_metriccont",
-        "e_output_curatedmag_case_humangut"
+        "e_output_curatedmag_case_humangut",
+        "e_output_curatedmag_char_contigbin"
       ],
       "source_ids": [
         "binny_2022",
@@ -39698,7 +39773,8 @@
           "algorithm_iterative_marker_guided_refinement"
         ],
         "concept_ids": [
-          "concept_marker_consensus_bin"
+          "concept_marker_consensus_bin",
+          "concept_contig_bin"
         ],
         "module_ids": [
           "module_iterative_bin_refinement"
