@@ -103,7 +103,6 @@ const state = {
   selectedNodeIds: new Set(),
   primarySelectionId: null,
   layout: "force",
-  autoRotate: false,
   nodeColorMode: "category",
   nodeSizeMode: "default",
   showPrerequisites: true,
@@ -123,7 +122,8 @@ const refs = {
   search: document.querySelector("#search"),
   stats: document.querySelector("#stats"),
   layoutSelect: document.querySelector("#layout-select"),
-  autoRotateBtn: document.querySelector("#auto-rotate-btn"),
+  recenterBtn: document.querySelector("#recenter-btn"),
+  panelsBtn: document.querySelector("#panels-btn"),
   settingsBtn: document.querySelector("#settings-btn"),
   settingsClose: document.querySelector("#settings-close"),
   settingsShell: document.querySelector("#settings-shell"),
@@ -149,9 +149,6 @@ const refs = {
 
 let toastTimer = null;
 let clickTimer = null;
-let autoRotateFrame = null;
-let autoRotateAngle = 0;
-let autoRotateSnapshot = null;
 
 boot().catch((error) => {
   refs.infoBody.innerHTML = `
@@ -241,16 +238,15 @@ function initUi() {
     }
     state.layout = nextLayout;
     applyLayout({ zoom: true });
-    if (state.autoRotate) {
-      updateAutoRotate();
-    }
     syncControls();
   });
 
-  refs.autoRotateBtn.addEventListener("click", () => {
-    state.autoRotate = !state.autoRotate;
-    updateAutoRotate();
-    syncControls();
+  refs.recenterBtn.addEventListener("click", () => {
+    recenterGraphView();
+  });
+
+  refs.panelsBtn.addEventListener("click", () => {
+    setPanelsCollapsed(!panelsAreCollapsed());
   });
 
   refs.settingsBtn.addEventListener("click", () => {
@@ -294,18 +290,25 @@ function initUi() {
   });
 
   refs.resetBtn.addEventListener("click", () => {
+    const nextLayout = state.layout === "radial" ? "cluster" : state.layout;
     refs.search.value = "";
     state.searchQuery = "";
     state.activeTraitFilters = new Set();
-    state.layout = "force";
-    refs.layoutSelect.value = "force";
-    state.autoRotate = false;
+    state.visibleCategories = new Set(state.prepared.categories.map((category) => category.id));
+    state.nodeColorMode = "category";
+    state.nodeSizeMode = "default";
+    refs.nodeColoringSelect.value = "category";
+    refs.nodeSizingSelect.value = "default";
+    state.showPrerequisites = true;
+    state.showDependents = false;
     clearSelection();
+    state.layout = nextLayout;
+    refs.layoutSelect.value = nextLayout;
     markDerivedStateDirty();
     renderSettingsFilters();
-    rebuildGraph({ zoom: true });
+    rebuildGraph({ zoom: false });
     renderPanels();
-    updateAutoRotate();
+    recenterGraphView();
     syncControls();
   });
 
@@ -328,7 +331,6 @@ function initGraph() {
   state.rendererMode = "2d";
   configureSharedGraphForces();
   refs.graphCanvas.style.cursor = "grab";
-  updateAutoRotate();
 }
 
 function initGraph2d() {
@@ -597,9 +599,6 @@ function rebuildGraph({ zoom = false } = {}) {
   renderStats(graphData);
   applyLayout({ zoom });
   refreshGraphStyles();
-  if (state.autoRotate) {
-    updateAutoRotate();
-  }
 }
 
 function applyLayout({ zoom = false } = {}) {
@@ -763,6 +762,19 @@ function focusGraphCore({ duration = 700, positions = null } = {}) {
 
   state.graph.centerAt(metrics.centerX, metrics.centerY, duration);
   state.graph.zoom(nextZoom, duration);
+}
+
+function recenterGraphView() {
+  if (!state.graph) {
+    return;
+  }
+
+  if (state.rendererMode === "3d") {
+    state.graph.zoomToFit?.(700, 80);
+    return;
+  }
+
+  focusGraphCore({ duration: 700 });
 }
 
 function emptySelectionContext() {
@@ -1094,7 +1106,7 @@ function overviewInfoHtml() {
               <h3>Renderer Status</h3>
               <p class="info-copy">
                 WebGL was unavailable here, so the explorer dropped to a 2D force-graph fallback.
-                The interaction model stays intact, including layout changes, highlighting, and 2D auto-rotate.
+                The interaction model stays intact, including layout changes, highlighting, and recentring in the 2D fallback.
               </p>
             </section>
           `
@@ -1103,7 +1115,7 @@ function overviewInfoHtml() {
 
       <section class="spotlight-card">
         <p>
-          Reset clears the active selection, clears tool filters, and zooms back out to the full graph.
+          Reset clears the active selection, search, and tool filters while keeping the current overview layout in place.
         </p>
       </section>
     </div>
@@ -2129,6 +2141,7 @@ function isSearchMatch(node) {
 
 function syncControls() {
   refs.layoutSelect.value = state.layout;
+  const collapsed = panelsAreCollapsed();
   refs.settingsGraphTab.classList.toggle("is-active", state.settingsTab === "graph");
   refs.settingsFiltersTab.classList.toggle("is-active", state.settingsTab === "filters");
   refs.settingsGraphTab.setAttribute("aria-selected", String(state.settingsTab === "graph"));
@@ -2139,135 +2152,35 @@ function syncControls() {
   refs.settingsFiltersPane.hidden = state.settingsTab !== "filters";
   refs.layoutSelect.querySelector('option[value="radial"]').disabled = !state.primarySelectionId;
   refs.layoutSelect.disabled = !state.graph;
-  refs.autoRotateBtn.classList.toggle("is-active", state.autoRotate);
-  refs.autoRotateBtn.disabled = !state.graph;
+  refs.recenterBtn.disabled = !state.graph;
+  refs.panelsBtn.textContent = collapsed ? "Show Panels" : "Hide Panels";
+  refs.panelsBtn.setAttribute("aria-pressed", String(collapsed));
   refs.screenshotBtn.disabled = !state.graph;
   refs.settingsShell.classList.toggle("is-open", state.settingsOpen);
   refs.settingsBtn.setAttribute("aria-expanded", String(state.settingsOpen));
   refs.settingsShell.setAttribute("aria-hidden", String(!state.settingsOpen));
 }
 
-function stopAutoRotateLoop({ restore = false } = {}) {
-  if (autoRotateFrame != null) {
-    window.cancelAnimationFrame(autoRotateFrame);
-    autoRotateFrame = null;
-  }
-
-  if (!restore || !autoRotateSnapshot) {
-    return;
-  }
-
-  autoRotateSnapshot.positions.forEach((position, nodeId) => {
-    const node = state.prepared?.nodeMap.get(nodeId);
-    if (!node) {
-      return;
-    }
-    node.x = position.x;
-    node.y = position.y;
-    if (state.layout === "force") {
-      delete node.fx;
-      delete node.fy;
-    } else {
-      node.fx = position.x;
-      node.fy = position.y;
-    }
-  });
-
-  if (state.layout === "force") {
-    state.graph?.cooldownTicks(90).d3ReheatSimulation();
-  } else {
-    state.graph?.refresh();
-  }
-
-  autoRotateSnapshot = null;
-  autoRotateAngle = 0;
+function panelsAreCollapsed() {
+  return refs.infoPanel.classList.contains("is-collapsed") && refs.analyticsPanel.classList.contains("is-collapsed");
 }
 
-function captureAutoRotateSnapshot() {
-  const positions = snapshotNodePositions();
-  if (!positions.size) {
-    return null;
-  }
-
-  const metrics = robustViewMetricsFromPositions([...positions.values()]);
-  if (!metrics) {
-    return null;
-  }
-
-  return {
-    positions,
-    center: { x: metrics.centerX, y: metrics.centerY },
-  };
-}
-
-function animate2dAutoRotate() {
-  if (!state.graph || !state.autoRotate || state.rendererMode !== "2d") {
-    stopAutoRotateLoop({ restore: true });
-    return;
-  }
-
-  if (!autoRotateSnapshot) {
-    autoRotateSnapshot = captureAutoRotateSnapshot();
-    autoRotateAngle = 0;
-  }
-
-  if (!autoRotateSnapshot) {
-    autoRotateFrame = window.requestAnimationFrame(animate2dAutoRotate);
-    return;
-  }
-
-  const cosine = Math.cos(autoRotateAngle);
-  const sine = Math.sin(autoRotateAngle);
-  const { center, positions } = autoRotateSnapshot;
-
-  currentVisibleNodes().forEach((node) => {
-    const base = positions.get(node.id);
-    if (!base) {
-      return;
-    }
-    const dx = base.x - center.x;
-    const dy = base.y - center.y;
-    const x = center.x + dx * cosine - dy * sine;
-    const y = center.y + dx * sine + dy * cosine;
-    node.x = x;
-    node.y = y;
-    node.fx = x;
-    node.fy = y;
-  });
-
-  state.graph.refresh();
-  autoRotateAngle += 0.0032;
-  autoRotateFrame = window.requestAnimationFrame(animate2dAutoRotate);
-}
-
-function updateAutoRotate() {
-  stopAutoRotateLoop({ restore: true });
-
-  if (!state.graph || !state.autoRotate) {
-    return;
-  }
-
-  if (state.rendererMode === "3d") {
-    const controls = state.graph.controls();
-    controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.45;
-    return;
-  }
-
-  autoRotateSnapshot = captureAutoRotateSnapshot();
-  if (!autoRotateSnapshot) {
-    return;
-  }
-
-  state.graph.centerAt(autoRotateSnapshot.center.x, autoRotateSnapshot.center.y, 400);
-  animate2dAutoRotate();
-}
-
-function togglePanel(panel) {
-  const collapsed = panel.classList.toggle("is-collapsed");
+function setPanelCollapsed(panel, collapsed) {
+  panel.classList.toggle("is-collapsed", collapsed);
   const toggle = panel.querySelector(".panel-toggle");
   toggle.textContent = collapsed ? "Expand" : "Collapse";
   toggle.setAttribute("aria-expanded", String(!collapsed));
+}
+
+function setPanelsCollapsed(collapsed) {
+  setPanelCollapsed(refs.infoPanel, collapsed);
+  setPanelCollapsed(refs.analyticsPanel, collapsed);
+  syncControls();
+}
+
+function togglePanel(panel) {
+  setPanelCollapsed(panel, !panel.classList.contains("is-collapsed"));
+  syncControls();
 }
 
 function downloadScreenshot() {
@@ -2313,7 +2226,6 @@ function clearSelection() {
   if (state.layout === "radial") {
     state.layout = "force";
   }
-  updateAutoRotate();
   syncUrlState();
 }
 

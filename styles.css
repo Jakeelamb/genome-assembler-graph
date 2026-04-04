@@ -169,6 +169,12 @@ body {
   padding: 0 16px;
 }
 
+.control-select option,
+.settings-select option {
+  background: #0b2130;
+  color: var(--text);
+}
+
 .control-btn:hover,
 .panel-toggle:hover,
 .legend-item:hover,
@@ -367,6 +373,13 @@ body {
 .legend-count {
   color: var(--muted);
   font-size: 0.82rem;
+}
+
+.legend-help {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.5;
 }
 
 .summary-grid {

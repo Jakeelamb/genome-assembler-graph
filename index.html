@@ -45,7 +45,8 @@
         <option value="cluster">Cluster</option>
         <option value="radial" disabled>Radial</option>
       </select>
-      <button id="auto-rotate-btn" class="control-btn" type="button">Auto-Rotate</button>
+      <button id="recenter-btn" class="control-btn" type="button">Recenter</button>
+      <button id="panels-btn" class="control-btn" type="button" aria-pressed="false">Hide Panels</button>
       <button id="reset-btn" class="control-btn" type="button">Reset</button>
       <button
         id="settings-btn"
@@ -107,9 +108,12 @@
           <section class="settings-section">
             <h3>Categories</h3>
             <p class="section-copy">
-              Toggle lanes on and off to isolate a part of the assembly stack.
+              When Color by is set to Categories, these colors map the lane palette for the graph. Click a lane below to hide or restore it.
             </p>
             <div id="legend" class="legend"></div>
+            <p class="legend-help">
+              Assembly goals, read types, support data, algorithms, concepts, modules, tools, stages, outputs, metrics, and case studies each keep a fixed category color in this mode.
+            </p>
           </section>
 
           <section class="settings-section">
@@ -196,7 +200,7 @@
 
   <div id="controls-hint">
     Pan: drag · Zoom: scroll or pinch<br>
-    Click: focus selection · Shift+Click: add to selection · Double-click: radial layout
+    Click: focus selection · Shift+Click: add to selection · Recenter: center the visible graph
   </div>
 
   <div id="toast" role="status" aria-live="polite"></div>
