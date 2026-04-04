@@ -78,41 +78,78 @@
       </div>
 
       <div class="panel-body settings-body">
-        <section class="settings-section">
-          <h3>Categories</h3>
-          <p class="section-copy">
-            Toggle lanes on and off to isolate a part of the assembly stack.
-          </p>
-          <div id="legend" class="legend"></div>
-        </section>
+        <div class="settings-tabs" role="tablist" aria-label="Settings views">
+          <button
+            id="settings-graph-tab"
+            class="settings-tab is-active"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            aria-controls="settings-graph-pane"
+            data-settings-tab="graph"
+          >
+            Graph
+          </button>
+          <button
+            id="settings-filters-tab"
+            class="settings-tab"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="settings-filters-pane"
+            data-settings-tab="filters"
+          >
+            Filters
+          </button>
+        </div>
 
-        <section class="settings-section">
-          <h3>Node Coloring</h3>
-          <label class="settings-label" for="node-coloring-select">Color by</label>
-          <select id="node-coloring-select" class="settings-select">
-            <option value="category">Categories</option>
-            <option value="_pagerank">PageRank</option>
-            <option value="_degree_centrality">Degree centrality</option>
-            <option value="_betweenness_centrality">Betweenness centrality</option>
-            <option value="_descendant_ratio">Descendant ratio</option>
-            <option value="_prerequisite_ratio">Prerequisite ratio</option>
-            <option value="_reachability_ratio">Reachability ratio</option>
-          </select>
-        </section>
+        <div id="settings-graph-pane" class="settings-pane is-active" role="tabpanel" aria-labelledby="settings-graph-tab">
+          <section class="settings-section">
+            <h3>Categories</h3>
+            <p class="section-copy">
+              Toggle lanes on and off to isolate a part of the assembly stack.
+            </p>
+            <div id="legend" class="legend"></div>
+          </section>
 
-        <section class="settings-section">
-          <h3>Node Sizing</h3>
-          <label class="settings-label" for="node-sizing-select">Size by</label>
-          <select id="node-sizing-select" class="settings-select">
-            <option value="default">Default</option>
-            <option value="_pagerank">PageRank</option>
-            <option value="_degree_centrality">Degree centrality</option>
-            <option value="_betweenness_centrality">Betweenness centrality</option>
-            <option value="_descendant_ratio">Descendant ratio</option>
-            <option value="_prerequisite_ratio">Prerequisite ratio</option>
-            <option value="_reachability_ratio">Reachability ratio</option>
-          </select>
-        </section>
+          <section class="settings-section">
+            <h3>Node Coloring</h3>
+            <label class="settings-label" for="node-coloring-select">Color by</label>
+            <select id="node-coloring-select" class="settings-select">
+              <option value="category">Categories</option>
+              <option value="_pagerank">PageRank</option>
+              <option value="_degree_centrality">Degree centrality</option>
+              <option value="_betweenness_centrality">Betweenness centrality</option>
+              <option value="_descendant_ratio">Descendant ratio</option>
+              <option value="_prerequisite_ratio">Prerequisite ratio</option>
+              <option value="_reachability_ratio">Reachability ratio</option>
+            </select>
+          </section>
+
+          <section class="settings-section">
+            <h3>Node Sizing</h3>
+            <label class="settings-label" for="node-sizing-select">Size by</label>
+            <select id="node-sizing-select" class="settings-select">
+              <option value="default">Default</option>
+              <option value="_pagerank">PageRank</option>
+              <option value="_degree_centrality">Degree centrality</option>
+              <option value="_betweenness_centrality">Betweenness centrality</option>
+              <option value="_descendant_ratio">Descendant ratio</option>
+              <option value="_prerequisite_ratio">Prerequisite ratio</option>
+              <option value="_reachability_ratio">Reachability ratio</option>
+            </select>
+          </section>
+        </div>
+
+        <div id="settings-filters-pane" class="settings-pane" role="tabpanel" aria-labelledby="settings-filters-tab" hidden>
+          <section class="settings-section">
+            <h3>Tool Trait Filters</h3>
+            <p class="section-copy">
+              Match tools by the structured traits attached to their records. Matching tools and linked workflows stay highlighted in the graph.
+            </p>
+            <div id="trait-filter-shell"></div>
+          </section>
+        </div>
       </div>
     </aside>
   </div>

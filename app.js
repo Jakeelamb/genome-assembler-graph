@@ -55,6 +55,29 @@ const TOOL_PROFILE_GROUPS = [
   { title: "Other linked tools", fields: ["related_tool_ids"] },
 ];
 
+const TOOL_TRAIT_FILTER_GROUPS = [
+  { field: "primary_input_ids", title: "Primary Inputs" },
+  { field: "support_data_ids", title: "Support Data" },
+  { field: "property_ids", title: "Genome Properties" },
+  { field: "goal_ids", title: "Assembly Goals" },
+  { field: "output_ids", title: "Outputs" },
+];
+
+function traitFilterKey(field, nodeId) {
+  return `${field}::${nodeId}`;
+}
+
+function parseTraitFilterKey(key) {
+  const separatorIndex = key.indexOf("::");
+  if (separatorIndex === -1) {
+    return { field: "", nodeId: "" };
+  }
+  return {
+    field: key.slice(0, separatorIndex),
+    nodeId: key.slice(separatorIndex + 2),
+  };
+}
+
 const CATEGORY_COLORS = {
   goal: "#f2c86b",
   property: "#f59f86",
@@ -86,7 +109,9 @@ const state = {
   showPrerequisites: true,
   showDependents: false,
   activePipelineId: null,
+  activeTraitFilters: new Set(),
   settingsOpen: false,
+  settingsTab: "graph",
   graphError: null,
   selectionSource: null,
   derived: null,
@@ -102,7 +127,12 @@ const refs = {
   settingsBtn: document.querySelector("#settings-btn"),
   settingsClose: document.querySelector("#settings-close"),
   settingsShell: document.querySelector("#settings-shell"),
+  settingsGraphTab: document.querySelector("#settings-graph-tab"),
+  settingsFiltersTab: document.querySelector("#settings-filters-tab"),
+  settingsGraphPane: document.querySelector("#settings-graph-pane"),
+  settingsFiltersPane: document.querySelector("#settings-filters-pane"),
   legend: document.querySelector("#legend"),
+  traitFilterShell: document.querySelector("#trait-filter-shell"),
   nodeColoringSelect: document.querySelector("#node-coloring-select"),
   nodeSizingSelect: document.querySelector("#node-sizing-select"),
   resetBtn: document.querySelector("#reset-btn"),
@@ -119,6 +149,8 @@ const refs = {
 
 let toastTimer = null;
 let clickTimer = null;
+let autoRotateFrame = null;
+let autoRotateAngle = 0;
 
 boot().catch((error) => {
   refs.infoBody.innerHTML = `
@@ -137,6 +169,7 @@ async function boot() {
   state.visibleCategories = new Set(state.prepared.categories.map((category) => category.id));
 
   initUi();
+  renderSettingsFilters();
   try {
     initGraph();
   } catch (error) {
@@ -226,6 +259,26 @@ function initUi() {
     syncControls();
   });
 
+  [refs.settingsGraphTab, refs.settingsFiltersTab].forEach((button) => {
+    button.addEventListener("click", () => {
+      state.settingsTab = button.dataset.settingsTab || "graph";
+      syncControls();
+    });
+  });
+
+  refs.traitFilterShell.addEventListener("click", (event) => {
+    const clearButton = event.target.closest("[data-clear-trait-filters]");
+    if (clearButton) {
+      clearTraitFilters();
+      return;
+    }
+
+    const filterButton = event.target.closest("[data-trait-filter]");
+    if (filterButton) {
+      toggleTraitFilter(filterButton.getAttribute("data-trait-filter"));
+    }
+  });
+
   refs.nodeColoringSelect.addEventListener("change", (event) => {
     state.nodeColorMode = event.target.value;
     refreshGraphStyles();
@@ -239,14 +292,17 @@ function initUi() {
   refs.resetBtn.addEventListener("click", () => {
     refs.search.value = "";
     state.searchQuery = "";
-    markDerivedStateDirty();
+    state.activeTraitFilters = new Set();
     state.layout = "force";
     refs.layoutSelect.value = "force";
-    applyLandingSelection();
+    state.autoRotate = false;
+    clearSelection();
+    markDerivedStateDirty();
+    renderSettingsFilters();
     rebuildGraph({ zoom: true });
     renderPanels();
+    updateAutoRotate();
     syncControls();
-    scheduleSelectionFocus();
   });
 
   refs.screenshotBtn.addEventListener("click", downloadScreenshot);
@@ -320,6 +376,46 @@ function resolveComponentNodes(componentMap, nodeMap) {
       Array.isArray(ids) ? ids.filter((nodeId) => nodeMap.has(nodeId)).map((nodeId) => nodeMap.get(nodeId)) : [],
     ])
   );
+}
+
+function buildTraitFilterIndex(nodes, nodeMap) {
+  const toolNodes = nodes.filter((node) => node.kind === "tool" && node.toolProfile);
+  const groups = TOOL_TRAIT_FILTER_GROUPS.map((group) => {
+    const counts = new Map();
+    toolNodes.forEach((toolNode) => {
+      (toolNode.toolProfile[group.field] || []).forEach((nodeId) => {
+        counts.set(nodeId, (counts.get(nodeId) || 0) + 1);
+      });
+    });
+
+    const items = [...counts.entries()]
+      .map(([nodeId, count]) => {
+        const node = nodeMap.get(nodeId);
+        if (!node) {
+          return null;
+        }
+        return {
+          key: traitFilterKey(group.field, nodeId),
+          field: group.field,
+          nodeId,
+          label: node.label,
+          count,
+          color: categoryColor(node),
+        };
+      })
+      .filter(Boolean)
+      .sort((left, right) => right.count - left.count || left.label.localeCompare(right.label));
+
+    return {
+      ...group,
+      items,
+    };
+  }).filter((group) => group.items.length > 0);
+
+  return {
+    groups,
+    itemMap: new Map(groups.flatMap((group) => group.items.map((item) => [item.key, item]))),
+  };
 }
 
 function prepareData(raw) {
@@ -467,6 +563,8 @@ function prepareData(raw) {
     ])
   );
 
+  const traitFilterIndex = buildTraitFilterIndex(nodes, nodeMap);
+
   return {
     nodes,
     nodeMap,
@@ -477,6 +575,8 @@ function prepareData(raw) {
     pipelineMap,
     categories,
     metricRanges,
+    traitFilterGroups: traitFilterIndex.groups,
+    traitFilterItemMap: traitFilterIndex.itemMap,
   };
 }
 
@@ -530,7 +630,7 @@ function applyLayout({ zoom = false } = {}) {
       return;
     }
     node.fx = target.x;
-    node.fy = state.rendererMode === "3d" ? target.y : target.z;
+    node.fy = target.y;
     if (state.rendererMode === "3d") {
       node.fz = target.z;
     }
@@ -610,6 +710,7 @@ function ensureDerivedState() {
       matchingNodeIds: new Set(),
       selectionContext: emptySelectionContext(),
       activePipeline: null,
+      traitFilterState: emptyTraitFilterState(),
     };
   }
 
@@ -635,9 +736,109 @@ function ensureDerivedState() {
     matchingNodeIds,
     selectionContext: computeSelectionContext(),
     activePipeline: state.activePipelineId ? state.prepared.pipelineMap.get(state.activePipelineId) || null : null,
+    traitFilterState: computeTraitFilterState(),
   };
   state.derivedDirty = false;
   return state.derived;
+}
+
+function renderSettingsFilters() {
+  if (!refs.traitFilterShell || !state.prepared) {
+    return;
+  }
+  refs.traitFilterShell.innerHTML = settingsTraitFiltersHtml();
+}
+
+function settingsTraitFiltersHtml() {
+  const activeItems = activeTraitFilterItems();
+  return `
+    <div class="trait-filter-toolbar">
+      <p class="section-copy">
+        Tools must match all active traits. Matching tools and their linked workflows stay highlighted in the graph.
+      </p>
+      ${
+        activeItems.length
+          ? `<button type="button" class="settings-inline-action" data-clear-trait-filters="true">Clear</button>`
+          : ""
+      }
+    </div>
+    ${
+      activeItems.length
+        ? `<div class="filter-pill-row">${activeItems.map((item) => filterPillHtml(item)).join("")}</div>`
+        : `<p class="section-copy">No active trait filters.</p>`
+    }
+    ${state.prepared.traitFilterGroups
+      .map(
+        (group) => `
+          <div class="trait-filter-group">
+            <h4>${escapeHtml(group.title)}</h4>
+            <div class="trait-filter-grid">
+              ${group.items.map((item) => traitFilterChipHtml(item)).join("")}
+            </div>
+          </div>
+        `
+      )
+      .join("")}
+  `;
+}
+
+function traitFilterChipHtml(item) {
+  return `
+    <button
+      type="button"
+      class="trait-filter-chip ${state.activeTraitFilters.has(item.key) ? "is-active" : ""}"
+      data-trait-filter="${escapeHtml(item.key)}"
+    >
+      <span>${escapeHtml(item.label)}</span>
+      <span class="trait-filter-chip-count">${item.count}</span>
+    </button>
+  `;
+}
+
+function filterPillHtml(item) {
+  return `
+    <span class="filter-pill">
+      <span class="pill-dot" style="background:${escapeHtml(item.color)}"></span>
+      ${escapeHtml(item.label)}
+    </span>
+  `;
+}
+
+function activeTraitFilterItems() {
+  return [...state.activeTraitFilters]
+    .map((key) => state.prepared.traitFilterItemMap.get(key))
+    .filter(Boolean)
+    .sort((left, right) => left.label.localeCompare(right.label));
+}
+
+function toggleTraitFilter(key) {
+  if (!key || !state.prepared.traitFilterItemMap.has(key)) {
+    return;
+  }
+
+  if (state.activeTraitFilters.has(key)) {
+    state.activeTraitFilters.delete(key);
+  } else {
+    state.activeTraitFilters.add(key);
+  }
+
+  markDerivedStateDirty();
+  renderSettingsFilters();
+  renderPanels();
+  refreshGraphStyles();
+  syncUrlState();
+}
+
+function clearTraitFilters() {
+  if (!state.activeTraitFilters.size) {
+    return;
+  }
+  state.activeTraitFilters = new Set();
+  markDerivedStateDirty();
+  renderSettingsFilters();
+  renderPanels();
+  refreshGraphStyles();
+  syncUrlState();
 }
 
 function renderLegend() {
@@ -694,12 +895,16 @@ function renderStats(graphData = currentGraphData()) {
   const totalEdges = graphData.links.length;
   const matches = matchingNodeIds().size;
   const selected = state.selectedNodeIds.size;
+  const traitFilters = toolTraitFilterState();
   const parts = [`${totalNodes} nodes`, `${totalEdges} edges`];
   if (state.searchQuery) {
     parts.push(`${matches} matches`);
   }
   if (selected) {
     parts.push(`${selected} selected`);
+  }
+  if (traitFilters.active) {
+    parts.push(`${traitFilters.toolIds.size} tool matches`);
   }
   refs.stats.textContent = parts.join(" · ");
 }
@@ -784,7 +989,7 @@ function overviewInfoHtml() {
               <h3>Renderer Status</h3>
               <p class="info-copy">
                 WebGL was unavailable here, so the explorer dropped to a 2D force-graph fallback.
-                The interaction model stays intact, but auto-rotate and full 3D depth are disabled.
+                The interaction model stays intact, including layout changes, highlighting, and 2D auto-rotate.
               </p>
             </section>
           `
@@ -793,7 +998,7 @@ function overviewInfoHtml() {
 
       <section class="spotlight-card">
         <p>
-          Reset restores the initial view with <strong>hifiasm</strong> selected.
+          Reset clears the active selection, clears tool filters, and zooms back out to the full graph.
         </p>
       </section>
     </div>
@@ -820,6 +1025,8 @@ function overviewAnalyticsHtml() {
           Radial layout unlocks when a node is selected or double-clicked.
         </p>
       </section>
+
+      ${toolTraitFilterSummaryHtml()}
 
       <section class="analytics-block">
         <h3>Path Highlighting</h3>
@@ -877,6 +1084,7 @@ function nodeInfoHtml(node) {
       `
       : "";
   const toolRecord = toolProfile ? toolProfileBreakdownHtml(node, toolProfile) : "";
+  const referenceSection = nodeReferenceSectionHtml(node, currentPipeline);
   const pipelineChooser =
     node.pipelines.length > 0
       ? `
@@ -917,6 +1125,7 @@ function nodeInfoHtml(node) {
       </section>
 
       ${toolRecord}
+      ${referenceSection}
       ${pipelineChooser}
 
       ${
@@ -972,6 +1181,7 @@ function nodeAnalyticsHtml(node) {
       }
 
       ${toolProfile ? toolProfileAnalyticsHtml(toolProfile) : ""}
+      ${toolTraitFilterSummaryHtml()}
 
       <section class="analytics-block">
         <h3>Graph Metrics</h3>
@@ -1636,15 +1846,16 @@ function relatedButtonsHtml(ids) {
   `;
 }
 
-function sourcesHtml(node) {
+function uniqueSources(sources) {
   const sourceMap = new Map();
-  [...node.sources, ...node.pipelines.flatMap((pipeline) => resolveSources(pipeline.source_ids))]
-    .filter(Boolean)
-    .forEach((source) => sourceMap.set(source.id, source));
+  (sources || []).filter(Boolean).forEach((source) => sourceMap.set(source.id, source));
+  return [...sourceMap.values()];
+}
 
-  const items = [...sourceMap.values()];
+function sourceListHtml(sources, emptyMessage = "No source links attached to this node.") {
+  const items = uniqueSources(sources);
   if (!items.length) {
-    return `<p class="analytics-copy">No source links attached to this node.</p>`;
+    return `<p class="analytics-copy">${escapeHtml(emptyMessage)}</p>`;
   }
 
   return `
@@ -1664,6 +1875,54 @@ function sourcesHtml(node) {
   `;
 }
 
+function nodeReferenceSectionHtml(node, currentPipeline) {
+  const directSources = uniqueSources(node.sources);
+  const directSourceIds = new Set(directSources.map((source) => source.id));
+  const workflowSources = uniqueSources(
+    (currentPipeline?.sources || []).filter((source) => source && !directSourceIds.has(source.id))
+  );
+
+  if (!directSources.length && !workflowSources.length) {
+    return "";
+  }
+
+  return `
+    <section class="info-section">
+      <h3>References</h3>
+      <p class="info-copy">
+        These links point to the attached source records for this node${workflowSources.length ? " and the active workflow" : ""}.
+      </p>
+      ${
+        directSources.length
+          ? `
+            <div class="source-group">
+              <h4>${node.kind === "tool" ? "Tool references" : "Direct references"}</h4>
+              ${sourceListHtml(directSources)}
+            </div>
+          `
+          : ""
+      }
+      ${
+        workflowSources.length
+          ? `
+            <div class="source-group">
+              <h4>Active workflow references</h4>
+              ${sourceListHtml(workflowSources)}
+            </div>
+          `
+          : ""
+      }
+    </section>
+  `;
+}
+
+function sourcesHtml(node) {
+  return sourceListHtml(
+    [...node.sources, ...node.pipelines.flatMap((pipeline) => resolveSources(pipeline.source_ids))],
+    "No source links attached to this node."
+  );
+}
+
 function metricCardHtml(label, value) {
   return `
     <div class="metric-card">
@@ -1671,6 +1930,88 @@ function metricCardHtml(label, value) {
       <span>${escapeHtml(label)}</span>
     </div>
   `;
+}
+
+function toolTraitFilterSummaryHtml() {
+  const traitFilters = toolTraitFilterState();
+  return `
+    <section class="analytics-block">
+      <h3>Tool Filters</h3>
+      <p class="analytics-copy">
+        Settings -> Filters matches tools by the structured traits already attached to their records.
+      </p>
+      ${
+        traitFilters.active
+          ? `
+            <div class="filter-pill-row">
+              ${traitFilters.items.map((item) => filterPillHtml(item)).join("")}
+            </div>
+            <div class="metrics-grid">
+              ${metricCardHtml("Matched tools", String(traitFilters.toolIds.size))}
+              ${metricCardHtml("Linked workflows", String(traitFilters.pipelineIds.size))}
+              ${metricCardHtml("Highlighted nodes", String(traitFilters.nodeIds.size))}
+            </div>
+          `
+          : `<p class="analytics-copy">No active tool-trait filters.</p>`
+      }
+    </section>
+  `;
+}
+
+function toolTraitFilterState() {
+  return ensureDerivedState().traitFilterState;
+}
+
+function emptyTraitFilterState() {
+  return {
+    active: false,
+    items: [],
+    traitNodeIds: new Set(),
+    toolIds: new Set(),
+    pipelineIds: new Set(),
+    nodeIds: new Set(),
+    edgeIds: new Set(),
+  };
+}
+
+function computeTraitFilterState() {
+  const items = activeTraitFilterItems();
+  if (!items.length) {
+    return emptyTraitFilterState();
+  }
+
+  const matchedToolNodes = state.prepared.nodes.filter(
+    (node) =>
+      node.kind === "tool" &&
+      node.toolProfile &&
+      items.every((item) => (node.toolProfile[item.field] || []).includes(item.nodeId))
+  );
+
+  const traitNodeIds = new Set(items.map((item) => item.nodeId));
+  const toolIds = new Set();
+  const pipelineIds = new Set();
+  const nodeIds = new Set(traitNodeIds);
+  const edgeIds = new Set();
+
+  matchedToolNodes.forEach((toolNode) => {
+    toolIds.add(toolNode.id);
+    nodeIds.add(toolNode.id);
+    (toolNode.toolProfile.linkedPipelines || []).forEach((pipeline) => {
+      pipelineIds.add(pipeline.id);
+      pipeline.nodeSet.forEach((nodeId) => nodeIds.add(nodeId));
+      pipeline.edgeSet.forEach((edgeId) => edgeIds.add(edgeId));
+    });
+  });
+
+  return {
+    active: true,
+    items,
+    traitNodeIds,
+    toolIds,
+    pipelineIds,
+    nodeIds,
+    edgeIds,
+  };
 }
 
 function matchingNodeIds() {
@@ -1683,23 +2024,100 @@ function isSearchMatch(node) {
 
 function syncControls() {
   refs.layoutSelect.value = state.layout;
+  refs.settingsGraphTab.classList.toggle("is-active", state.settingsTab === "graph");
+  refs.settingsFiltersTab.classList.toggle("is-active", state.settingsTab === "filters");
+  refs.settingsGraphTab.setAttribute("aria-selected", String(state.settingsTab === "graph"));
+  refs.settingsFiltersTab.setAttribute("aria-selected", String(state.settingsTab === "filters"));
+  refs.settingsGraphPane.classList.toggle("is-active", state.settingsTab === "graph");
+  refs.settingsFiltersPane.classList.toggle("is-active", state.settingsTab === "filters");
+  refs.settingsGraphPane.hidden = state.settingsTab !== "graph";
+  refs.settingsFiltersPane.hidden = state.settingsTab !== "filters";
   refs.layoutSelect.querySelector('option[value="radial"]').disabled = !state.primarySelectionId;
   refs.layoutSelect.disabled = !state.graph;
-  refs.autoRotateBtn.classList.toggle("is-active", state.autoRotate && state.rendererMode === "3d");
-  refs.autoRotateBtn.disabled = !state.graph || state.rendererMode !== "3d";
+  refs.autoRotateBtn.classList.toggle("is-active", state.autoRotate);
+  refs.autoRotateBtn.disabled = !state.graph;
   refs.screenshotBtn.disabled = !state.graph;
   refs.settingsShell.classList.toggle("is-open", state.settingsOpen);
   refs.settingsBtn.setAttribute("aria-expanded", String(state.settingsOpen));
   refs.settingsShell.setAttribute("aria-hidden", String(!state.settingsOpen));
 }
 
-function updateAutoRotate() {
-  if (!state.graph || state.rendererMode !== "3d") {
+function stopAutoRotateLoop() {
+  if (autoRotateFrame != null) {
+    window.cancelAnimationFrame(autoRotateFrame);
+    autoRotateFrame = null;
+  }
+}
+
+function autoRotateTarget() {
+  if (!state.prepared) {
+    return null;
+  }
+
+  const visibleNodes = currentVisibleNodes().filter((node) => Number.isFinite(node.x) && Number.isFinite(node.y));
+  if (!visibleNodes.length) {
+    return null;
+  }
+
+  if (state.primarySelectionId) {
+    const selected = state.prepared.nodeMap.get(state.primarySelectionId);
+    if (selected && Number.isFinite(selected.x) && Number.isFinite(selected.y)) {
+      return selected;
+    }
+  }
+
+  const totals = visibleNodes.reduce(
+    (acc, node) => {
+      acc.x += node.x;
+      acc.y += node.y;
+      return acc;
+    },
+    { x: 0, y: 0 }
+  );
+
+  return {
+    x: totals.x / visibleNodes.length,
+    y: totals.y / visibleNodes.length,
+  };
+}
+
+function animate2dAutoRotate() {
+  if (!state.graph || !state.autoRotate || state.rendererMode !== "2d") {
+    stopAutoRotateLoop();
     return;
   }
-  const controls = state.graph.controls();
-  controls.autoRotate = state.autoRotate;
-  controls.autoRotateSpeed = 0.45;
+
+  const target = autoRotateTarget();
+  if (!target) {
+    autoRotateFrame = window.requestAnimationFrame(animate2dAutoRotate);
+    return;
+  }
+
+  autoRotateAngle += 0.012;
+  const radius = state.primarySelectionId ? 90 : 140;
+  state.graph.centerAt(
+    target.x + Math.cos(autoRotateAngle) * radius,
+    target.y + Math.sin(autoRotateAngle) * radius,
+    0
+  );
+  autoRotateFrame = window.requestAnimationFrame(animate2dAutoRotate);
+}
+
+function updateAutoRotate() {
+  stopAutoRotateLoop();
+
+  if (!state.graph || !state.autoRotate) {
+    return;
+  }
+
+  if (state.rendererMode === "3d") {
+    const controls = state.graph.controls();
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.45;
+    return;
+  }
+
+  animate2dAutoRotate();
 }
 
 function togglePanel(panel) {
@@ -1752,6 +2170,7 @@ function clearSelection() {
   if (state.layout === "radial") {
     state.layout = "force";
   }
+  updateAutoRotate();
   syncUrlState();
 }
 
@@ -1760,6 +2179,18 @@ function applyUrlState() {
   const nodesParam = params.get("nodes");
   const nodeParam = params.get("node");
   const pipelineParam = params.get("pipeline");
+  const traitsParam = params.get("traits");
+
+  if (traitsParam) {
+    state.activeTraitFilters = new Set(
+      traitsParam
+        .split(",")
+        .map((value) => value.trim())
+        .filter((value) => state.prepared.traitFilterItemMap.has(value))
+    );
+    markDerivedStateDirty();
+    renderSettingsFilters();
+  }
 
   if (pipelineParam && state.prepared.pipelineMap.has(pipelineParam)) {
     state.activePipelineId = pipelineParam;
@@ -1799,6 +2230,7 @@ function syncUrlState() {
   url.searchParams.delete("node");
   url.searchParams.delete("nodes");
   url.searchParams.delete("pipeline");
+  url.searchParams.delete("traits");
   if (state.selectedNodeIds.size > 1) {
     url.searchParams.set("nodes", [...state.selectedNodeIds].join(","));
   } else if (state.primarySelectionId) {
@@ -1806,6 +2238,9 @@ function syncUrlState() {
   }
   if (state.activePipelineId) {
     url.searchParams.set("pipeline", state.activePipelineId);
+  }
+  if (state.activeTraitFilters.size) {
+    url.searchParams.set("traits", [...state.activeTraitFilters].sort().join(","));
   }
   url.hash = "";
   window.history.replaceState({}, "", url);
@@ -1839,14 +2274,7 @@ function selectionIdsFromParams(params) {
 }
 
 function applyLandingSelection() {
-  if (!state.prepared.nodeMap.has(DEFAULT_NODE_ID)) {
-    clearSelection();
-    return;
-  }
-  state.selectedNodeIds = new Set([DEFAULT_NODE_ID]);
-  state.primarySelectionId = DEFAULT_NODE_ID;
-  state.selectionSource = "default";
-  state.activePipelineId = defaultPipelineIdForNode(state.prepared.nodeMap.get(DEFAULT_NODE_ID));
+  clearSelection();
   markDerivedStateDirty();
   clearUrlSelectionState();
 }
@@ -1878,6 +2306,7 @@ function clearUrlSelectionState() {
   url.searchParams.delete("node");
   url.searchParams.delete("nodes");
   url.searchParams.delete("pipeline");
+  url.searchParams.delete("traits");
   url.hash = "";
   window.history.replaceState({}, "", url);
 }

@@ -214,6 +214,7 @@ body {
   grid-template-columns: minmax(300px, 420px) minmax(280px, 340px);
   gap: 14px;
   max-width: min(52vw, 760px);
+  height: calc(100vh - 116px);
   max-height: calc(100vh - 116px);
 }
 
@@ -232,7 +233,15 @@ body {
 .panel {
   display: flex;
   flex-direction: column;
-  min-height: 320px;
+  min-height: 0;
+  height: 100%;
+}
+
+#settings-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: inherit;
 }
 
 .panel.is-collapsed {
@@ -276,6 +285,8 @@ body {
 }
 
 .panel-body {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: auto;
   padding: 18px;
 }
@@ -506,6 +517,16 @@ body {
 }
 
 .pipeline-node-group h4 {
+  margin: 0 0 10px;
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+
+.source-group + .source-group {
+  margin-top: 14px;
+}
+
+.source-group h4 {
   margin: 0 0 10px;
   font-size: 0.86rem;
   color: var(--muted);
