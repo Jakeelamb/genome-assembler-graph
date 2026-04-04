@@ -1,14 +1,30 @@
 # Genome Assembler Knowledge Graph
 
-A standalone, ontology-first map of modern genome assemblers.
+Interactive map of modern genome assembly workflows, from read types and support data to algorithms, reusable modules, tools, outputs, metrics, and case studies.
+
+Live site: `https://jakeelamb.github.io/genome-assembler-graph/`
 
 This repository ships as a lightweight static web app plus a curated graph dataset so you can:
 
-- see how assembly tools decompose into data types, algorithmic primitives, functional modules, and stages
-- inspect how curated assemblers and workflows such as `hifiasm`, `Verkko`, `Flye`, `LJA`, `HiCanu`, and `Shasta` are represented in the graph
-- inspect how auxiliary data like `ONT ultra-long`, `Hi-C`, and `trio` plug into specific modules
+- start from a familiar assembler and fan out through its prerequisites, support data, and downstream outputs
+- inspect how curated workflows such as `hifiasm`, `Verkko`, `Flye`, `LJA`, `HiCanu`, and `Shasta` are represented in the graph
+- see where auxiliary data like `ONT ultra-long`, `Hi-C`, and `trio` plug into specific modules and finishing paths
 - share a node or multi-node selection with a deep link
 - extend the graph into Neo4j, Memgraph, ArangoDB, or a backend API later
+
+## Screenshots
+
+Default landing view with `hifiasm` as the public entry point:
+
+![Default landing view](assets/screenshots/landing-default.png)
+
+Hybrid branch focused on `Verkko`:
+
+![Verkko-focused view](assets/screenshots/verkko-view.png)
+
+Chromosome-scale endpoint view:
+
+![Chromosome-scale output view](assets/screenshots/chromosome-output.png)
 
 ## Project Shape
 
