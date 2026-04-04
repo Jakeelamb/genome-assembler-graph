@@ -224,8 +224,9 @@ body {
   max-height: calc(100vh - 116px);
 }
 
-#side-panels.is-hidden {
-  display: none;
+#side-panels.is-hidden,
+#side-panels[hidden] {
+  display: none !important;
 }
 
 .panel,

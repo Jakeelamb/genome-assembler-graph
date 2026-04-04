@@ -2157,6 +2157,8 @@ function syncControls() {
   refs.panelsBtn.textContent = hidden ? "Show Panels" : "Hide Panels";
   refs.panelsBtn.setAttribute("aria-pressed", String(hidden));
   refs.sidePanels.classList.toggle("is-hidden", hidden);
+  refs.sidePanels.hidden = hidden;
+  refs.sidePanels.setAttribute("aria-hidden", String(hidden));
   refs.screenshotBtn.disabled = !state.graph;
   refs.settingsShell.classList.toggle("is-open", state.settingsOpen);
   refs.settingsBtn.setAttribute("aria-expanded", String(state.settingsOpen));
@@ -2164,7 +2166,7 @@ function syncControls() {
 }
 
 function panelsAreHidden() {
-  return refs.sidePanels.classList.contains("is-hidden");
+  return refs.sidePanels.hidden || refs.sidePanels.classList.contains("is-hidden");
 }
 
 function setPanelCollapsed(panel, collapsed) {
@@ -2175,7 +2177,13 @@ function setPanelCollapsed(panel, collapsed) {
 }
 
 function setPanelsHidden(hidden) {
+  refs.sidePanels.hidden = hidden;
   refs.sidePanels.classList.toggle("is-hidden", hidden);
+  refs.sidePanels.setAttribute("aria-hidden", String(hidden));
+  if (!hidden) {
+    setPanelCollapsed(refs.infoPanel, false);
+    setPanelCollapsed(refs.analyticsPanel, false);
+  }
   syncControls();
 }
 
