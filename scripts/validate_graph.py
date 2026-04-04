@@ -36,6 +36,22 @@ PIPELINE_COMPONENT_FIELDS = {
     "case_ids": "case",
 }
 
+TOOL_PROFILE_COMPONENT_FIELDS = {
+    field: kind for field, kind in PIPELINE_COMPONENT_FIELDS.items() if field != "tool_ids"
+}
+
+TOOL_PROFILE_FIELDS = {
+    **TOOL_PROFILE_COMPONENT_FIELDS,
+    "related_tool_ids": "tool",
+}
+
+TOOL_PROFILE_REQUIRED_KEYS = (
+    "linked_pipeline_ids",
+    "step_pipeline_ids",
+    *TOOL_PROFILE_FIELDS.keys(),
+)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Validate genome assembler graph JSON."
@@ -61,6 +77,67 @@ def ensure(condition: bool, message: str, errors: list[str]) -> None:
 def duplicate_ids(records: Iterable[dict], label: str) -> list[str]:
     counts = Counter(record.get("id") for record in records)
     return [f"Duplicate {label} id: {record_id}" for record_id, count in counts.items() if record_id and count > 1]
+
+
+def append_unique(values: list[str], seen: set[str], item: str) -> None:
+    if item in seen:
+        return
+    seen.add(item)
+    values.append(item)
+
+
+def compute_expected_tool_profiles(pipelines: list[dict], node_map: dict[str, dict]) -> dict[str, dict[str, list[str]]]:
+    tool_ids = [node_id for node_id, node in node_map.items() if node.get("kind") == "tool"]
+    expected = {
+        tool_id: {
+            "linked_pipeline_ids": [],
+            "step_pipeline_ids": [],
+            **{field: [] for field in TOOL_PROFILE_FIELDS},
+        }
+        for tool_id in tool_ids
+    }
+    seen = {
+        tool_id: {field: set() for field in profile}
+        for tool_id, profile in expected.items()
+    }
+
+    for pipeline in pipelines:
+        if not isinstance(pipeline, dict):
+            continue
+        pipeline_id = pipeline.get("id")
+        node_ids = pipeline.get("node_ids")
+        step_ids = pipeline.get("step_ids")
+        components = pipeline.get("components")
+        if not pipeline_id or not isinstance(node_ids, list) or not isinstance(components, dict):
+            continue
+
+        node_tool_ids = [node_id for node_id in node_ids if node_id in expected]
+        step_tool_ids = [step_id for step_id in step_ids if step_id in expected] if isinstance(step_ids, list) else []
+        related_tool_ids = [tool_id for tool_id in components.get("tool_ids", []) if tool_id in expected]
+
+        for tool_id in node_tool_ids:
+            append_unique(expected[tool_id]["linked_pipeline_ids"], seen[tool_id]["linked_pipeline_ids"], pipeline_id)
+        for tool_id in step_tool_ids:
+            append_unique(expected[tool_id]["step_pipeline_ids"], seen[tool_id]["step_pipeline_ids"], pipeline_id)
+
+        for tool_id in node_tool_ids:
+            for field in TOOL_PROFILE_COMPONENT_FIELDS:
+                component_ids = components.get(field, [])
+                if not isinstance(component_ids, list):
+                    continue
+                for component_id in component_ids:
+                    append_unique(expected[tool_id][field], seen[tool_id][field], component_id)
+
+            for related_tool_id in related_tool_ids:
+                if related_tool_id == tool_id:
+                    continue
+                append_unique(
+                    expected[tool_id]["related_tool_ids"],
+                    seen[tool_id]["related_tool_ids"],
+                    related_tool_id,
+                )
+
+    return expected
 
 
 def validate_graph(graph: dict) -> list[str]:
@@ -94,6 +171,9 @@ def validate_graph(graph: dict) -> list[str]:
     }
     edge_map = {
         edge["id"]: edge for edge in graph["edges"] if isinstance(edge, dict) and "id" in edge
+    }
+    pipeline_map = {
+        pipeline["id"]: pipeline for pipeline in graph["pipelines"] if isinstance(pipeline, dict) and "id" in pipeline
     }
 
     lane_rows: dict[str, set[int]] = {}
@@ -225,6 +305,97 @@ def validate_graph(graph: dict) -> list[str]:
             f"Pipeline {pipeline['id']} components must partition node_ids exactly",
             errors,
         )
+
+    expected_tool_profiles = compute_expected_tool_profiles(graph["pipelines"], node_map)
+
+    for node in graph["nodes"]:
+        if not isinstance(node, dict) or "id" not in node or "kind" not in node:
+            continue
+
+        if node["kind"] != "tool":
+            ensure("tool_profile" not in node, f"Non-tool node {node['id']} must not define tool_profile", errors)
+            continue
+
+        ensure("tool_profile" in node, f"Tool node {node['id']} is missing tool_profile", errors)
+        profile = node.get("tool_profile")
+        ensure(isinstance(profile, dict), f"Tool node {node['id']} tool_profile must be an object", errors)
+        if not isinstance(profile, dict):
+            continue
+
+        for key in TOOL_PROFILE_REQUIRED_KEYS:
+            ensure(key in profile, f"Tool node {node['id']} tool_profile missing {key}", errors)
+
+        expected_profile = expected_tool_profiles.get(node["id"])
+        if expected_profile is None:
+            errors.append(f"Tool node {node['id']} is missing from expected tool profile index")
+            continue
+
+        for field in TOOL_PROFILE_REQUIRED_KEYS:
+            values = profile.get(field, [])
+            ensure(isinstance(values, list), f"Tool node {node['id']} tool_profile.{field} must be an array", errors)
+            if not isinstance(values, list):
+                continue
+            ensure(len(values) == len(set(values)), f"Tool node {node['id']} tool_profile.{field} has duplicate ids", errors)
+
+        linked_pipeline_ids = profile.get("linked_pipeline_ids", [])
+        step_pipeline_ids = profile.get("step_pipeline_ids", [])
+
+        for pipeline_id in linked_pipeline_ids:
+            ensure(pipeline_id in pipeline_map, f"Tool node {node['id']} tool_profile.linked_pipeline_ids references unknown pipeline {pipeline_id}", errors)
+            if pipeline_id in pipeline_map:
+                ensure(
+                    node["id"] in pipeline_map[pipeline_id].get("node_ids", []),
+                    f"Tool node {node['id']} tool_profile.linked_pipeline_ids pipeline {pipeline_id} does not include the tool in node_ids",
+                    errors,
+                )
+
+        for pipeline_id in step_pipeline_ids:
+            ensure(pipeline_id in pipeline_map, f"Tool node {node['id']} tool_profile.step_pipeline_ids references unknown pipeline {pipeline_id}", errors)
+            if pipeline_id in pipeline_map:
+                ensure(
+                    node["id"] in pipeline_map[pipeline_id].get("step_ids", []),
+                    f"Tool node {node['id']} tool_profile.step_pipeline_ids pipeline {pipeline_id} does not include the tool in step_ids",
+                    errors,
+                )
+
+        ensure(
+            set(step_pipeline_ids).issubset(set(linked_pipeline_ids)),
+            f"Tool node {node['id']} tool_profile.step_pipeline_ids must be a subset of linked_pipeline_ids",
+            errors,
+        )
+
+        ensure(
+            linked_pipeline_ids == expected_profile["linked_pipeline_ids"],
+            f"Tool node {node['id']} tool_profile.linked_pipeline_ids must match workflow-derived linked pipelines",
+            errors,
+        )
+        ensure(
+            step_pipeline_ids == expected_profile["step_pipeline_ids"],
+            f"Tool node {node['id']} tool_profile.step_pipeline_ids must match workflow-derived step pipelines",
+            errors,
+        )
+
+        for field, expected_kind in TOOL_PROFILE_FIELDS.items():
+            values = profile.get(field, [])
+            if not isinstance(values, list):
+                continue
+            for component_id in values:
+                ensure(component_id in node_map, f"Tool node {node['id']} tool_profile.{field} references unknown node {component_id}", errors)
+                if component_id not in node_map:
+                    continue
+                ensure(
+                    node_map[component_id]["kind"] == expected_kind,
+                    f"Tool node {node['id']} tool_profile.{field} node {component_id} must have kind {expected_kind}",
+                    errors,
+                )
+                if field == "related_tool_ids":
+                    ensure(component_id != node["id"], f"Tool node {node['id']} tool_profile.related_tool_ids must not include itself", errors)
+
+            ensure(
+                values == expected_profile[field],
+                f"Tool node {node['id']} tool_profile.{field} must match workflow-derived {field}",
+                errors,
+            )
 
     return errors
 

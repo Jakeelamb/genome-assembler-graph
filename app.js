@@ -44,6 +44,17 @@ const PIPELINE_COMPONENT_GROUPS = [
   { title: "Metrics and case studies", fields: ["metric_ids", "case_ids"] },
 ];
 
+const TOOL_PROFILE_GROUPS = [
+  { title: "Assembly goals and properties", fields: ["goal_ids", "property_ids"] },
+  { title: "Primary inputs", fields: ["primary_input_ids"] },
+  { title: "Support data", fields: ["support_data_ids"] },
+  { title: "Algorithms and concepts", fields: ["algorithm_ids", "concept_ids"] },
+  { title: "Modules and stages", fields: ["module_ids", "stage_ids"] },
+  { title: "Outputs", fields: ["output_ids"] },
+  { title: "Metrics and case studies", fields: ["metric_ids", "case_ids"] },
+  { title: "Other linked tools", fields: ["related_tool_ids"] },
+];
+
 const CATEGORY_COLORS = {
   goal: "#f2c86b",
   property: "#f59f86",
@@ -297,6 +308,15 @@ function configureSharedGraphForces() {
   state.graph.cooldownTicks(120);
 }
 
+function resolveComponentNodes(componentMap, nodeMap) {
+  return Object.fromEntries(
+    Object.entries(componentMap || {}).map(([field, ids]) => [
+      field,
+      Array.isArray(ids) ? ids.filter((nodeId) => nodeMap.has(nodeId)).map((nodeId) => nodeMap.get(nodeId)) : [],
+    ])
+  );
+}
+
 function prepareData(raw) {
   const laneMap = new Map(raw.lanes.map((lane, index) => [lane.id, { ...lane, index }]));
   const sourceMap = new Map(raw.sources.map((source) => [source.id, source]));
@@ -335,12 +355,7 @@ function prepareData(raw) {
     const resolvedNodeIds = pipeline.node_ids.filter((nodeId) => nodeMap.has(nodeId));
     const resolvedStepIds = (pipeline.step_ids || []).filter((nodeId) => nodeMap.has(nodeId));
     const resolvedEdgeIds = (pipeline.edge_ids || []).filter((edgeId) => edgeMap.has(edgeId));
-    const componentNodes = Object.fromEntries(
-      Object.entries(pipeline.components || {}).map(([field, ids]) => [
-        field,
-        ids.filter((nodeId) => nodeMap.has(nodeId)).map((nodeId) => nodeMap.get(nodeId)),
-      ])
-    );
+    const componentNodes = resolveComponentNodes(pipeline.components, nodeMap);
     return {
       ...pipeline,
       nodes: resolvedNodeIds.map((nodeId) => nodeMap.get(nodeId)),
@@ -362,6 +377,29 @@ function prepareData(raw) {
         node.pipelines.push(pipeline);
       }
     });
+  });
+
+  nodes.forEach((node) => {
+    if (node.kind !== "tool" || !node.tool_profile) {
+      return;
+    }
+
+    const componentIds = Object.fromEntries(
+      Object.entries(node.tool_profile).filter(
+        ([field]) => field.endsWith("_ids") && field !== "linked_pipeline_ids" && field !== "step_pipeline_ids"
+      )
+    );
+
+    node.toolProfile = {
+      ...node.tool_profile,
+      linkedPipelines: (node.tool_profile.linked_pipeline_ids || [])
+        .map((pipelineId) => pipelineMap.get(pipelineId))
+        .filter(Boolean),
+      stepPipelines: (node.tool_profile.step_pipeline_ids || [])
+        .map((pipelineId) => pipelineMap.get(pipelineId))
+        .filter(Boolean),
+      componentNodes: resolveComponentNodes(componentIds, nodeMap),
+    };
   });
 
   const depthMemo = new Map();
@@ -398,6 +436,10 @@ function prepareData(raw) {
           .flat()
           .map((componentNode) => componentNode.label)
       ),
+      ...(node.toolProfile?.linkedPipelines || []).map((pipeline) => pipeline.label),
+      ...Object.values(node.toolProfile?.componentNodes || {})
+        .flat()
+        .map((componentNode) => componentNode.label),
     ]
       .join(" ")
       .toLowerCase();
@@ -727,6 +769,7 @@ function overviewAnalyticsHtml() {
 
 function nodeInfoHtml(node) {
   const currentPipeline = activePipelineForNode(node);
+  const toolProfile = toolProfileForNode(node);
   const landingIntro =
     state.selectionSource === "default" && node.id === DEFAULT_NODE_ID
       ? `
@@ -746,6 +789,7 @@ function nodeInfoHtml(node) {
         </section>
       `
       : "";
+  const toolRecord = toolProfile ? toolProfileBreakdownHtml(node, toolProfile) : "";
   const pipelineChooser =
     node.pipelines.length > 0
       ? `
@@ -785,6 +829,7 @@ function nodeInfoHtml(node) {
         </p>
       </section>
 
+      ${toolRecord}
       ${pipelineChooser}
 
       ${
@@ -808,6 +853,7 @@ function nodeInfoHtml(node) {
 
 function nodeAnalyticsHtml(node) {
   const currentPipeline = activePipelineForNode(node);
+  const toolProfile = toolProfileForNode(node);
   return `
     <div class="analytics-body">
       <div class="badge-row">
@@ -837,6 +883,8 @@ function nodeAnalyticsHtml(node) {
           `
           : ""
       }
+
+      ${toolProfile ? toolProfileAnalyticsHtml(toolProfile) : ""}
 
       <section class="analytics-block">
         <h3>Graph Metrics</h3>
@@ -943,10 +991,10 @@ function pipelineNodeGroupHtml(title, nodes) {
   `;
 }
 
-function pipelineNodesForFields(pipeline, fields) {
+function pipelineNodesForFields(record, fields) {
   const seen = new Set();
   return fields
-    .flatMap((field) => pipeline.componentNodes[field] || [])
+    .flatMap((field) => record.componentNodes[field] || [])
     .filter((node) => {
       if (!node || seen.has(node.id)) {
         return false;
@@ -988,6 +1036,54 @@ function summarizeNodeLabels(nodes, maxItems = 3) {
 
 function pipelineFactSummary(pipeline) {
   return `${pipeline.stepNodes.length} step nodes · ${pipeline.nodes.length} path nodes · ${pipeline.edges.length} edges · ${pipeline.sources.length} sources`;
+}
+
+function toolProfileForNode(node) {
+  return node.kind === "tool" ? node.toolProfile || null : null;
+}
+
+function toolProfileBreakdownHtml(node, toolProfile) {
+  const groupedSections = TOOL_PROFILE_GROUPS.map((group) =>
+    pipelineNodeGroupHtml(group.title, pipelineNodesForFields(toolProfile, group.fields))
+  )
+    .filter(Boolean)
+    .join("");
+
+  return `
+    <section class="info-section">
+      <h3>Tool Record</h3>
+      <p class="info-copy">
+        This record aggregates the linked workflow fields attached to ${escapeHtml(node.label)} in the dataset.
+      </p>
+      <div class="badge-row">
+        <span class="info-badge">Linked workflows: ${toolProfile.linkedPipelines.length}</span>
+        <span class="info-badge">Step workflows: ${toolProfile.stepPipelines.length}</span>
+        <span class="info-badge">Primary inputs: ${toolProfile.componentNodes.primary_input_ids?.length || 0}</span>
+        <span class="info-badge">Support data: ${toolProfile.componentNodes.support_data_ids?.length || 0}</span>
+        <span class="info-badge">Outputs: ${toolProfile.componentNodes.output_ids?.length || 0}</span>
+      </div>
+      ${
+        groupedSections ||
+        `<p class="info-copy">No linked workflow records are attached to this tool in the current dataset.</p>`
+      }
+    </section>
+  `;
+}
+
+function toolProfileAnalyticsHtml(toolProfile) {
+  return `
+    <section class="analytics-block">
+      <h3>Tool Record</h3>
+      <div class="metrics-grid">
+        ${metricCardHtml("Linked workflows", String(toolProfile.linkedPipelines.length))}
+        ${metricCardHtml("Step workflows", String(toolProfile.stepPipelines.length))}
+        ${metricCardHtml("Primary inputs", String(toolProfile.componentNodes.primary_input_ids?.length || 0))}
+        ${metricCardHtml("Support data", String(toolProfile.componentNodes.support_data_ids?.length || 0))}
+        ${metricCardHtml("Modules", String(toolProfile.componentNodes.module_ids?.length || 0))}
+        ${metricCardHtml("Outputs", String(toolProfile.componentNodes.output_ids?.length || 0))}
+      </div>
+    </section>
+  `;
 }
 
 function sortedPipelinesForNode(node) {

@@ -3,86 +3,210 @@
   "$id": "https://example.org/genome-assembler-graph.schema.json",
   "title": "Genome Assembler Knowledge Graph",
   "type": "object",
-  "required": ["title", "description", "lanes", "nodes", "edges", "pipelines", "sources"],
+  "required": [
+    "title",
+    "description",
+    "lanes",
+    "nodes",
+    "edges",
+    "pipelines",
+    "sources"
+  ],
   "properties": {
-    "title": { "type": "string" },
-    "description": { "type": "string" },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
     "lanes": {
       "type": "array",
-      "items": { "$ref": "#/$defs/lane" }
+      "items": {
+        "$ref": "#/$defs/lane"
+      }
     },
     "nodes": {
       "type": "array",
-      "items": { "$ref": "#/$defs/node" }
+      "items": {
+        "$ref": "#/$defs/node"
+      }
     },
     "edges": {
       "type": "array",
-      "items": { "$ref": "#/$defs/edge" }
+      "items": {
+        "$ref": "#/$defs/edge"
+      }
     },
     "pipelines": {
       "type": "array",
-      "items": { "$ref": "#/$defs/pipeline" }
+      "items": {
+        "$ref": "#/$defs/pipeline"
+      }
     },
     "sources": {
       "type": "array",
-      "items": { "$ref": "#/$defs/source" }
+      "items": {
+        "$ref": "#/$defs/source"
+      }
     }
   },
   "$defs": {
     "id_list": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "uniqueItems": true
     },
     "lane": {
       "type": "object",
-      "required": ["id", "label"],
+      "required": [
+        "id",
+        "label"
+      ],
       "properties": {
-        "id": { "type": "string" },
-        "label": { "type": "string" }
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        }
       },
       "additionalProperties": false
     },
     "node": {
       "type": "object",
-      "required": ["id", "label", "kind", "lane", "row"],
+      "required": [
+        "id",
+        "label",
+        "kind",
+        "lane",
+        "row"
+      ],
       "properties": {
-        "id": { "type": "string" },
-        "label": { "type": "string" },
-        "kind": { "type": "string" },
-        "lane": { "type": "string" },
-        "row": { "type": "integer", "minimum": 0 },
-        "summary": { "type": "string" },
-        "source_ids": { "$ref": "#/$defs/id_list" }
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "lane": {
+          "type": "string"
+        },
+        "row": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "summary": {
+          "type": "string"
+        },
+        "source_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "tool_profile": {
+          "$ref": "#/$defs/tool_profile"
+        }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "tool"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "tool_profile"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "tool_profile"
+              ]
+            }
+          }
+        }
+      ]
     },
     "edge": {
       "type": "object",
-      "required": ["id", "source", "target", "kind"],
+      "required": [
+        "id",
+        "source",
+        "target",
+        "kind"
+      ],
       "properties": {
-        "id": { "type": "string" },
-        "source": { "type": "string" },
-        "target": { "type": "string" },
-        "kind": { "type": "string" },
-        "source_ids": { "$ref": "#/$defs/id_list" }
+        "id": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "source_ids": {
+          "$ref": "#/$defs/id_list"
+        }
       },
       "additionalProperties": false
     },
     "pipeline": {
       "type": "object",
-      "required": ["id", "label", "tagline", "description", "focus", "step_ids", "node_ids", "edge_ids", "source_ids", "components"],
+      "required": [
+        "id",
+        "label",
+        "tagline",
+        "description",
+        "focus",
+        "step_ids",
+        "node_ids",
+        "edge_ids",
+        "source_ids",
+        "components"
+      ],
       "properties": {
-        "id": { "type": "string" },
-        "label": { "type": "string" },
-        "tagline": { "type": "string" },
-        "description": { "type": "string" },
-        "focus": { "type": "string" },
-        "step_ids": { "$ref": "#/$defs/id_list" },
-        "node_ids": { "$ref": "#/$defs/id_list" },
-        "edge_ids": { "$ref": "#/$defs/id_list" },
-        "source_ids": { "$ref": "#/$defs/id_list" },
-        "components": { "$ref": "#/$defs/pipeline_components" }
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "tagline": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "focus": {
+          "type": "string"
+        },
+        "step_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "node_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "edge_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "source_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "components": {
+          "$ref": "#/$defs/pipeline_components"
+        }
       },
       "additionalProperties": false
     },
@@ -103,28 +227,127 @@
         "case_ids"
       ],
       "properties": {
-        "goal_ids": { "$ref": "#/$defs/id_list" },
-        "property_ids": { "$ref": "#/$defs/id_list" },
-        "primary_input_ids": { "$ref": "#/$defs/id_list" },
-        "support_data_ids": { "$ref": "#/$defs/id_list" },
-        "algorithm_ids": { "$ref": "#/$defs/id_list" },
-        "concept_ids": { "$ref": "#/$defs/id_list" },
-        "module_ids": { "$ref": "#/$defs/id_list" },
-        "tool_ids": { "$ref": "#/$defs/id_list" },
-        "stage_ids": { "$ref": "#/$defs/id_list" },
-        "output_ids": { "$ref": "#/$defs/id_list" },
-        "metric_ids": { "$ref": "#/$defs/id_list" },
-        "case_ids": { "$ref": "#/$defs/id_list" }
+        "goal_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "property_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "primary_input_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "support_data_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "algorithm_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "concept_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "module_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "tool_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "stage_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "output_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "metric_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "case_ids": {
+          "$ref": "#/$defs/id_list"
+        }
       },
       "additionalProperties": false
     },
     "source": {
       "type": "object",
-      "required": ["id", "label", "url"],
+      "required": [
+        "id",
+        "label",
+        "url"
+      ],
       "properties": {
-        "id": { "type": "string" },
-        "label": { "type": "string" },
-        "url": { "type": "string", "format": "uri" }
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "additionalProperties": false
+    },
+    "tool_profile": {
+      "type": "object",
+      "required": [
+        "linked_pipeline_ids",
+        "step_pipeline_ids",
+        "goal_ids",
+        "property_ids",
+        "primary_input_ids",
+        "support_data_ids",
+        "algorithm_ids",
+        "concept_ids",
+        "module_ids",
+        "stage_ids",
+        "output_ids",
+        "metric_ids",
+        "case_ids",
+        "related_tool_ids"
+      ],
+      "properties": {
+        "linked_pipeline_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "step_pipeline_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "goal_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "property_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "primary_input_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "support_data_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "algorithm_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "concept_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "module_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "stage_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "output_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "metric_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "case_ids": {
+          "$ref": "#/$defs/id_list"
+        },
+        "related_tool_ids": {
+          "$ref": "#/$defs/id_list"
+        }
       },
       "additionalProperties": false
     }
