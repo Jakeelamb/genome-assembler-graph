@@ -1,12 +1,12 @@
 # Genome Assembler Knowledge Graph
 
-Interactive map of modern genome assembly workflows, from read types and support data to algorithms, reusable modules, tools, outputs, metrics, and case studies.
+Interactive reference map of genome assembly workflows, from read types and support data to algorithms, reusable modules, tools, outputs, metrics, and case studies.
 
 Live site: `https://jakeelamb.github.io/genome-assembler-graph/`
 
 This repository ships as a lightweight static web app plus a curated graph dataset so you can:
 
-- start from a familiar assembler and fan out through its prerequisites, support data, and downstream outputs
+- inspect the nodes and recorded workflow paths attached to an assembler, support-data type, stage, or output
 - inspect how curated workflows such as `hifiasm`, `Verkko`, `Flye`, `LJA`, `HiCanu`, and `Shasta` are represented in the graph
 - see where auxiliary data like `ONT ultra-long`, `Hi-C`, and `trio` plug into specific modules and finishing paths
 - share a node or multi-node selection with a deep link

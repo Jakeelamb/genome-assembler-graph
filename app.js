@@ -11,23 +11,23 @@ const DEFAULT_NODE_ID = "tool_hifiasm";
 const START_HERE_ITEMS = [
   {
     id: "tool_hifiasm",
-    title: "Start with hifiasm",
-    description: "Trace the HiFi-first phased assembly branch.",
+    title: "hifiasm workflow",
+    description: "View the curated HiFi phased-assembly path.",
   },
   {
     id: "tool_verkko",
-    title: "Compare Verkko",
-    description: "Jump to the hybrid HiFi plus ONT ultra-long path.",
+    title: "Verkko workflow",
+    description: "View the curated HiFi plus ONT ultra-long path.",
   },
   {
     id: "support_hic",
-    title: "Inspect Hi-C",
-    description: "See where long-range contact data enters scaffolding and phasing.",
+    title: "Hi-C support-data view",
+    description: "View paths that include long-range contact data.",
   },
   {
     id: "output_chr_anchor",
-    title: "Follow the endpoint",
-    description: "Look at the chromosome-scale assembly target and what feeds it.",
+    title: "Chromosome-scale output view",
+    description: "View the output node and linked workflow components.",
   },
 ];
 
@@ -593,11 +593,11 @@ function overviewInfoHtml() {
   return `
     <div class="detail-stack">
       <div>
-        <h2 class="detail-heading">Start with one assembler, then fan out through the graph.</h2>
+        <h2 class="detail-heading">Interactive map of genome assembly workflows.</h2>
         <p class="info-copy">
-          This explorer maps how modern assembly workflows connect reads, support data, algorithmic ideas,
-          reusable modules, tools, stages, outputs, metrics, and case studies. Pick a starting node and
-          then walk upstream into prerequisites or downstream into what that choice enables.
+          This explorer maps how genome assembly workflows connect reads, support data, algorithms,
+          reusable modules, tools, stages, outputs, metrics, and case studies. Select a node to inspect
+          linked workflow paths and the graph components attached to them.
         </p>
       </div>
 
@@ -608,10 +608,9 @@ function overviewInfoHtml() {
       </div>
 
       <section class="info-section">
-        <h3>Start Here</h3>
+        <h3>Example Views</h3>
         <p class="info-copy">
-          If you are new to the graph, start with a familiar assembler, compare it to a hybrid branch,
-          or jump straight to a chromosome-scale endpoint.
+          These buttons open a few representative nodes and workflow views from the dataset.
         </p>
         ${startHereButtonsHtml()}
       </section>
@@ -641,8 +640,7 @@ function overviewInfoHtml() {
 
       <section class="spotlight-card">
         <p>
-          Reset always returns to <strong>hifiasm</strong>, which is the default landing node for the
-          public site.
+          Reset restores the initial view with <strong>hifiasm</strong> selected.
         </p>
       </section>
     </div>
@@ -711,17 +709,15 @@ function nodeInfoHtml(node) {
       ? `
         <section class="spotlight-card">
           <p>
-            <strong>Start here.</strong> ${escapeHtml(node.label)} is the default landing node because it
-            sits close to the center of the modern HiFi assembly story: phased assembly graphs, support
-            data, downstream scaffolding, and chromosome-scale finishing all connect through this branch.
+            <strong>Default view.</strong> ${escapeHtml(node.label)} is selected on initial load so the
+            interface opens with one concrete workflow path already highlighted.
           </p>
         </section>
 
         <section class="info-section">
-          <h3>Try Next</h3>
+          <h3>Other Example Views</h3>
           <p class="info-copy">
-            Use these jumps to compare a hybrid assembler, inspect long-range support data, or follow the
-            path to a chromosome-scale result.
+            These links switch to other nodes and workflow views from the same dataset.
           </p>
           ${startHereButtonsHtml(START_HERE_ITEMS.filter((item) => item.id !== DEFAULT_NODE_ID))}
         </section>
@@ -731,10 +727,10 @@ function nodeInfoHtml(node) {
     node.pipelines.length > 0
       ? `
         <section class="info-section">
-          <h3>Workflow Paths</h3>
+          <h3>Linked Workflows</h3>
           <p class="info-copy">
-            Choose a curated path to highlight how this tool is typically used, what support data it relies on,
-            and which techniques shape the resulting assembly.
+            Choose a workflow entry linked to this node. The graph highlights the nodes and edges recorded for
+            that path in the dataset.
           </p>
           ${pipelineChooserHtml(node, currentPipeline)}
         </section>
@@ -911,9 +907,9 @@ function pipelineBreakdownHtml(pipeline) {
 
   return `
     <section class="info-section">
-      <h3>Path Ingredients</h3>
+      <h3>Workflow Components</h3>
       <p class="info-copy">
-        This highlighted path emphasizes ${escapeHtml((pipeline.focus || pipeline.tagline || "a curated workflow").toLowerCase())}.
+        This section lists the nodes attached to the selected workflow path.
       </p>
       ${pipelineNodeGroupHtml("Inputs and support data", inputs)}
       ${pipelineNodeGroupHtml("Core techniques and modules", techniques)}
