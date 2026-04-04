@@ -224,6 +224,10 @@ body {
   max-height: calc(100vh - 116px);
 }
 
+#side-panels.is-hidden {
+  display: none;
+}
+
 .panel,
 #settings-panel {
   background:

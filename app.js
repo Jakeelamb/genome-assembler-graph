@@ -140,6 +140,7 @@ const refs = {
   copyLinkBtn: document.querySelector("#copy-link-btn"),
   infoBody: document.querySelector("#info-body"),
   analyticsBody: document.querySelector("#analytics-body"),
+  sidePanels: document.querySelector("#side-panels"),
   infoPanel: document.querySelector("#info-panel"),
   analyticsPanel: document.querySelector("#analytics-panel"),
   infoToggle: document.querySelector("#info-toggle"),
@@ -246,7 +247,7 @@ function initUi() {
   });
 
   refs.panelsBtn.addEventListener("click", () => {
-    setPanelsCollapsed(!panelsAreCollapsed());
+    setPanelsHidden(!panelsAreHidden());
   });
 
   refs.settingsBtn.addEventListener("click", () => {
@@ -2141,7 +2142,7 @@ function isSearchMatch(node) {
 
 function syncControls() {
   refs.layoutSelect.value = state.layout;
-  const collapsed = panelsAreCollapsed();
+  const hidden = panelsAreHidden();
   refs.settingsGraphTab.classList.toggle("is-active", state.settingsTab === "graph");
   refs.settingsFiltersTab.classList.toggle("is-active", state.settingsTab === "filters");
   refs.settingsGraphTab.setAttribute("aria-selected", String(state.settingsTab === "graph"));
@@ -2153,16 +2154,17 @@ function syncControls() {
   refs.layoutSelect.querySelector('option[value="radial"]').disabled = !state.primarySelectionId;
   refs.layoutSelect.disabled = !state.graph;
   refs.recenterBtn.disabled = !state.graph;
-  refs.panelsBtn.textContent = collapsed ? "Show Panels" : "Hide Panels";
-  refs.panelsBtn.setAttribute("aria-pressed", String(collapsed));
+  refs.panelsBtn.textContent = hidden ? "Show Panels" : "Hide Panels";
+  refs.panelsBtn.setAttribute("aria-pressed", String(hidden));
+  refs.sidePanels.classList.toggle("is-hidden", hidden);
   refs.screenshotBtn.disabled = !state.graph;
   refs.settingsShell.classList.toggle("is-open", state.settingsOpen);
   refs.settingsBtn.setAttribute("aria-expanded", String(state.settingsOpen));
   refs.settingsShell.setAttribute("aria-hidden", String(!state.settingsOpen));
 }
 
-function panelsAreCollapsed() {
-  return refs.infoPanel.classList.contains("is-collapsed") && refs.analyticsPanel.classList.contains("is-collapsed");
+function panelsAreHidden() {
+  return refs.sidePanels.classList.contains("is-hidden");
 }
 
 function setPanelCollapsed(panel, collapsed) {
@@ -2172,9 +2174,8 @@ function setPanelCollapsed(panel, collapsed) {
   toggle.setAttribute("aria-expanded", String(!collapsed));
 }
 
-function setPanelsCollapsed(collapsed) {
-  setPanelCollapsed(refs.infoPanel, collapsed);
-  setPanelCollapsed(refs.analyticsPanel, collapsed);
+function setPanelsHidden(hidden) {
+  refs.sidePanels.classList.toggle("is-hidden", hidden);
   syncControls();
 }
 
