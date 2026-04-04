@@ -89,6 +89,8 @@ const state = {
   settingsOpen: false,
   graphError: null,
   selectionSource: null,
+  derived: null,
+  derivedDirty: true,
 };
 
 const refs = {
@@ -179,6 +181,7 @@ async function loadGraphData() {
 function initUi() {
   refs.search.addEventListener("input", (event) => {
     state.searchQuery = event.target.value.trim().toLowerCase();
+    markDerivedStateDirty();
     clearSelection();
     rebuildGraph({ zoom: false });
     renderPanels();
@@ -190,6 +193,7 @@ function initUi() {
     }
     refs.search.value = "";
     state.searchQuery = "";
+    markDerivedStateDirty();
     rebuildGraph({ zoom: false });
     renderPanels();
     refs.search.blur();
@@ -235,6 +239,7 @@ function initUi() {
   refs.resetBtn.addEventListener("click", () => {
     refs.search.value = "";
     state.searchQuery = "";
+    markDerivedStateDirty();
     state.layout = "force";
     refs.layoutSelect.value = "force";
     applyLandingSelection();
@@ -476,6 +481,7 @@ function prepareData(raw) {
 }
 
 function rebuildGraph({ zoom = false } = {}) {
+  ensureDerivedState();
   if (!state.graph) {
     renderStats();
     return;
@@ -537,11 +543,11 @@ function applyLayout({ zoom = false } = {}) {
 }
 
 function currentGraphData() {
-  const visibleNodeIds = new Set(currentVisibleNodes().map((node) => node.id));
+  const derived = ensureDerivedState();
   return {
-    nodes: currentVisibleNodes(),
+    nodes: derived.visibleNodes,
     links: state.prepared.links
-      .filter((link) => visibleNodeIds.has(link.sourceId) && visibleNodeIds.has(link.targetId))
+      .filter((link) => derived.visibleNodeIds.has(link.sourceId) && derived.visibleNodeIds.has(link.targetId))
       .map((link) => ({
         ...link,
         source: link.sourceId,
@@ -551,7 +557,87 @@ function currentGraphData() {
 }
 
 function currentVisibleNodes() {
-  return state.prepared.nodes.filter((node) => state.visibleCategories.has(node.categoryId));
+  return ensureDerivedState().visibleNodes;
+}
+
+function emptySelectionContext() {
+  return {
+    selected: new Set(),
+    prerequisites: new Set(),
+    dependents: new Set(),
+    prerequisitesAndSelected: new Set(),
+    dependentsAndSelected: new Set(),
+  };
+}
+
+function computeSelectionContext() {
+  const selected = new Set(state.selectedNodeIds);
+  const prerequisites = new Set();
+  const dependents = new Set();
+
+  selected.forEach((id) => {
+    const node = state.prepared.nodeMap.get(id);
+    if (!node) {
+      return;
+    }
+    node.ancestorIds.forEach((ancestorId) => prerequisites.add(ancestorId));
+    node.descendantIds.forEach((descendantId) => dependents.add(descendantId));
+  });
+
+  selected.forEach((id) => {
+    prerequisites.delete(id);
+    dependents.delete(id);
+  });
+
+  return {
+    selected,
+    prerequisites,
+    dependents,
+    prerequisitesAndSelected: new Set([...selected, ...prerequisites]),
+    dependentsAndSelected: new Set([...selected, ...dependents]),
+  };
+}
+
+function markDerivedStateDirty() {
+  state.derivedDirty = true;
+}
+
+function ensureDerivedState() {
+  if (!state.prepared) {
+    return {
+      visibleNodes: [],
+      visibleNodeIds: new Set(),
+      matchingNodeIds: new Set(),
+      selectionContext: emptySelectionContext(),
+      activePipeline: null,
+    };
+  }
+
+  if (!state.derivedDirty && state.derived) {
+    return state.derived;
+  }
+
+  const visibleNodes = state.prepared.nodes.filter((node) => state.visibleCategories.has(node.categoryId));
+  const visibleNodeIds = new Set(visibleNodes.map((node) => node.id));
+  const matchingNodeIds = new Set();
+
+  if (state.searchQuery) {
+    visibleNodes.forEach((node) => {
+      if (node.searchText.includes(state.searchQuery)) {
+        matchingNodeIds.add(node.id);
+      }
+    });
+  }
+
+  state.derived = {
+    visibleNodes,
+    visibleNodeIds,
+    matchingNodeIds,
+    selectionContext: computeSelectionContext(),
+    activePipeline: state.activePipelineId ? state.prepared.pipelineMap.get(state.activePipelineId) || null : null,
+  };
+  state.derivedDirty = false;
+  return state.derived;
 }
 
 function renderLegend() {
@@ -577,6 +663,7 @@ function renderLegend() {
       } else {
         state.visibleCategories.add(category.id);
       }
+      markDerivedStateDirty();
 
       if (state.visibleCategories.size === 0) {
         state.visibleCategories.add(category.id);
@@ -1245,6 +1332,7 @@ function handleNodeClick(node, event) {
     }
     state.selectionSource = "user";
     state.activePipelineId = defaultPipelineIdForNode(node);
+    markDerivedStateDirty();
     state.layout = "radial";
     syncControls();
     renderPanels();
@@ -1265,6 +1353,7 @@ function handleNodeClick(node, event) {
       state.activePipelineId = defaultPipelineIdForNode(node);
     }
     state.selectionSource = "user";
+    markDerivedStateDirty();
 
     if (state.layout === "radial" && !state.primarySelectionId) {
       state.layout = "force";
@@ -1306,6 +1395,7 @@ function focusNode(nodeId) {
 }
 
 function refreshGraphStyles() {
+  ensureDerivedState();
   if (!state.graph) {
     return;
   }
@@ -1505,31 +1595,7 @@ function selectedNodes() {
 }
 
 function selectionContext() {
-  const selected = new Set(state.selectedNodeIds);
-  const prerequisites = new Set();
-  const dependents = new Set();
-
-  selected.forEach((id) => {
-    const node = state.prepared.nodeMap.get(id);
-    if (!node) {
-      return;
-    }
-    node.ancestorIds.forEach((ancestorId) => prerequisites.add(ancestorId));
-    node.descendantIds.forEach((descendantId) => dependents.add(descendantId));
-  });
-
-  selected.forEach((id) => {
-    prerequisites.delete(id);
-    dependents.delete(id);
-  });
-
-  return {
-    selected,
-    prerequisites,
-    dependents,
-    prerequisitesAndSelected: new Set([...selected, ...prerequisites]),
-    dependentsAndSelected: new Set([...selected, ...dependents]),
-  };
+  return ensureDerivedState().selectionContext;
 }
 
 function uniqueNeighborIds(selection, direction) {
@@ -1608,13 +1674,7 @@ function metricCardHtml(label, value) {
 }
 
 function matchingNodeIds() {
-  const matches = new Set();
-  currentVisibleNodes().forEach((node) => {
-    if (isSearchMatch(node)) {
-      matches.add(node.id);
-    }
-  });
-  return matches;
+  return ensureDerivedState().matchingNodeIds;
 }
 
 function isSearchMatch(node) {
@@ -1688,6 +1748,7 @@ function clearSelection() {
   state.primarySelectionId = null;
   state.selectionSource = null;
   state.activePipelineId = null;
+  markDerivedStateDirty();
   if (state.layout === "radial") {
     state.layout = "force";
   }
@@ -1702,6 +1763,7 @@ function applyUrlState() {
 
   if (pipelineParam && state.prepared.pipelineMap.has(pipelineParam)) {
     state.activePipelineId = pipelineParam;
+    markDerivedStateDirty();
   }
 
   if (nodesParam || nodeParam) {
@@ -1710,6 +1772,7 @@ function applyUrlState() {
       state.selectedNodeIds = new Set(ids);
       state.primarySelectionId = ids[ids.length - 1];
       state.selectionSource = "url";
+      markDerivedStateDirty();
       if (!state.activePipelineId && ids.length === 1) {
         state.activePipelineId = defaultPipelineIdForNode(state.prepared.nodeMap.get(ids[0]));
       }
@@ -1723,6 +1786,7 @@ function applyUrlState() {
       state.selectedNodeIds = new Set([leadId]);
       state.primarySelectionId = leadId;
       state.selectionSource = "url";
+      markDerivedStateDirty();
       return true;
     }
   }
@@ -1783,6 +1847,7 @@ function applyLandingSelection() {
   state.primarySelectionId = DEFAULT_NODE_ID;
   state.selectionSource = "default";
   state.activePipelineId = defaultPipelineIdForNode(state.prepared.nodeMap.get(DEFAULT_NODE_ID));
+  markDerivedStateDirty();
   clearUrlSelectionState();
 }
 
@@ -1792,6 +1857,7 @@ function selectSingleNode(id) {
   state.primarySelectionId = id;
   state.selectionSource = "user";
   state.activePipelineId = defaultPipelineIdForNode(node);
+  markDerivedStateDirty();
   state.layout = state.layout === "radial" ? "radial" : state.layout;
   syncUrlState();
   renderPanels();
@@ -1822,6 +1888,7 @@ function activatePipeline(pipelineId) {
     return;
   }
   state.activePipelineId = pipelineId;
+  markDerivedStateDirty();
   if (!state.primarySelectionId || !pipeline.nodeSet.has(state.primarySelectionId)) {
     const leadId = pipelineLeadNodeId(pipeline);
     if (leadId) {
@@ -1840,7 +1907,7 @@ function activatePipeline(pipelineId) {
 }
 
 function activePipeline() {
-  return state.activePipelineId ? state.prepared.pipelineMap.get(state.activePipelineId) || null : null;
+  return ensureDerivedState().activePipeline;
 }
 
 function activePipelineForNode(node) {
