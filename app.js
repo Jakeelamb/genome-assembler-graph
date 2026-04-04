@@ -1391,7 +1391,7 @@ function focusNode(nodeId) {
   }
 
   state.graph.centerAt(node.x, node.y, 700);
-  state.graph.zoom(3.2, 700);
+  state.graph.zoom(1.35, 700);
 }
 
 function refreshGraphStyles() {
@@ -1437,9 +1437,9 @@ function nodeColor(node) {
       return categoryColor(node);
     }
     if (pipeline.nodeSet.has(node.id)) {
-      return colorWithAlpha(categoryColor(node), 0.64);
+      return colorWithAlpha(categoryColor(node), 0.86);
     }
-    return "rgba(88, 109, 124, 0.14)";
+    return colorWithAlpha(categoryColor(node), 0.38);
   }
 
   if (state.primarySelectionId) {
@@ -1473,9 +1473,9 @@ function nodeValue(node) {
     if (pipeline.stepSet.has(node.id)) {
       value *= 1.34;
     } else if (pipeline.nodeSet.has(node.id)) {
-      value *= 1.08;
+      value *= 1.16;
     } else {
-      value *= 0.56;
+      value *= 0.94;
     }
   } else if (state.primarySelectionId) {
     const context = selectionContext();
@@ -1503,9 +1503,9 @@ function linkColor(link) {
       return "rgba(242, 200, 107, 0.96)";
     }
     if (pipeline.nodeSet.has(sourceId) && pipeline.nodeSet.has(targetId)) {
-      return "rgba(126, 195, 255, 0.34)";
+      return "rgba(126, 195, 255, 0.44)";
     }
-    return "rgba(82, 98, 111, 0.08)";
+    return "rgba(126, 163, 186, 0.14)";
   }
 
   if (state.primarySelectionId) {
@@ -1544,7 +1544,7 @@ function linkWidth(link) {
     if (pipeline.edgeSet.has(link.id)) {
       return 3.2;
     }
-    return 0.25;
+    return 0.5;
   }
 
   if (isActiveLink(link)) {
