@@ -151,6 +151,7 @@ let toastTimer = null;
 let clickTimer = null;
 let autoRotateFrame = null;
 let autoRotateAngle = 0;
+let autoRotateSnapshot = null;
 
 boot().catch((error) => {
   refs.infoBody.innerHTML = `
@@ -240,6 +241,9 @@ function initUi() {
     }
     state.layout = nextLayout;
     applyLayout({ zoom: true });
+    if (state.autoRotate) {
+      updateAutoRotate();
+    }
     syncControls();
   });
 
@@ -593,6 +597,9 @@ function rebuildGraph({ zoom = false } = {}) {
   renderStats(graphData);
   applyLayout({ zoom });
   refreshGraphStyles();
+  if (state.autoRotate) {
+    updateAutoRotate();
+  }
 }
 
 function applyLayout({ zoom = false } = {}) {
@@ -612,7 +619,8 @@ function applyLayout({ zoom = false } = {}) {
     }
     state.graph.cooldownTicks(140).d3ReheatSimulation();
     if (zoom) {
-      window.setTimeout(() => state.graph.zoomToFit(700, 70), 160);
+      window.setTimeout(() => focusGraphCore({ duration: 700 }), 260);
+      window.setTimeout(() => focusGraphCore({ duration: 380 }), 900);
     }
     return;
   }
@@ -629,16 +637,19 @@ function applyLayout({ zoom = false } = {}) {
     if (!target) {
       return;
     }
+    node.x = target.x;
+    node.y = target.y;
     node.fx = target.x;
     node.fy = target.y;
     if (state.rendererMode === "3d") {
+      node.z = target.z;
       node.fz = target.z;
     }
   });
 
   state.graph.cooldownTicks(0).d3ReheatSimulation().refresh();
   if (zoom) {
-    window.setTimeout(() => state.graph.zoomToFit(700, 70), 160);
+    window.setTimeout(() => focusGraphCore({ duration: 700, positions }), 60);
   }
 }
 
@@ -658,6 +669,100 @@ function currentGraphData() {
 
 function currentVisibleNodes() {
   return ensureDerivedState().visibleNodes;
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function resolvedNodePosition(node, positions = null) {
+  if (positions?.has(node.id)) {
+    return positions.get(node.id);
+  }
+
+  const x = Number.isFinite(node.fx) ? node.fx : node.x;
+  const y = Number.isFinite(node.fy) ? node.fy : node.y;
+  if (!Number.isFinite(x) || !Number.isFinite(y)) {
+    return null;
+  }
+
+  return { x, y };
+}
+
+function snapshotNodePositions(nodes = currentVisibleNodes()) {
+  const positions = new Map();
+  nodes.forEach((node) => {
+    const position = resolvedNodePosition(node);
+    if (position) {
+      positions.set(node.id, { x: position.x, y: position.y });
+    }
+  });
+  return positions;
+}
+
+function percentile(sortedValues, fraction) {
+  if (!sortedValues.length) {
+    return 0;
+  }
+
+  const index = (sortedValues.length - 1) * fraction;
+  const lowerIndex = Math.floor(index);
+  const upperIndex = Math.ceil(index);
+  if (lowerIndex === upperIndex) {
+    return sortedValues[lowerIndex];
+  }
+
+  const weight = index - lowerIndex;
+  return sortedValues[lowerIndex] * (1 - weight) + sortedValues[upperIndex] * weight;
+}
+
+function robustViewMetricsFromPositions(positions) {
+  const samples = positions.filter(
+    (position) => position && Number.isFinite(position.x) && Number.isFinite(position.y)
+  );
+  if (!samples.length) {
+    return null;
+  }
+
+  const xs = samples.map((position) => position.x).sort((left, right) => left - right);
+  const ys = samples.map((position) => position.y).sort((left, right) => left - right);
+  const trimFraction = samples.length > 48 ? 0.08 : samples.length > 20 ? 0.04 : 0;
+  const minX = percentile(xs, trimFraction);
+  const maxX = percentile(xs, 1 - trimFraction);
+  const minY = percentile(ys, trimFraction);
+  const maxY = percentile(ys, 1 - trimFraction);
+
+  return {
+    centerX: (minX + maxX) / 2,
+    centerY: (minY + maxY) / 2,
+    width: Math.max(140, maxX - minX),
+    height: Math.max(140, maxY - minY),
+  };
+}
+
+function focusGraphCore({ duration = 700, positions = null } = {}) {
+  if (!state.graph || state.rendererMode !== "2d") {
+    return;
+  }
+
+  const samples = currentVisibleNodes()
+    .map((node) => resolvedNodePosition(node, positions))
+    .filter(Boolean);
+  const metrics = robustViewMetricsFromPositions(samples);
+  if (!metrics) {
+    return;
+  }
+
+  const viewportWidth = refs.graphCanvas?.clientWidth || window.innerWidth;
+  const viewportHeight = refs.graphCanvas?.clientHeight || window.innerHeight;
+  const padX = Math.max(120, viewportWidth * 0.12);
+  const padY = Math.max(120, viewportHeight * 0.12);
+  const zoomX = (viewportWidth - padX * 2) / metrics.width;
+  const zoomY = (viewportHeight - padY * 2) / metrics.height;
+  const nextZoom = clamp(Math.min(zoomX, zoomY), 0.2, 2.4);
+
+  state.graph.centerAt(metrics.centerX, metrics.centerY, duration);
+  state.graph.zoom(nextZoom, duration);
 }
 
 function emptySelectionContext() {
@@ -2042,69 +2147,101 @@ function syncControls() {
   refs.settingsShell.setAttribute("aria-hidden", String(!state.settingsOpen));
 }
 
-function stopAutoRotateLoop() {
+function stopAutoRotateLoop({ restore = false } = {}) {
   if (autoRotateFrame != null) {
     window.cancelAnimationFrame(autoRotateFrame);
     autoRotateFrame = null;
   }
+
+  if (!restore || !autoRotateSnapshot) {
+    return;
+  }
+
+  autoRotateSnapshot.positions.forEach((position, nodeId) => {
+    const node = state.prepared?.nodeMap.get(nodeId);
+    if (!node) {
+      return;
+    }
+    node.x = position.x;
+    node.y = position.y;
+    if (state.layout === "force") {
+      delete node.fx;
+      delete node.fy;
+    } else {
+      node.fx = position.x;
+      node.fy = position.y;
+    }
+  });
+
+  if (state.layout === "force") {
+    state.graph?.cooldownTicks(90).d3ReheatSimulation();
+  } else {
+    state.graph?.refresh();
+  }
+
+  autoRotateSnapshot = null;
+  autoRotateAngle = 0;
 }
 
-function autoRotateTarget() {
-  if (!state.prepared) {
+function captureAutoRotateSnapshot() {
+  const positions = snapshotNodePositions();
+  if (!positions.size) {
     return null;
   }
 
-  const visibleNodes = currentVisibleNodes().filter((node) => Number.isFinite(node.x) && Number.isFinite(node.y));
-  if (!visibleNodes.length) {
+  const metrics = robustViewMetricsFromPositions([...positions.values()]);
+  if (!metrics) {
     return null;
   }
-
-  if (state.primarySelectionId) {
-    const selected = state.prepared.nodeMap.get(state.primarySelectionId);
-    if (selected && Number.isFinite(selected.x) && Number.isFinite(selected.y)) {
-      return selected;
-    }
-  }
-
-  const totals = visibleNodes.reduce(
-    (acc, node) => {
-      acc.x += node.x;
-      acc.y += node.y;
-      return acc;
-    },
-    { x: 0, y: 0 }
-  );
 
   return {
-    x: totals.x / visibleNodes.length,
-    y: totals.y / visibleNodes.length,
+    positions,
+    center: { x: metrics.centerX, y: metrics.centerY },
   };
 }
 
 function animate2dAutoRotate() {
   if (!state.graph || !state.autoRotate || state.rendererMode !== "2d") {
-    stopAutoRotateLoop();
+    stopAutoRotateLoop({ restore: true });
     return;
   }
 
-  const target = autoRotateTarget();
-  if (!target) {
+  if (!autoRotateSnapshot) {
+    autoRotateSnapshot = captureAutoRotateSnapshot();
+    autoRotateAngle = 0;
+  }
+
+  if (!autoRotateSnapshot) {
     autoRotateFrame = window.requestAnimationFrame(animate2dAutoRotate);
     return;
   }
 
-  autoRotateAngle += 0.012;
-  const radius = state.primarySelectionId ? 90 : 140;
-  state.graph.centerAt(
-    target.x + Math.cos(autoRotateAngle) * radius,
-    target.y + Math.sin(autoRotateAngle) * radius,
-    0
-  );
+  const cosine = Math.cos(autoRotateAngle);
+  const sine = Math.sin(autoRotateAngle);
+  const { center, positions } = autoRotateSnapshot;
+
+  currentVisibleNodes().forEach((node) => {
+    const base = positions.get(node.id);
+    if (!base) {
+      return;
+    }
+    const dx = base.x - center.x;
+    const dy = base.y - center.y;
+    const x = center.x + dx * cosine - dy * sine;
+    const y = center.y + dx * sine + dy * cosine;
+    node.x = x;
+    node.y = y;
+    node.fx = x;
+    node.fy = y;
+  });
+
+  state.graph.refresh();
+  autoRotateAngle += 0.0032;
   autoRotateFrame = window.requestAnimationFrame(animate2dAutoRotate);
 }
 
 function updateAutoRotate() {
-  stopAutoRotateLoop();
+  stopAutoRotateLoop({ restore: true });
 
   if (!state.graph || !state.autoRotate) {
     return;
@@ -2117,6 +2254,12 @@ function updateAutoRotate() {
     return;
   }
 
+  autoRotateSnapshot = captureAutoRotateSnapshot();
+  if (!autoRotateSnapshot) {
+    return;
+  }
+
+  state.graph.centerAt(autoRotateSnapshot.center.x, autoRotateSnapshot.center.y, 400);
   animate2dAutoRotate();
 }
 
