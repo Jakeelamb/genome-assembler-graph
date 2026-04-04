@@ -21,6 +21,20 @@ REQUIRED_TOP_LEVEL_KEYS = (
     "sources",
 )
 
+PIPELINE_COMPONENT_FIELDS = {
+    "goal_ids": "goal",
+    "property_ids": "property",
+    "primary_input_ids": "primary",
+    "support_data_ids": "support",
+    "algorithm_ids": "algorithm",
+    "concept_ids": "concept",
+    "module_ids": "module",
+    "tool_ids": "tool",
+    "stage_ids": "stage",
+    "output_ids": "output",
+    "metric_ids": "metric",
+    "case_ids": "case",
+}
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -124,9 +138,9 @@ def validate_graph(graph: dict) -> list[str]:
         if not isinstance(pipeline, dict):
             continue
 
-        for key in ("id", "label", "tagline", "description", "focus", "step_ids", "node_ids", "edge_ids", "source_ids"):
+        for key in ("id", "label", "tagline", "description", "focus", "step_ids", "node_ids", "edge_ids", "source_ids", "components"):
             ensure(key in pipeline, f"Pipeline is missing required key: {key}", errors)
-        if not all(key in pipeline for key in ("id", "step_ids", "node_ids", "edge_ids", "source_ids")):
+        if not all(key in pipeline for key in ("id", "step_ids", "node_ids", "edge_ids", "source_ids", "components")):
             continue
 
         ensure(bool(pipeline["source_ids"]), f"Pipeline {pipeline['id']} must cite at least one source", errors)
@@ -175,6 +189,42 @@ def validate_graph(graph: dict) -> list[str]:
                 f"Pipeline {pipeline['id']} edge {edge_id} must carry source_ids",
                 errors,
             )
+
+        components = pipeline["components"]
+        ensure(isinstance(components, dict), f"Pipeline {pipeline['id']} components must be an object", errors)
+        if not isinstance(components, dict):
+            continue
+
+        partition_ids: set[str] = set()
+        for field, expected_kind in PIPELINE_COMPONENT_FIELDS.items():
+            ensure(field in components, f"Pipeline {pipeline['id']} components missing {field}", errors)
+            values = components.get(field, [])
+            ensure(isinstance(values, list), f"Pipeline {pipeline['id']} components.{field} must be an array", errors)
+            if not isinstance(values, list):
+                continue
+            ensure(len(values) == len(set(values)), f"Pipeline {pipeline['id']} components.{field} has duplicate ids", errors)
+            for component_id in values:
+                ensure(component_id in node_map, f"Pipeline {pipeline['id']} components.{field} references unknown node {component_id}", errors)
+                if component_id not in node_map:
+                    continue
+                ensure(component_id in node_id_set, f"Pipeline {pipeline['id']} components.{field} references node outside node_ids: {component_id}", errors)
+                ensure(
+                    node_map[component_id]["kind"] == expected_kind,
+                    f"Pipeline {pipeline['id']} components.{field} node {component_id} must have kind {expected_kind}",
+                    errors,
+                )
+                ensure(
+                    component_id not in partition_ids,
+                    f"Pipeline {pipeline['id']} components reuse node {component_id} across categories",
+                    errors,
+                )
+                partition_ids.add(component_id)
+
+        ensure(
+            partition_ids == node_id_set,
+            f"Pipeline {pipeline['id']} components must partition node_ids exactly",
+            errors,
+        )
 
     return errors
 

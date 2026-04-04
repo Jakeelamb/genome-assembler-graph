@@ -31,6 +31,19 @@ const START_HERE_ITEMS = [
   },
 ];
 
+const PIPELINE_COMPONENT_GROUPS = [
+  { title: "Assembly goals and properties", fields: ["goal_ids", "property_ids"] },
+  { title: "Primary inputs", fields: ["primary_input_ids"] },
+  { title: "Support data", fields: ["support_data_ids"] },
+  { title: "Algorithms", fields: ["algorithm_ids"] },
+  { title: "Concepts", fields: ["concept_ids"] },
+  { title: "Modules", fields: ["module_ids"] },
+  { title: "Tools", fields: ["tool_ids"] },
+  { title: "Stages", fields: ["stage_ids"] },
+  { title: "Outputs", fields: ["output_ids"] },
+  { title: "Metrics and case studies", fields: ["metric_ids", "case_ids"] },
+];
+
 const CATEGORY_COLORS = {
   goal: "#f2c86b",
   property: "#f59f86",
@@ -322,11 +335,18 @@ function prepareData(raw) {
     const resolvedNodeIds = pipeline.node_ids.filter((nodeId) => nodeMap.has(nodeId));
     const resolvedStepIds = (pipeline.step_ids || []).filter((nodeId) => nodeMap.has(nodeId));
     const resolvedEdgeIds = (pipeline.edge_ids || []).filter((edgeId) => edgeMap.has(edgeId));
+    const componentNodes = Object.fromEntries(
+      Object.entries(pipeline.components || {}).map(([field, ids]) => [
+        field,
+        ids.filter((nodeId) => nodeMap.has(nodeId)).map((nodeId) => nodeMap.get(nodeId)),
+      ])
+    );
     return {
       ...pipeline,
       nodes: resolvedNodeIds.map((nodeId) => nodeMap.get(nodeId)),
       stepNodes: resolvedStepIds.map((nodeId) => nodeMap.get(nodeId)),
       edges: resolvedEdgeIds.map((edgeId) => edgeMap.get(edgeId)),
+      componentNodes,
       nodeSet: new Set(resolvedNodeIds),
       stepSet: new Set(resolvedStepIds),
       edgeSet: new Set(resolvedEdgeIds),
@@ -373,7 +393,11 @@ function prepareData(raw) {
       node.kindLabel,
       node.category,
       ...node.pipelines.map((pipeline) => pipeline.label),
-      ...node.pipelines.map((pipeline) => pipeline.focus || ""),
+      ...node.pipelines.flatMap((pipeline) =>
+        Object.values(pipeline.componentNodes)
+          .flat()
+          .map((componentNode) => componentNode.label)
+      ),
     ]
       .join(" ")
       .toLowerCase();
@@ -703,7 +727,6 @@ function overviewAnalyticsHtml() {
 
 function nodeInfoHtml(node) {
   const currentPipeline = activePipelineForNode(node);
-  const pipelineMeta = currentPipeline?.focus ? pipelineFocusBadgesHtml(currentPipeline) : "";
   const landingIntro =
     state.selectionSource === "default" && node.id === DEFAULT_NODE_ID
       ? `
@@ -768,19 +791,17 @@ function nodeInfoHtml(node) {
         currentPipeline
           ? `
             <section class="spotlight-card">
-              ${pipelineMeta}
               <p>
-                Pipeline spotlight:
-                <strong>${escapeHtml(currentPipeline.label)}</strong><br>
-                ${escapeHtml(currentPipeline.description)}
+                <strong>Active workflow record:</strong> ${escapeHtml(currentPipeline.label)}<br>
+                ${escapeHtml(pipelineFactSummary(currentPipeline))}
               </p>
             </section>
           `
           : ""
       }
 
-      ${landingIntro}
       ${pipelineBreakdown}
+      ${landingIntro}
     </div>
   `;
 }
@@ -807,9 +828,10 @@ function nodeAnalyticsHtml(node) {
               <h3>Active Path</h3>
               <div class="metrics-grid">
                 ${metricCardHtml("Workflow", currentPipeline.label)}
-                ${metricCardHtml("Focus", currentPipeline.focus || "Curated path")}
+                ${metricCardHtml("Step nodes", String(currentPipeline.stepNodes.length))}
                 ${metricCardHtml("Nodes in path", String(currentPipeline.nodes.length))}
                 ${metricCardHtml("Edges in path", String(currentPipeline.edges.length))}
+                ${metricCardHtml("Source links", String(currentPipeline.sources.length))}
               </div>
             </section>
           `
@@ -855,20 +877,6 @@ function nodeAnalyticsHtml(node) {
   `;
 }
 
-function pipelineFocusLineHtml(pipeline) {
-  return pipeline.focus ? `<div class="pipeline-meta">${escapeHtml(`Focus: ${pipeline.focus}`)}</div>` : "";
-}
-
-function pipelineFocusBadgesHtml(pipeline) {
-  return pipeline.focus
-    ? `
-      <div class="badge-row inline-badges">
-        <span class="info-badge">${escapeHtml(pipeline.focus)}</span>
-      </div>
-    `
-    : "";
-}
-
 function pipelineChooserHtml(node, currentPipeline) {
   const visiblePipelines = sortedPipelinesForNode(node).slice(0, 6);
   return `
@@ -883,8 +891,8 @@ function pipelineChooserHtml(node, currentPipeline) {
               data-pipeline-target="${escapeHtml(pipeline.id)}"
             >
               <strong>${escapeHtml(pipeline.label)}</strong><br>
-              ${escapeHtml(pipeline.tagline)}
-              ${pipelineFocusLineHtml(pipeline)}
+              <span class="pipeline-button-meta">${escapeHtml(pipelineFactSummary(pipeline))}</span>
+              ${pipelineChooserDetailsHtml(pipeline)}
             </button>
           `;
         })
@@ -899,21 +907,15 @@ function pipelineChooserHtml(node, currentPipeline) {
 }
 
 function pipelineBreakdownHtml(pipeline) {
-  const techniques = pipeline.stepNodes.filter((node) =>
-    ["algorithm", "concept", "module"].includes(node.kind)
-  );
-  const inputs = pipeline.stepNodes.filter((node) => ["primary", "support"].includes(node.kind));
-  const outputs = pipeline.stepNodes.filter((node) => ["output", "stage"].includes(node.kind));
-
   return `
     <section class="info-section">
       <h3>Workflow Components</h3>
       <p class="info-copy">
         This section lists the nodes attached to the selected workflow path.
       </p>
-      ${pipelineNodeGroupHtml("Inputs and support data", inputs)}
-      ${pipelineNodeGroupHtml("Core techniques and modules", techniques)}
-      ${pipelineNodeGroupHtml("Stages and outputs", outputs)}
+      ${PIPELINE_COMPONENT_GROUPS.map((group) =>
+        pipelineNodeGroupHtml(group.title, pipelineNodesForFields(pipeline, group.fields))
+      ).join("")}
     </section>
   `;
 }
@@ -941,6 +943,53 @@ function pipelineNodeGroupHtml(title, nodes) {
   `;
 }
 
+function pipelineNodesForFields(pipeline, fields) {
+  const seen = new Set();
+  return fields
+    .flatMap((field) => pipeline.componentNodes[field] || [])
+    .filter((node) => {
+      if (!node || seen.has(node.id)) {
+        return false;
+      }
+      seen.add(node.id);
+      return true;
+    });
+}
+
+function pipelineChooserDetailsHtml(pipeline) {
+  const detailLines = [
+    pipelineFieldSummaryLine("Inputs", pipeline.componentNodes.primary_input_ids),
+    pipelineFieldSummaryLine("Support", pipeline.componentNodes.support_data_ids),
+    pipelineFieldSummaryLine("Outputs", pipeline.componentNodes.output_ids),
+  ].filter(Boolean);
+
+  if (!detailLines.length) {
+    return "";
+  }
+
+  return detailLines.map((line) => `<span class="pipeline-button-meta">${escapeHtml(line)}</span>`).join("");
+}
+
+function pipelineFieldSummaryLine(label, nodes) {
+  if (!nodes?.length) {
+    return "";
+  }
+  return `${label}: ${summarizeNodeLabels(nodes)}`;
+}
+
+function summarizeNodeLabels(nodes, maxItems = 3) {
+  const labels = nodes.map((node) => node.label);
+  if (labels.length <= maxItems) {
+    return labels.join(", ");
+  }
+  const visible = labels.slice(0, maxItems).join(", ");
+  return `${visible}, +${labels.length - maxItems} more`;
+}
+
+function pipelineFactSummary(pipeline) {
+  return `${pipeline.stepNodes.length} step nodes · ${pipeline.nodes.length} path nodes · ${pipeline.edges.length} edges · ${pipeline.sources.length} sources`;
+}
+
 function sortedPipelinesForNode(node) {
   return [...node.pipelines].sort((left, right) => {
     const scoreDelta = pipelineRelevanceScore(right, node) - pipelineRelevanceScore(left, node);
@@ -957,7 +1006,6 @@ function sortedPipelinesForNode(node) {
 
 function pipelineRelevanceScore(pipeline, node) {
   const label = pipeline.label.toLowerCase();
-  const focus = (pipeline.focus || "").toLowerCase();
   const target = node.label.toLowerCase();
   let score = 0;
   if (label.includes(target)) {
@@ -965,9 +1013,6 @@ function pipelineRelevanceScore(pipeline, node) {
   }
   if (label.startsWith(target)) {
     score += 3;
-  }
-  if (focus.includes(target)) {
-    score += 1;
   }
   if (pipeline.stepSet.has(node.id)) {
     score += 2;

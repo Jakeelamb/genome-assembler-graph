@@ -9,6 +9,7 @@ This repository ships as a lightweight static web app plus a curated graph datas
 - inspect the nodes and recorded workflow paths attached to an assembler, support-data type, stage, or output
 - inspect how curated workflows such as `hifiasm`, `Verkko`, `Flye`, `LJA`, `HiCanu`, and `Shasta` are represented in the graph
 - see where auxiliary data like `ONT ultra-long`, `Hi-C`, and `trio` plug into specific modules and finishing paths
+- inspect typed workflow components such as inputs, support data, algorithms, modules, tools, stages, outputs, metrics, and case studies
 - share a node or multi-node selection with a deep link
 - extend the graph into Neo4j, Memgraph, ArangoDB, or a backend API later
 
@@ -28,7 +29,7 @@ Chromosome-scale endpoint view:
 
 ## Project Shape
 
-- `data/genome_assembler_graph.json`: curated graph data, ontology metadata, pipeline paths, and paper links
+- `data/genome_assembler_graph.json`: curated graph data, ontology metadata, pipeline paths, paper links, and structured pipeline `components` grouped by node kind
 - `schema/genome_assembler_graph.schema.json`: JSON schema for the graph contract
 - `index.html`: single-page interface
 - `styles.css`: layout and visual system

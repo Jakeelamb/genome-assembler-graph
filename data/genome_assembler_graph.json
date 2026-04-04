@@ -24174,7 +24174,47 @@
         "threedna_2017",
         "threedna_repo",
         "juicebox_gui_repo"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_chromosome_scaffold"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_hic"
+        ],
+        "algorithm_ids": [
+          "algorithm_hic_scaffolding",
+          "algorithm_hic_misjoin_correction"
+        ],
+        "concept_ids": [
+          "concept_superscaffold",
+          "failure_misscaffolding"
+        ],
+        "module_ids": [
+          "module_hic_contact_scaffolding",
+          "module_hic_misjoin_correction",
+          "module_interactive_curation"
+        ],
+        "tool_ids": [
+          "tool_3ddna",
+          "tool_juicebox"
+        ],
+        "stage_ids": [
+          "stage_anchor",
+          "stage_curate"
+        ],
+        "output_ids": [
+          "output_chr_anchor"
+        ],
+        "metric_ids": [
+          "metric_misassembly_rate"
+        ],
+        "case_ids": [
+          "case_aedes_aegypti"
+        ]
+      }
     },
     {
       "id": "pipeline_agouti_transcript_scaffold",
@@ -24245,7 +24285,47 @@
       "source_ids": [
         "agouti_2016",
         "agouti_repo"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_transcript_guided_scaffolding",
+          "goal_draft_scaffolding",
+          "goal_finishing"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_fragmented_draft",
+          "support_rna_seq"
+        ],
+        "algorithm_ids": [
+          "algorithm_transcript_guided_scaffolding"
+        ],
+        "concept_ids": [
+          "concept_spliced_contig_bridge"
+        ],
+        "module_ids": [
+          "module_transcript_link_scaffolding",
+          "module_gene_model_merging"
+        ],
+        "tool_ids": [
+          "tool_agouti",
+          "tool_busco",
+          "tool_quast"
+        ],
+        "stage_ids": [
+          "stage_anchor",
+          "stage_annotate"
+        ],
+        "output_ids": [
+          "output_scaffold_draft",
+          "output_gene_complete"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_allhic_polyploid",
@@ -24296,7 +24376,43 @@
         "allhic_2019",
         "polygh_2024",
         "wheat_2012"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_polyploid"
+        ],
+        "property_ids": [
+          "prop_polyploid",
+          "prop_recent_wgd"
+        ],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_hic",
+          "support_gamete_data"
+        ],
+        "algorithm_ids": [
+          "algorithm_polyploid_scaffolding"
+        ],
+        "concept_ids": [
+          "failure_underphasing"
+        ],
+        "module_ids": [
+          "module_polyploid_partitioning"
+        ],
+        "tool_ids": [
+          "tool_allhic"
+        ],
+        "stage_ids": [
+          "stage_anchor"
+        ],
+        "output_ids": [
+          "output_chr_anchor"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_wheat"
+        ]
+      }
     },
     {
       "id": "pipeline_anvio_mag_curation",
@@ -24353,7 +24469,44 @@
         "anvio_2015",
         "anvio_site",
         "checkm_2015"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_mag_curation"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_recovered_bins"
+        ],
+        "algorithm_ids": [
+          "algorithm_manual_bin_curation"
+        ],
+        "concept_ids": [
+          "concept_curated_mag"
+        ],
+        "module_ids": [
+          "module_manual_bin_refinement"
+        ],
+        "tool_ids": [
+          "tool_anvio",
+          "tool_checkm"
+        ],
+        "stage_ids": [
+          "stage_curate"
+        ],
+        "output_ids": [
+          "output_refined_mag_bins",
+          "output_curated_mag_set"
+        ],
+        "metric_ids": [
+          "metric_bin_completeness",
+          "metric_bin_contamination"
+        ],
+        "case_ids": [
+          "case_human_gut_microbiome"
+        ]
+      }
     },
     {
       "id": "pipeline_arks_scaffold",
@@ -24399,7 +24552,41 @@
       ],
       "source_ids": [
         "arks_2018"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_chromosome_scaffold"
+        ],
+        "property_ids": [
+          "prop_high_repeat_content"
+        ],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_fragmented_draft",
+          "support_linked_reads"
+        ],
+        "algorithm_ids": [
+          "algorithm_linked_read_scaffolding"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_linked_read_kmer_scaffolding"
+        ],
+        "tool_ids": [
+          "tool_arks",
+          "tool_quast"
+        ],
+        "stage_ids": [
+          "stage_anchor"
+        ],
+        "output_ids": [
+          "output_chr_anchor"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_athena_readcloud_metagenome",
@@ -24462,7 +24649,49 @@
       "source_ids": [
         "athena_2018",
         "metaquast_2016"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_metagenome_assembly"
+        ],
+        "property_ids": [
+          "prop_low_abundance_taxa",
+          "prop_strain_heterogeneity"
+        ],
+        "primary_input_ids": [
+          "read_paired_end"
+        ],
+        "support_data_ids": [
+          "support_read_clouds"
+        ],
+        "algorithm_ids": [
+          "algorithm_read_cloud_subassembly"
+        ],
+        "concept_ids": [
+          "concept_read_cloud_barcode",
+          "concept_strain_resolved_draft"
+        ],
+        "module_ids": [
+          "module_read_cloud_subassembly"
+        ],
+        "tool_ids": [
+          "tool_athena",
+          "tool_metaquast"
+        ],
+        "stage_ids": [
+          "stage_graph"
+        ],
+        "output_ids": [
+          "output_strain_resolved_drafts"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": [
+          "case_read_cloud_gut",
+          "case_marine_sediment"
+        ]
+      }
     },
     {
       "id": "pipeline_australian_lungfish",
@@ -24536,7 +24765,50 @@
       ],
       "source_ids": [
         "lungfish_2021"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_giant"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [
+          "read_ont_long_ul"
+        ],
+        "support_data_ids": [
+          "support_ont_ul",
+          "support_high_mem_hpc"
+        ],
+        "algorithm_ids": [
+          "algorithm_olc"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_ultra_long_bridging",
+          "module_memory_partitioning",
+          "module_graph_cleanup",
+          "module_consensus_refinement"
+        ],
+        "tool_ids": [
+          "tool_marvel"
+        ],
+        "stage_ids": [
+          "stage_overlap",
+          "stage_graph",
+          "stage_repeat",
+          "stage_consensus",
+          "stage_polish",
+          "stage_anchor"
+        ],
+        "output_ids": [
+          "output_chr_anchor"
+        ],
+        "metric_ids": [
+          "metric_qv"
+        ],
+        "case_ids": [
+          "case_lungfish"
+        ]
+      }
     },
     {
       "id": "pipeline_axolotl_hic",
@@ -24587,7 +24859,43 @@
       ],
       "source_ids": [
         "axolotl_2021"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_giant"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [
+          "read_clr"
+        ],
+        "support_data_ids": [
+          "support_hic",
+          "support_high_mem_hpc"
+        ],
+        "algorithm_ids": [
+          "algorithm_anchor_scaffold"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_scaffolding",
+          "module_memory_partitioning"
+        ],
+        "tool_ids": [
+          "tool_amexg_hic"
+        ],
+        "stage_ids": [
+          "stage_anchor"
+        ],
+        "output_ids": [
+          "output_chr_anchor"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": [
+          "case_axolotl"
+        ]
+      }
     },
     {
       "id": "pipeline_axolotl_map_anchor",
@@ -24638,7 +24946,43 @@
       ],
       "source_ids": [
         "axolotl_2019"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_giant"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [
+          "read_clr"
+        ],
+        "support_data_ids": [
+          "support_dense_map",
+          "support_high_mem_hpc"
+        ],
+        "algorithm_ids": [
+          "algorithm_anchor_scaffold"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_map_anchoring",
+          "module_memory_partitioning"
+        ],
+        "tool_ids": [
+          "tool_amexg_map"
+        ],
+        "stage_ids": [
+          "stage_anchor"
+        ],
+        "output_ids": [
+          "output_chr_anchor"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": [
+          "case_axolotl"
+        ]
+      }
     },
     {
       "id": "pipeline_bandage_graph_inspection",
@@ -24692,7 +25036,43 @@
       "source_ids": [
         "bandage_2015",
         "bandage_repo"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_graph_inspection",
+          "goal_validation"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_gfa_graph_file"
+        ],
+        "algorithm_ids": [
+          "algorithm_graph_visualization"
+        ],
+        "concept_ids": [
+          "concept_gfa_graph",
+          "concept_graph_tangling",
+          "failure_overcollapsed_repeats"
+        ],
+        "module_ids": [
+          "module_graph_visualization"
+        ],
+        "tool_ids": [
+          "tool_bandage"
+        ],
+        "stage_ids": [
+          "stage_graph_analyze"
+        ],
+        "output_ids": [
+          "output_graph_inspection_view",
+          "output_pangenome_graph"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_hprc_pangenome"
+        ]
+      }
     },
     {
       "id": "pipeline_besst_scaffold",
@@ -24739,7 +25119,42 @@
       ],
       "source_ids": [
         "besst_2014"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_draft_scaffolding"
+        ],
+        "property_ids": [
+          "prop_high_repeat_content"
+        ],
+        "primary_input_ids": [
+          "read_paired_end"
+        ],
+        "support_data_ids": [
+          "support_mate_pair"
+        ],
+        "algorithm_ids": [
+          "algorithm_paired_link_scaffolding"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_paired_read_scaffolding"
+        ],
+        "tool_ids": [
+          "tool_besst",
+          "tool_quast"
+        ],
+        "stage_ids": [
+          "stage_anchor"
+        ],
+        "output_ids": [
+          "output_scaffold_draft"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_blobtoolkit_screen",
@@ -24785,7 +25200,40 @@
       ],
       "source_ids": [
         "blobtoolkit_2020"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_contamination"
+        ],
+        "property_ids": [
+          "prop_organelle_contam",
+          "prop_high_gc"
+        ],
+        "primary_input_ids": [
+          "read_paired_end"
+        ],
+        "support_data_ids": [
+          "support_taxonomic_profile"
+        ],
+        "algorithm_ids": [
+          "algorithm_contamination_binning"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_contamination_filtering"
+        ],
+        "tool_ids": [
+          "tool_blobtoolkit"
+        ],
+        "stage_ids": [
+          "stage_screen"
+        ],
+        "output_ids": [
+          "output_contamination_profile"
+        ],
+        "metric_ids": [],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_busco_qc",
@@ -24830,7 +25278,42 @@
       ],
       "source_ids": [
         "busco_2015"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_validation"
+        ],
+        "property_ids": [
+          "prop_diploid"
+        ],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_rna_seq"
+        ],
+        "algorithm_ids": [
+          "algorithm_ortholog_qc"
+        ],
+        "concept_ids": [
+          "failure_false_duplication",
+          "failure_overpurging"
+        ],
+        "module_ids": [
+          "module_gene_completeness"
+        ],
+        "tool_ids": [
+          "tool_busco"
+        ],
+        "stage_ids": [
+          "stage_qc"
+        ],
+        "output_ids": [
+          "output_gene_complete"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_arabidopsis"
+        ]
+      }
     },
     {
       "id": "pipeline_canu_clr",
@@ -24878,7 +25361,40 @@
       ],
       "source_ids": [
         "canu_2017"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_de_novo"
+        ],
+        "property_ids": [
+          "prop_high_repeat_content"
+        ],
+        "primary_input_ids": [
+          "read_clr"
+        ],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_olc"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_raw_read_correction",
+          "module_adaptive_kmer_weighting"
+        ],
+        "tool_ids": [
+          "tool_canu"
+        ],
+        "stage_ids": [
+          "stage_overlap",
+          "stage_graph",
+          "stage_consensus"
+        ],
+        "output_ids": [
+          "output_draft"
+        ],
+        "metric_ids": [],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_checkm_mag_qc",
@@ -24936,7 +25452,44 @@
       ],
       "source_ids": [
         "checkm_2015"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_mag_evaluation"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_recovered_bins",
+          "support_lineage_marker_sets"
+        ],
+        "algorithm_ids": [
+          "algorithm_marker_gene_qc"
+        ],
+        "concept_ids": [
+          "concept_marker_gene_lineage"
+        ],
+        "module_ids": [
+          "module_marker_gene_quality_scoring"
+        ],
+        "tool_ids": [
+          "tool_checkm"
+        ],
+        "stage_ids": [
+          "stage_qc"
+        ],
+        "output_ids": [
+          "output_refined_mag_bins",
+          "output_mag_quality_report"
+        ],
+        "metric_ids": [
+          "metric_bin_completeness",
+          "metric_bin_contamination"
+        ],
+        "case_ids": [
+          "case_sheep_microbiome"
+        ]
+      }
     },
     {
       "id": "pipeline_checkv_viral_qc",
@@ -24996,7 +25549,44 @@
       ],
       "source_ids": [
         "checkv_2021"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_viral_genome_evaluation"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_viral_candidate_contigs",
+          "support_viral_reference_db"
+        ],
+        "algorithm_ids": [
+          "algorithm_viral_genome_qc"
+        ],
+        "concept_ids": [
+          "concept_provirus",
+          "concept_complete_viral_genome"
+        ],
+        "module_ids": [
+          "module_viral_completeness_estimation"
+        ],
+        "tool_ids": [
+          "tool_checkv"
+        ],
+        "stage_ids": [
+          "stage_qc"
+        ],
+        "output_ids": [
+          "output_viral_contigs",
+          "output_viral_quality_report"
+        ],
+        "metric_ids": [
+          "metric_viral_completeness"
+        ],
+        "case_ids": [
+          "case_global_ocean_virome"
+        ]
+      }
     },
     {
       "id": "pipeline_clone_by_clone_human",
@@ -25037,7 +25627,39 @@
       "source_ids": [
         "human_genome_2001",
         "physical_map_2001"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_de_novo"
+        ],
+        "property_ids": [
+          "prop_segmental_duplications"
+        ],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_bac_map"
+        ],
+        "algorithm_ids": [
+          "algorithm_hierarchical_shotgun"
+        ],
+        "concept_ids": [
+          "concept_clone_tiling_path"
+        ],
+        "module_ids": [
+          "module_clone_by_clone_tiling"
+        ],
+        "tool_ids": [],
+        "stage_ids": [
+          "stage_anchor"
+        ],
+        "output_ids": [
+          "output_pseudomolecules"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_human_reference_2001"
+        ]
+      }
     },
     {
       "id": "pipeline_coconet_viral_binning",
@@ -25094,7 +25716,43 @@
       "source_ids": [
         "coconet_2021",
         "checkv_2021"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_viral_genome_recovery"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_viral_candidate_contigs",
+          "support_multisample_coverage_profiles"
+        ],
+        "algorithm_ids": [
+          "algorithm_viral_metagenome_binning",
+          "algorithm_composition_coverage_binning"
+        ],
+        "concept_ids": [
+          "concept_viral_bin",
+          "concept_microdiversity"
+        ],
+        "module_ids": [
+          "module_viral_bin_embedding"
+        ],
+        "tool_ids": [
+          "tool_coconet",
+          "tool_checkv"
+        ],
+        "stage_ids": [
+          "stage_bin"
+        ],
+        "output_ids": [
+          "output_viral_bins"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_global_ocean_virome"
+        ]
+      }
     },
     {
       "id": "pipeline_concoct_binning",
@@ -25152,7 +25810,45 @@
       "source_ids": [
         "concoct_2014",
         "checkm_2015"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_mag_recovery"
+        ],
+        "property_ids": [
+          "prop_uneven_coverage"
+        ],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_fragmented_draft",
+          "support_multisample_coverage_profiles"
+        ],
+        "algorithm_ids": [
+          "algorithm_composition_coverage_binning"
+        ],
+        "concept_ids": [
+          "concept_tetranucleotide_frequency",
+          "concept_mag"
+        ],
+        "module_ids": [
+          "module_tetranucleotide_coverage_clustering"
+        ],
+        "tool_ids": [
+          "tool_concoct",
+          "tool_checkm"
+        ],
+        "stage_ids": [
+          "stage_bin"
+        ],
+        "output_ids": [
+          "output_metagenome_contigs",
+          "output_mag_bins"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_mock_microbial_community"
+        ]
+      }
     },
     {
       "id": "pipeline_dastool_refinement",
@@ -25211,7 +25907,46 @@
       "source_ids": [
         "dastool_2018",
         "checkm_2015"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_mag_recovery"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_recovered_bins",
+          "support_lineage_marker_sets"
+        ],
+        "algorithm_ids": [
+          "algorithm_consensus_bin_refinement"
+        ],
+        "concept_ids": [
+          "concept_marker_gene_lineage",
+          "concept_mag"
+        ],
+        "module_ids": [
+          "module_bin_consensus_scoring"
+        ],
+        "tool_ids": [
+          "tool_das_tool",
+          "tool_checkm"
+        ],
+        "stage_ids": [
+          "stage_dedup"
+        ],
+        "output_ids": [
+          "output_mag_bins",
+          "output_refined_mag_bins"
+        ],
+        "metric_ids": [
+          "metric_bin_completeness",
+          "metric_bin_contamination"
+        ],
+        "case_ids": [
+          "case_sheep_microbiome"
+        ]
+      }
     },
     {
       "id": "pipeline_dbg2olc_hybrid",
@@ -25258,7 +25993,42 @@
       ],
       "source_ids": [
         "dbg2olc_2016"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_hybrid_assembly"
+        ],
+        "property_ids": [
+          "prop_high_repeat_content"
+        ],
+        "primary_input_ids": [
+          "read_paired_end"
+        ],
+        "support_data_ids": [
+          "support_pacbio_long"
+        ],
+        "algorithm_ids": [
+          "algorithm_hybrid_dbg_olc"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_hybrid_backbone_construction"
+        ],
+        "tool_ids": [
+          "tool_dbg2olc"
+        ],
+        "stage_ids": [
+          "stage_graph",
+          "stage_consensus"
+        ],
+        "output_ids": [
+          "output_draft"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_eukcc_eukmag_qc",
@@ -25319,7 +26089,46 @@
       ],
       "source_ids": [
         "eukcc_2020"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_eukaryotic_mag_evaluation"
+        ],
+        "property_ids": [
+          "prop_uneven_coverage"
+        ],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_recovered_bins",
+          "support_euk_marker_sets"
+        ],
+        "algorithm_ids": [
+          "algorithm_eukaryotic_mag_qc"
+        ],
+        "concept_ids": [
+          "concept_curated_mag"
+        ],
+        "module_ids": [
+          "module_eukaryotic_marker_qc"
+        ],
+        "tool_ids": [
+          "tool_eukcc"
+        ],
+        "stage_ids": [
+          "stage_qc"
+        ],
+        "output_ids": [
+          "output_curated_mag_set",
+          "output_euk_mag_quality_report"
+        ],
+        "metric_ids": [
+          "metric_bin_completeness",
+          "metric_bin_contamination"
+        ],
+        "case_ids": [
+          "case_human_skin_eukaryome"
+        ]
+      }
     },
     {
       "id": "pipeline_falcon_phased",
@@ -25374,7 +26183,44 @@
       ],
       "source_ids": [
         "falcon_2016"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_phased"
+        ],
+        "property_ids": [
+          "prop_diploid",
+          "prop_high_heterozygosity"
+        ],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_pacbio_long"
+        ],
+        "algorithm_ids": [
+          "algorithm_olc"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_raw_read_correction",
+          "module_haplotype_partitioning"
+        ],
+        "tool_ids": [
+          "tool_falcon"
+        ],
+        "stage_ids": [
+          "stage_overlap",
+          "stage_graph",
+          "stage_phase",
+          "stage_consensus"
+        ],
+        "output_ids": [
+          "output_phased"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_arabidopsis"
+        ]
+      }
     },
     {
       "id": "pipeline_fast_plast_plastome",
@@ -25463,7 +26309,52 @@
       "source_ids": [
         "fastplast_repo",
         "getorganelle_2020"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_plastome_assembly",
+          "goal_organelle_assembly"
+        ],
+        "property_ids": [
+          "prop_small_circular_genome"
+        ],
+        "primary_input_ids": [
+          "read_paired_end"
+        ],
+        "support_data_ids": [
+          "support_genome_skimming",
+          "support_seed_sequence",
+          "support_plastid_reference_panel"
+        ],
+        "algorithm_ids": [
+          "algorithm_seeded_organelle_recruitment",
+          "algorithm_plastome_finishing"
+        ],
+        "concept_ids": [
+          "concept_inverted_repeat",
+          "concept_quadripartite_plastome"
+        ],
+        "module_ids": [
+          "module_seeded_organelle_recruitment",
+          "module_organelle_graph_disentangling",
+          "module_plastome_ir_validation",
+          "module_plastome_structure_orientation"
+        ],
+        "tool_ids": [
+          "tool_fastplast"
+        ],
+        "stage_ids": [
+          "stage_graph"
+        ],
+        "output_ids": [
+          "output_plastome",
+          "output_organelle_genome"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_plastome_from_skimming"
+        ]
+      }
     },
     {
       "id": "pipeline_finishersc_upgrade",
@@ -25512,7 +26403,44 @@
       "source_ids": [
         "finishersc_2015",
         "finishersc_repo"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_finishing"
+        ],
+        "property_ids": [
+          "prop_high_repeat_content"
+        ],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_fragmented_draft",
+          "support_pacbio_long"
+        ],
+        "algorithm_ids": [
+          "algorithm_long_read_assembly_upgrade"
+        ],
+        "concept_ids": [
+          "concept_repeat_collapse"
+        ],
+        "module_ids": [
+          "module_repeat_aware_upgrade"
+        ],
+        "tool_ids": [
+          "tool_finishersc"
+        ],
+        "stage_ids": [
+          "stage_polish"
+        ],
+        "output_ids": [
+          "output_polished"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": [
+          "case_klebsiella_baa2146"
+        ]
+      }
     },
     {
       "id": "pipeline_flye",
@@ -25579,7 +26507,48 @@
         "flye_2019",
         "assembly_review_2024",
         "lai_2018"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_repeat"
+        ],
+        "property_ids": [
+          "prop_high_repeat_content",
+          "prop_high_heterozygosity"
+        ],
+        "primary_input_ids": [
+          "read_clr"
+        ],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_repeat_graph"
+        ],
+        "concept_ids": [
+          "failure_overcollapsed_repeats"
+        ],
+        "module_ids": [
+          "module_seeding_indexing",
+          "module_repeat_disambiguation",
+          "module_graph_cleanup",
+          "module_consensus_refinement"
+        ],
+        "tool_ids": [
+          "tool_flye"
+        ],
+        "stage_ids": [
+          "stage_graph",
+          "stage_repeat",
+          "stage_consensus",
+          "stage_polish"
+        ],
+        "output_ids": [
+          "output_draft"
+        ],
+        "metric_ids": [
+          "metric_lai"
+        ],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_getorganelle_organelle",
@@ -25639,7 +26608,46 @@
       "source_ids": [
         "getorganelle_2020",
         "getorganelle_repo"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_organelle_assembly"
+        ],
+        "property_ids": [
+          "prop_small_circular_genome"
+        ],
+        "primary_input_ids": [
+          "read_paired_end"
+        ],
+        "support_data_ids": [
+          "support_genome_skimming",
+          "support_seed_sequence"
+        ],
+        "algorithm_ids": [
+          "algorithm_seeded_organelle_recruitment"
+        ],
+        "concept_ids": [
+          "concept_read_recruitment",
+          "concept_circular_organelle"
+        ],
+        "module_ids": [
+          "module_seeded_organelle_recruitment",
+          "module_organelle_graph_disentangling"
+        ],
+        "tool_ids": [
+          "tool_getorganelle"
+        ],
+        "stage_ids": [
+          "stage_graph"
+        ],
+        "output_ids": [
+          "output_organelle_genome"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_plastome_from_skimming"
+        ]
+      }
     },
     {
       "id": "pipeline_gfaffix_graph_cleanup",
@@ -25686,7 +26694,40 @@
       "source_ids": [
         "gfaffix_repo",
         "pggb_2024"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_pangenome"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_graph_affix_collapse"
+        ],
+        "concept_ids": [
+          "concept_shared_affix",
+          "concept_graph_path"
+        ],
+        "module_ids": [
+          "module_affix_collapse"
+        ],
+        "tool_ids": [
+          "tool_gfaffix",
+          "tool_pggb",
+          "tool_odgi"
+        ],
+        "stage_ids": [
+          "stage_graph_analyze"
+        ],
+        "output_ids": [
+          "output_pangenome_graph"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_hprc_pangenome"
+        ]
+      }
     },
     {
       "id": "pipeline_gtdbtk_taxonomy",
@@ -25743,7 +26784,43 @@
       ],
       "source_ids": [
         "gtdbtk_2019"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_genome_taxonomy"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_recovered_bins",
+          "support_gtdb_reference_taxonomy"
+        ],
+        "algorithm_ids": [
+          "algorithm_genome_taxonomy_placement"
+        ],
+        "concept_ids": [
+          "concept_taxonomic_placement"
+        ],
+        "module_ids": [
+          "module_phylogenomic_taxonomy"
+        ],
+        "tool_ids": [
+          "tool_gtdbtk",
+          "tool_checkm"
+        ],
+        "stage_ids": [
+          "stage_classify"
+        ],
+        "output_ids": [
+          "output_refined_mag_bins",
+          "output_genome_taxonomy"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_soil_metagenome",
+          "case_sheep_microbiome"
+        ]
+      }
     },
     {
       "id": "pipeline_hicanu",
@@ -25809,7 +26886,48 @@
         "assembly_review_2024",
         "chm13_2022",
         "lai_2018"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_repeat"
+        ],
+        "property_ids": [
+          "prop_segmental_duplications",
+          "prop_high_repeat_content"
+        ],
+        "primary_input_ids": [
+          "read_hifi"
+        ],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_hpc_olc"
+        ],
+        "concept_ids": [
+          "failure_overcollapsed_repeats"
+        ],
+        "module_ids": [
+          "module_homopolymer_compression",
+          "module_seeding_indexing",
+          "module_graph_cleanup",
+          "module_consensus_refinement"
+        ],
+        "tool_ids": [
+          "tool_hicanu"
+        ],
+        "stage_ids": [
+          "stage_overlap",
+          "stage_graph",
+          "stage_repeat",
+          "stage_consensus"
+        ],
+        "output_ids": [
+          "output_draft"
+        ],
+        "metric_ids": [
+          "metric_lai"
+        ],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_hifiasm_hic_trio",
@@ -25886,7 +27004,54 @@
         "hg002_ccs_2019",
         "merqury_2020",
         "trio_binning_2018"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_phased"
+        ],
+        "property_ids": [
+          "prop_diploid",
+          "prop_high_heterozygosity"
+        ],
+        "primary_input_ids": [
+          "read_hifi"
+        ],
+        "support_data_ids": [
+          "support_hic",
+          "support_trio"
+        ],
+        "algorithm_ids": [
+          "algorithm_phased_graph"
+        ],
+        "concept_ids": [
+          "failure_underphasing"
+        ],
+        "module_ids": [
+          "module_long_range_phasing",
+          "module_scaffolding",
+          "module_graph_cleanup",
+          "module_consensus_refinement"
+        ],
+        "tool_ids": [
+          "tool_hifiasm"
+        ],
+        "stage_ids": [
+          "stage_overlap",
+          "stage_graph",
+          "stage_phase",
+          "stage_consensus"
+        ],
+        "output_ids": [
+          "output_phased"
+        ],
+        "metric_ids": [
+          "metric_qv",
+          "metric_switch_error"
+        ],
+        "case_ids": [
+          "case_hg002"
+        ]
+      }
     },
     {
       "id": "pipeline_hifiasm_hifi",
@@ -25952,7 +27117,48 @@
         "hg002_ccs_2019",
         "merqury_2020",
         "trio_binning_2018"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_phased"
+        ],
+        "property_ids": [
+          "prop_diploid",
+          "prop_high_heterozygosity"
+        ],
+        "primary_input_ids": [
+          "read_hifi"
+        ],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_phased_graph"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_haplotype_partitioning",
+          "module_graph_cleanup",
+          "module_consensus_refinement"
+        ],
+        "tool_ids": [
+          "tool_hifiasm"
+        ],
+        "stage_ids": [
+          "stage_overlap",
+          "stage_graph",
+          "stage_phase",
+          "stage_consensus"
+        ],
+        "output_ids": [
+          "output_phased"
+        ],
+        "metric_ids": [
+          "metric_qv",
+          "metric_switch_error"
+        ],
+        "case_ids": [
+          "case_hg002"
+        ]
+      }
     },
     {
       "id": "pipeline_hifiasm_ont",
@@ -26009,7 +27215,41 @@
       "source_ids": [
         "hifiasm_ont_2026",
         "assembly_review_2024"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_t2t"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [
+          "read_ont_simplex"
+        ],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_ont_graph"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_ont_graph_cleaning",
+          "module_graph_cleanup",
+          "module_consensus_refinement"
+        ],
+        "tool_ids": [
+          "tool_hifiasm_ont"
+        ],
+        "stage_ids": [
+          "stage_graph",
+          "stage_repeat",
+          "stage_phase",
+          "stage_consensus",
+          "stage_polish"
+        ],
+        "output_ids": [
+          "output_t2t"
+        ],
+        "metric_ids": [],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_hifiasm_ul",
@@ -26078,7 +27318,50 @@
         "hifiasm_ul_2024",
         "assembly_review_2024",
         "chm13_2022"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_t2t"
+        ],
+        "property_ids": [
+          "prop_segmental_duplications",
+          "prop_high_repeat_content"
+        ],
+        "primary_input_ids": [
+          "read_hifi"
+        ],
+        "support_data_ids": [
+          "support_ont_ul"
+        ],
+        "algorithm_ids": [
+          "algorithm_double_graph"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_ultra_long_bridging",
+          "module_graph_cleanup",
+          "module_consensus_refinement"
+        ],
+        "tool_ids": [
+          "tool_hifiasm_ul"
+        ],
+        "stage_ids": [
+          "stage_graph",
+          "stage_repeat",
+          "stage_phase",
+          "stage_consensus",
+          "stage_polish"
+        ],
+        "output_ids": [
+          "output_t2t"
+        ],
+        "metric_ids": [
+          "metric_telomere_recovery"
+        ],
+        "case_ids": [
+          "case_chm13"
+        ]
+      }
     },
     {
       "id": "pipeline_homopolish_finish",
@@ -26126,7 +27409,44 @@
       ],
       "source_ids": [
         "homopolish_2021"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_finishing"
+        ],
+        "property_ids": [
+          "prop_microbial_genome"
+        ],
+        "primary_input_ids": [
+          "read_ont_simplex"
+        ],
+        "support_data_ids": [
+          "support_homologous_references"
+        ],
+        "algorithm_ids": [
+          "algorithm_homologous_polishing"
+        ],
+        "concept_ids": [
+          "failure_consensus_drift"
+        ],
+        "module_ids": [
+          "module_homologous_polishing"
+        ],
+        "tool_ids": [
+          "tool_homopolish",
+          "tool_medaka"
+        ],
+        "stage_ids": [
+          "stage_polish"
+        ],
+        "output_ids": [
+          "output_polished"
+        ],
+        "metric_ids": [
+          "metric_qv"
+        ],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_idba_ud_singlecell",
@@ -26189,7 +27509,48 @@
       ],
       "source_ids": [
         "idba_ud_2012"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_single_cell_assembly"
+        ],
+        "property_ids": [
+          "prop_uneven_coverage",
+          "prop_mda_amplification_bias"
+        ],
+        "primary_input_ids": [
+          "read_paired_end"
+        ],
+        "support_data_ids": [
+          "support_mda_amplified_dna"
+        ],
+        "algorithm_ids": [
+          "algorithm_uneven_depth_dbg"
+        ],
+        "concept_ids": [
+          "concept_coverage_dropout"
+        ],
+        "module_ids": [
+          "module_multidepth_kmer_filtering",
+          "module_low_depth_local_assembly"
+        ],
+        "tool_ids": [
+          "tool_idba_ud",
+          "tool_quast"
+        ],
+        "stage_ids": [
+          "stage_graph"
+        ],
+        "output_ids": [
+          "output_single_cell_draft"
+        ],
+        "metric_ids": [
+          "metric_n50"
+        ],
+        "case_ids": [
+          "case_single_cell_bacterial_sag"
+        ]
+      }
     },
     {
       "id": "pipeline_juicer_contact_map",
@@ -26234,7 +27595,39 @@
       "source_ids": [
         "juicer_2016",
         "juicebox_2015"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_chromosome_scaffold"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_hic"
+        ],
+        "algorithm_ids": [
+          "algorithm_contact_map_processing"
+        ],
+        "concept_ids": [
+          "concept_contact_map",
+          "failure_misscaffolding"
+        ],
+        "module_ids": [
+          "module_contact_map_generation"
+        ],
+        "tool_ids": [
+          "tool_juicer",
+          "tool_juicebox"
+        ],
+        "stage_ids": [
+          "stage_contact_map"
+        ],
+        "output_ids": [
+          "output_hic_contact_map"
+        ],
+        "metric_ids": [],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_lachesis_hic_scaffold",
@@ -26272,7 +27665,37 @@
       ],
       "source_ids": [
         "lachesis_2013"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_chromosome_scaffold"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_hic"
+        ],
+        "algorithm_ids": [
+          "algorithm_hic_scaffolding"
+        ],
+        "concept_ids": [
+          "concept_superscaffold"
+        ],
+        "module_ids": [
+          "module_hic_contact_scaffolding"
+        ],
+        "tool_ids": [
+          "tool_lachesis"
+        ],
+        "stage_ids": [
+          "stage_anchor"
+        ],
+        "output_ids": [
+          "output_chr_anchor"
+        ],
+        "metric_ids": [],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_lai_repeat_qc",
@@ -26318,7 +27741,40 @@
         "maize_2017",
         "lai_2018",
         "norway_spruce_2013"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_repeat"
+        ],
+        "property_ids": [
+          "prop_high_repeat_content"
+        ],
+        "primary_input_ids": [],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_repeat_qc"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_repeat_completeness"
+        ],
+        "tool_ids": [
+          "tool_ltr_retriever"
+        ],
+        "stage_ids": [
+          "stage_qc"
+        ],
+        "output_ids": [
+          "output_repeat_complete"
+        ],
+        "metric_ids": [
+          "metric_lai"
+        ],
+        "case_ids": [
+          "case_maize",
+          "case_spruce"
+        ]
+      }
     },
     {
       "id": "pipeline_links_scaffold",
@@ -26364,7 +27820,42 @@
       ],
       "source_ids": [
         "links_2015"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_draft_scaffolding"
+        ],
+        "property_ids": [
+          "prop_high_repeat_content"
+        ],
+        "primary_input_ids": [
+          "read_ont_simplex"
+        ],
+        "support_data_ids": [
+          "support_fragmented_draft"
+        ],
+        "algorithm_ids": [
+          "algorithm_alignment_free_scaffolding"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_alignment_free_linking"
+        ],
+        "tool_ids": [
+          "tool_links",
+          "tool_quast"
+        ],
+        "stage_ids": [
+          "stage_anchor"
+        ],
+        "output_ids": [
+          "output_scaffold_draft"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_lja",
@@ -26415,7 +27906,39 @@
       "source_ids": [
         "lja_2022",
         "assembly_review_2024"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_de_novo"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [
+          "read_hifi"
+        ],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_mdbg"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_variable_k_refinement",
+          "module_graph_cleanup",
+          "module_consensus_refinement"
+        ],
+        "tool_ids": [
+          "tool_lja"
+        ],
+        "stage_ids": [
+          "stage_graph",
+          "stage_repeat",
+          "stage_consensus"
+        ],
+        "output_ids": [
+          "output_draft"
+        ],
+        "metric_ids": [],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_loblolly_pine_mega_reads",
@@ -26481,7 +28004,45 @@
       ],
       "source_ids": [
         "loblolly_pine_2017"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_giant"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [
+          "read_short_wgs"
+        ],
+        "support_data_ids": [
+          "support_pacbio_long",
+          "support_high_mem_hpc"
+        ],
+        "algorithm_ids": [
+          "algorithm_super_read_hybrid"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_super_read_compression",
+          "module_mega_read_construction",
+          "module_memory_partitioning",
+          "module_graph_cleanup",
+          "module_consensus_refinement"
+        ],
+        "tool_ids": [
+          "tool_masurca"
+        ],
+        "stage_ids": [
+          "stage_graph",
+          "stage_repeat",
+          "stage_consensus",
+          "stage_polish"
+        ],
+        "output_ids": [
+          "output_draft"
+        ],
+        "metric_ids": [],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_loblolly_pine_short",
@@ -26554,7 +28115,47 @@
       ],
       "source_ids": [
         "loblolly_pine_2014"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_giant"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [
+          "read_short_wgs"
+        ],
+        "support_data_ids": [
+          "support_haploid_tissue",
+          "support_fosmid_pools",
+          "support_high_mem_hpc"
+        ],
+        "algorithm_ids": [
+          "algorithm_super_read_hybrid"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_haploid_sampling",
+          "module_fosmid_pool_assembly",
+          "module_super_read_compression",
+          "module_memory_partitioning",
+          "module_graph_cleanup",
+          "module_consensus_refinement"
+        ],
+        "tool_ids": [
+          "tool_masurca"
+        ],
+        "stage_ids": [
+          "stage_graph",
+          "stage_repeat",
+          "stage_consensus",
+          "stage_polish"
+        ],
+        "output_ids": [
+          "output_draft"
+        ],
+        "metric_ids": [],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_lrna_transcript_scaffold",
@@ -26612,7 +28213,45 @@
       ],
       "source_ids": [
         "l_rna_scaffolder_2013"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_transcript_guided_scaffolding"
+        ],
+        "property_ids": [
+          "prop_high_heterozygosity"
+        ],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_fragmented_draft",
+          "support_rna_seq"
+        ],
+        "algorithm_ids": [
+          "algorithm_transcript_guided_scaffolding"
+        ],
+        "concept_ids": [
+          "concept_spliced_contig_bridge"
+        ],
+        "module_ids": [
+          "module_transcript_link_scaffolding"
+        ],
+        "tool_ids": [
+          "tool_l_rna_scaffolder",
+          "tool_busco"
+        ],
+        "stage_ids": [
+          "stage_anchor"
+        ],
+        "output_ids": [
+          "output_scaffold_draft"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": [
+          "case_pearl_oyster"
+        ]
+      }
     },
     {
       "id": "pipeline_lrscaf_scaffold",
@@ -26659,7 +28298,44 @@
       ],
       "source_ids": [
         "lrscaf_2019"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_draft_scaffolding"
+        ],
+        "property_ids": [
+          "prop_high_repeat_content"
+        ],
+        "primary_input_ids": [
+          "read_ont_simplex"
+        ],
+        "support_data_ids": [
+          "support_pacbio_long"
+        ],
+        "algorithm_ids": [
+          "algorithm_long_read_scaffolding"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_long_read_link_scaffolding"
+        ],
+        "tool_ids": [
+          "tool_lrscaf",
+          "tool_quast"
+        ],
+        "stage_ids": [
+          "stage_anchor"
+        ],
+        "output_ids": [
+          "output_scaffold_draft"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": [
+          "case_maize"
+        ]
+      }
     },
     {
       "id": "pipeline_maxbin2_binning",
@@ -26721,7 +28397,46 @@
       "source_ids": [
         "maxbin2_2016",
         "checkm_2015"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_mag_recovery"
+        ],
+        "property_ids": [
+          "prop_uneven_coverage"
+        ],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_fragmented_draft",
+          "support_multisample_coverage_profiles",
+          "support_lineage_marker_sets"
+        ],
+        "algorithm_ids": [
+          "algorithm_marker_gene_binning"
+        ],
+        "concept_ids": [
+          "concept_marker_gene_lineage",
+          "concept_mag"
+        ],
+        "module_ids": [
+          "module_marker_gene_seeded_partitioning"
+        ],
+        "tool_ids": [
+          "tool_maxbin2",
+          "tool_checkm"
+        ],
+        "stage_ids": [
+          "stage_bin"
+        ],
+        "output_ids": [
+          "output_metagenome_contigs",
+          "output_mag_bins"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_mock_microbial_community"
+        ]
+      }
     },
     {
       "id": "pipeline_medaka_polish",
@@ -26764,7 +28479,41 @@
       ],
       "source_ids": [
         "medaka_repo"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_finishing"
+        ],
+        "property_ids": [
+          "prop_microbial_genome"
+        ],
+        "primary_input_ids": [
+          "read_ont_simplex"
+        ],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_neural_polishing"
+        ],
+        "concept_ids": [
+          "failure_consensus_drift"
+        ],
+        "module_ids": [
+          "module_neural_ont_polishing"
+        ],
+        "tool_ids": [
+          "tool_medaka"
+        ],
+        "stage_ids": [
+          "stage_polish"
+        ],
+        "output_ids": [
+          "output_polished"
+        ],
+        "metric_ids": [
+          "metric_qv"
+        ],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_medusa_multidraft_scaffold",
@@ -26813,7 +28562,42 @@
       "source_ids": [
         "medusa_2015",
         "medusa_repo"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_reference_guided"
+        ],
+        "property_ids": [
+          "prop_microbial_genome"
+        ],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_reference_genome",
+          "support_fragmented_draft"
+        ],
+        "algorithm_ids": [
+          "algorithm_multi_reference_scaffolding"
+        ],
+        "concept_ids": [
+          "concept_synteny_block"
+        ],
+        "module_ids": [
+          "module_multi_reference_synteny"
+        ],
+        "tool_ids": [
+          "tool_medusa"
+        ],
+        "stage_ids": [
+          "stage_anchor"
+        ],
+        "output_ids": [
+          "output_scaffold_draft"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_megahit_metagenome",
@@ -26858,7 +28642,42 @@
       "source_ids": [
         "megahit_2015",
         "megahit_repo"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_metagenome_assembly"
+        ],
+        "property_ids": [
+          "prop_microbial_genome",
+          "prop_uneven_coverage"
+        ],
+        "primary_input_ids": [
+          "read_paired_end"
+        ],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_succinct_metagenome_dbg"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_succinct_metagenome_graph"
+        ],
+        "tool_ids": [
+          "tool_megahit"
+        ],
+        "stage_ids": [
+          "stage_graph"
+        ],
+        "output_ids": [
+          "output_metagenome_contigs"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": [
+          "case_soil_metagenome"
+        ]
+      }
     },
     {
       "id": "pipeline_merqury_qc",
@@ -26904,7 +28723,40 @@
       "source_ids": [
         "merqury_2020",
         "hg002_ccs_2019"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_validation"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [
+          "read_paired_end"
+        ],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_kmer_qc"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_kmer_qc"
+        ],
+        "tool_ids": [
+          "tool_merqury"
+        ],
+        "stage_ids": [
+          "stage_qc"
+        ],
+        "output_ids": [
+          "output_qv"
+        ],
+        "metric_ids": [
+          "metric_qv",
+          "metric_kmer_completeness"
+        ],
+        "case_ids": [
+          "case_arabidopsis"
+        ]
+      }
     },
     {
       "id": "pipeline_metabat2_binning",
@@ -26962,7 +28814,45 @@
       "source_ids": [
         "metabat2_2019",
         "checkm_2015"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_mag_recovery"
+        ],
+        "property_ids": [
+          "prop_uneven_coverage"
+        ],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_fragmented_draft",
+          "support_multisample_coverage_profiles"
+        ],
+        "algorithm_ids": [
+          "algorithm_composition_coverage_binning"
+        ],
+        "concept_ids": [
+          "concept_tetranucleotide_frequency",
+          "concept_mag"
+        ],
+        "module_ids": [
+          "module_tetranucleotide_coverage_clustering"
+        ],
+        "tool_ids": [
+          "tool_metabat2",
+          "tool_checkm"
+        ],
+        "stage_ids": [
+          "stage_bin"
+        ],
+        "output_ids": [
+          "output_metagenome_contigs",
+          "output_mag_bins"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_sheep_microbiome"
+        ]
+      }
     },
     {
       "id": "pipeline_metacarvel_scaffolding",
@@ -27020,7 +28910,48 @@
       "source_ids": [
         "metacarvel_2019",
         "metaquast_2016"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_draft_scaffolding"
+        ],
+        "property_ids": [
+          "prop_strain_heterogeneity"
+        ],
+        "primary_input_ids": [
+          "read_paired_end"
+        ],
+        "support_data_ids": [
+          "support_fragmented_draft"
+        ],
+        "algorithm_ids": [
+          "algorithm_graph_motif_scaffolding"
+        ],
+        "concept_ids": [
+          "concept_assembly_graph_motif",
+          "concept_interspecies_misassembly"
+        ],
+        "module_ids": [
+          "module_graph_motif_analysis"
+        ],
+        "tool_ids": [
+          "tool_metacarvel",
+          "tool_metaquast",
+          "tool_metaspades"
+        ],
+        "stage_ids": [
+          "stage_graph_analyze"
+        ],
+        "output_ids": [
+          "output_scaffold_draft"
+        ],
+        "metric_ids": [
+          "metric_misassembly_rate"
+        ],
+        "case_ids": [
+          "case_mbarc26"
+        ]
+      }
     },
     {
       "id": "pipeline_metaflye_metagenome",
@@ -27069,7 +29000,44 @@
       "source_ids": [
         "metaflye_2020",
         "flye_repo"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_metagenome_assembly"
+        ],
+        "property_ids": [
+          "prop_uneven_coverage",
+          "prop_strain_heterogeneity"
+        ],
+        "primary_input_ids": [
+          "read_ont_long_ul"
+        ],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_long_read_metagenome_repeat_graph"
+        ],
+        "concept_ids": [
+          "concept_microdiversity"
+        ],
+        "module_ids": [
+          "module_long_read_metagenome_repeat_resolution"
+        ],
+        "tool_ids": [
+          "tool_metaflye"
+        ],
+        "stage_ids": [
+          "stage_graph"
+        ],
+        "output_ids": [
+          "output_metagenome_contigs"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": [
+          "case_sheep_microbiome"
+        ]
+      }
     },
     {
       "id": "pipeline_metaquast_benchmarking",
@@ -27129,7 +29097,47 @@
       "source_ids": [
         "metaquast_2016",
         "metaquast_docs"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_metagenome_evaluation"
+        ],
+        "property_ids": [
+          "prop_strain_heterogeneity"
+        ],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_reference_genome"
+        ],
+        "algorithm_ids": [
+          "algorithm_metagenome_reference_qc"
+        ],
+        "concept_ids": [
+          "concept_interspecies_misassembly"
+        ],
+        "module_ids": [
+          "module_interspecies_misassembly_detection"
+        ],
+        "tool_ids": [
+          "tool_metaquast",
+          "tool_megahit",
+          "tool_metaspades",
+          "tool_metaflye"
+        ],
+        "stage_ids": [
+          "stage_qc"
+        ],
+        "output_ids": [
+          "output_metagenome_contigs",
+          "output_metagenome_qc_report"
+        ],
+        "metric_ids": [
+          "metric_misassembly_rate"
+        ],
+        "case_ids": [
+          "case_mock_microbial_community"
+        ]
+      }
     },
     {
       "id": "pipeline_metaspades_metagenome",
@@ -27178,7 +29186,44 @@
       "source_ids": [
         "metaspades_2017",
         "spades_meta_docs"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_metagenome_assembly"
+        ],
+        "property_ids": [
+          "prop_microbial_genome",
+          "prop_strain_heterogeneity"
+        ],
+        "primary_input_ids": [
+          "read_paired_end"
+        ],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_strain_aware_metagenome_dbg"
+        ],
+        "concept_ids": [
+          "concept_microdiversity"
+        ],
+        "module_ids": [
+          "module_microdiversity_graph_resolution"
+        ],
+        "tool_ids": [
+          "tool_metaspades"
+        ],
+        "stage_ids": [
+          "stage_graph"
+        ],
+        "output_ids": [
+          "output_metagenome_contigs"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": [
+          "case_mock_microbial_community"
+        ]
+      }
     },
     {
       "id": "pipeline_metassembler_merge",
@@ -27216,7 +29261,37 @@
       ],
       "source_ids": [
         "metassembler_2015"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_structural"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_assembly_reconciliation"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_assembly_merging"
+        ],
+        "tool_ids": [
+          "tool_metassembler",
+          "tool_quast"
+        ],
+        "stage_ids": [
+          "stage_merge"
+        ],
+        "output_ids": [
+          "output_merged",
+          "output_draft"
+        ],
+        "metric_ids": [
+          "metric_n50"
+        ],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_metaviral_spades_recovery",
@@ -27272,7 +29347,43 @@
       "source_ids": [
         "metaviralspades_2020",
         "checkv_2021"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_viral_genome_recovery",
+          "goal_metagenome_assembly"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [
+          "read_paired_end"
+        ],
+        "support_data_ids": [
+          "support_metavirome"
+        ],
+        "algorithm_ids": [
+          "algorithm_viral_assembly_graph_recovery"
+        ],
+        "concept_ids": [
+          "concept_uvig"
+        ],
+        "module_ids": [
+          "module_viral_subgraph_extraction"
+        ],
+        "tool_ids": [
+          "tool_metaviral_spades",
+          "tool_checkv"
+        ],
+        "stage_ids": [
+          "stage_graph"
+        ],
+        "output_ids": [
+          "output_viral_contigs"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_global_ocean_virome"
+        ]
+      }
     },
     {
       "id": "pipeline_miniasm_racon",
@@ -27328,7 +29439,44 @@
       "source_ids": [
         "miniasm_2016",
         "racon_2017"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_de_novo"
+        ],
+        "property_ids": [
+          "prop_segmental_duplications"
+        ],
+        "primary_input_ids": [
+          "read_ont_simplex"
+        ],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_minimizer_overlap",
+          "algorithm_consensus_polishing"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_layout_without_correction",
+          "module_long_read_polishing"
+        ],
+        "tool_ids": [
+          "tool_miniasm",
+          "tool_racon"
+        ],
+        "stage_ids": [
+          "stage_overlap",
+          "stage_graph",
+          "stage_polish"
+        ],
+        "output_ids": [
+          "output_polished"
+        ],
+        "metric_ids": [
+          "metric_qv"
+        ],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_minigraph_cactus_pangenome",
@@ -27389,7 +29537,48 @@
         "minigraph_2020",
         "minigraph_cactus_2024",
         "hprc_2023"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_pangenome"
+        ],
+        "property_ids": [
+          "prop_diploid",
+          "prop_high_heterozygosity",
+          "prop_segmental_duplications"
+        ],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_reference_genome"
+        ],
+        "algorithm_ids": [
+          "algorithm_pangenome_graph"
+        ],
+        "concept_ids": [
+          "concept_pangenome_graph"
+        ],
+        "module_ids": [
+          "module_pangenome_graph_construction"
+        ],
+        "tool_ids": [
+          "tool_minigraph",
+          "tool_minigraph_cactus"
+        ],
+        "stage_ids": [
+          "stage_graph_integrate"
+        ],
+        "output_ids": [
+          "output_pangenome_graph",
+          "output_phased",
+          "output_t2t"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_hprc_pangenome",
+          "case_chm13",
+          "case_hg002"
+        ]
+      }
     },
     {
       "id": "pipeline_mitoz_mitogenome",
@@ -27434,7 +29623,41 @@
       "source_ids": [
         "mitoz_2019",
         "mitoz_repo"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_organelle_assembly"
+        ],
+        "property_ids": [
+          "prop_small_circular_genome"
+        ],
+        "primary_input_ids": [
+          "read_short_wgs"
+        ],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_mitogenome_recovery"
+        ],
+        "concept_ids": [
+          "concept_circular_organelle"
+        ],
+        "module_ids": [
+          "module_mitogenome_annotation"
+        ],
+        "tool_ids": [
+          "tool_mitoz"
+        ],
+        "stage_ids": [
+          "stage_annotate"
+        ],
+        "output_ids": [
+          "output_annotated_mitogenome"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_animal_mitogenome"
+        ]
+      }
     },
     {
       "id": "pipeline_nanopolish_finish",
@@ -27485,7 +29708,45 @@
       ],
       "source_ids": [
         "nanopolish_repo"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_finishing"
+        ],
+        "property_ids": [
+          "prop_microbial_genome"
+        ],
+        "primary_input_ids": [
+          "read_ont_simplex"
+        ],
+        "support_data_ids": [
+          "support_raw_signal_ont"
+        ],
+        "algorithm_ids": [
+          "algorithm_signal_level_polishing"
+        ],
+        "concept_ids": [
+          "failure_consensus_drift"
+        ],
+        "module_ids": [
+          "module_signal_level_polishing"
+        ],
+        "tool_ids": [
+          "tool_nanopolish",
+          "tool_miniasm",
+          "tool_racon"
+        ],
+        "stage_ids": [
+          "stage_polish"
+        ],
+        "output_ids": [
+          "output_polished"
+        ],
+        "metric_ids": [
+          "metric_qv"
+        ],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_nextpolish_finish",
@@ -27535,7 +29796,41 @@
       ],
       "source_ids": [
         "nextpolish_2020"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_finishing"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [
+          "read_paired_end",
+          "read_ont_simplex"
+        ],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_consensus_polishing"
+        ],
+        "concept_ids": [
+          "failure_consensus_drift"
+        ],
+        "module_ids": [
+          "module_short_read_polishing",
+          "module_long_read_polishing"
+        ],
+        "tool_ids": [
+          "tool_nextpolish"
+        ],
+        "stage_ids": [
+          "stage_polish"
+        ],
+        "output_ids": [
+          "output_polished"
+        ],
+        "metric_ids": [
+          "metric_qv"
+        ],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_norway_spruce",
@@ -27600,7 +29895,46 @@
       ],
       "source_ids": [
         "norway_spruce_2013"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_giant"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [
+          "read_short_wgs"
+        ],
+        "support_data_ids": [
+          "support_fosmid_pools",
+          "support_high_mem_hpc"
+        ],
+        "algorithm_ids": [
+          "algorithm_pool_merge_hybrid"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_fosmid_pool_assembly",
+          "module_memory_partitioning",
+          "module_graph_cleanup",
+          "module_consensus_refinement"
+        ],
+        "tool_ids": [
+          "tool_gam_ngs"
+        ],
+        "stage_ids": [
+          "stage_graph",
+          "stage_repeat",
+          "stage_consensus",
+          "stage_polish"
+        ],
+        "output_ids": [
+          "output_draft"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_spruce"
+        ]
+      }
     },
     {
       "id": "pipeline_novoplasty_organelle",
@@ -27652,7 +29986,45 @@
       "source_ids": [
         "novoplasty_2017",
         "novoplasty_repo"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_organelle_assembly"
+        ],
+        "property_ids": [
+          "prop_small_circular_genome"
+        ],
+        "primary_input_ids": [
+          "read_paired_end"
+        ],
+        "support_data_ids": [
+          "support_seed_sequence"
+        ],
+        "algorithm_ids": [
+          "algorithm_seed_extend_organelle"
+        ],
+        "concept_ids": [
+          "concept_read_recruitment",
+          "concept_circular_organelle"
+        ],
+        "module_ids": [
+          "module_seeded_organelle_recruitment"
+        ],
+        "tool_ids": [
+          "tool_novoplasty"
+        ],
+        "stage_ids": [
+          "stage_graph"
+        ],
+        "output_ids": [
+          "output_organelle_genome"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_plastome_from_skimming",
+          "case_animal_mitogenome"
+        ]
+      }
     },
     {
       "id": "pipeline_npscarf_realtime",
@@ -27704,7 +30076,47 @@
       ],
       "source_ids": [
         "npscarf_2017"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_draft_scaffolding"
+        ],
+        "property_ids": [
+          "prop_microbial_genome"
+        ],
+        "primary_input_ids": [
+          "read_ont_simplex"
+        ],
+        "support_data_ids": [
+          "support_fragmented_draft"
+        ],
+        "algorithm_ids": [
+          "algorithm_streaming_scaffolding"
+        ],
+        "concept_ids": [
+          "concept_complete_replicon"
+        ],
+        "module_ids": [
+          "module_real_time_scaffolding"
+        ],
+        "tool_ids": [
+          "tool_npscarf",
+          "tool_busco",
+          "tool_quast"
+        ],
+        "stage_ids": [
+          "stage_anchor"
+        ],
+        "output_ids": [
+          "output_complete_replicons"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": [
+          "case_klebsiella_baa2146"
+        ]
+      }
     },
     {
       "id": "pipeline_ntedit_polish",
@@ -27743,7 +30155,37 @@
       ],
       "source_ids": [
         "ntedit_2019"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_finishing"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [
+          "read_paired_end"
+        ],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_bloom_filter_polishing"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_bloom_filter_polishing"
+        ],
+        "tool_ids": [
+          "tool_ntedit"
+        ],
+        "stage_ids": [
+          "stage_polish"
+        ],
+        "output_ids": [
+          "output_polished"
+        ],
+        "metric_ids": [
+          "metric_qv"
+        ],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_odgi_graph_analytics",
@@ -27794,7 +30236,44 @@
       "source_ids": [
         "odgi_2022",
         "odgi_repo"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_pangenome"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_multiple_assemblies"
+        ],
+        "algorithm_ids": [
+          "algorithm_graph_analytics"
+        ],
+        "concept_ids": [
+          "concept_graph_path",
+          "concept_pangenome_graph",
+          "concept_variation_graph"
+        ],
+        "module_ids": [
+          "module_graph_path_layout"
+        ],
+        "tool_ids": [
+          "tool_odgi",
+          "tool_vg",
+          "tool_pggb",
+          "tool_minigraph_cactus"
+        ],
+        "stage_ids": [
+          "stage_graph_analyze"
+        ],
+        "output_ids": [
+          "output_pangenome_graph"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_hprc_pangenome"
+        ]
+      }
     },
     {
       "id": "pipeline_opera_lg_scaffold",
@@ -27840,7 +30319,42 @@
       ],
       "source_ids": [
         "opera_lg_2016"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_draft_scaffolding"
+        ],
+        "property_ids": [
+          "prop_high_repeat_content"
+        ],
+        "primary_input_ids": [
+          "read_paired_end"
+        ],
+        "support_data_ids": [
+          "support_fragmented_draft"
+        ],
+        "algorithm_ids": [
+          "algorithm_exact_scaffolding"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_exact_scaffold_search"
+        ],
+        "tool_ids": [
+          "tool_opera_lg",
+          "tool_quast"
+        ],
+        "stage_ids": [
+          "stage_anchor"
+        ],
+        "output_ids": [
+          "output_scaffold_draft"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_opera_ms_hybrid_metagenome",
@@ -27908,7 +30422,49 @@
       "source_ids": [
         "opera_ms_2019",
         "metaquast_2016"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_metagenome_assembly",
+          "goal_hybrid_assembly"
+        ],
+        "property_ids": [
+          "prop_strain_heterogeneity",
+          "prop_low_abundance_taxa"
+        ],
+        "primary_input_ids": [
+          "read_paired_end",
+          "read_ont_long_ul"
+        ],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_hybrid_metagenome_clustering"
+        ],
+        "concept_ids": [
+          "concept_strain_resolved_draft"
+        ],
+        "module_ids": [
+          "module_hybrid_metagenome_clustering"
+        ],
+        "tool_ids": [
+          "tool_opera_ms",
+          "tool_metaquast"
+        ],
+        "stage_ids": [
+          "stage_graph"
+        ],
+        "output_ids": [
+          "output_strain_resolved_drafts"
+        ],
+        "metric_ids": [
+          "metric_ng50",
+          "metric_misassembly_rate"
+        ],
+        "case_ids": [
+          "case_virtual_gut_microbiome",
+          "case_antibiotic_treated_gut"
+        ]
+      }
     },
     {
       "id": "pipeline_optical_map_validation",
@@ -27952,7 +30508,39 @@
         "biscot_2020",
         "hybrid_phasing_2016",
         "maize_2017"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_structural"
+        ],
+        "property_ids": [
+          "prop_high_repeat_content"
+        ],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_optical_map"
+        ],
+        "algorithm_ids": [],
+        "concept_ids": [],
+        "module_ids": [
+          "module_optical_map_validation"
+        ],
+        "tool_ids": [
+          "tool_biscot"
+        ],
+        "stage_ids": [
+          "stage_gap_close"
+        ],
+        "output_ids": [
+          "output_scaffolded"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": [
+          "case_maize"
+        ]
+      }
     },
     {
       "id": "pipeline_pepper_polish",
@@ -28006,7 +30594,47 @@
       "source_ids": [
         "pepper_md_2021",
         "pepper_repo"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_finishing",
+          "goal_phased"
+        ],
+        "property_ids": [
+          "prop_segmental_duplications",
+          "prop_diploid"
+        ],
+        "primary_input_ids": [
+          "read_ont_simplex"
+        ],
+        "support_data_ids": [
+          "support_reference_genome"
+        ],
+        "algorithm_ids": [
+          "algorithm_haplotype_aware_polishing"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_haplotype_aware_polishing"
+        ],
+        "tool_ids": [
+          "tool_pepper_margin_dv",
+          "tool_merqury"
+        ],
+        "stage_ids": [
+          "stage_polish"
+        ],
+        "output_ids": [
+          "output_polished"
+        ],
+        "metric_ids": [
+          "metric_qv",
+          "metric_switch_error"
+        ],
+        "case_ids": [
+          "case_hg002"
+        ]
+      }
     },
     {
       "id": "pipeline_pggb_vg_pangenome",
@@ -28078,7 +30706,48 @@
         "vg_2018",
         "vg_repo",
         "hprc_2023"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_pangenome"
+        ],
+        "property_ids": [
+          "prop_segmental_duplications"
+        ],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_multiple_assemblies"
+        ],
+        "algorithm_ids": [
+          "algorithm_pangenome_graph"
+        ],
+        "concept_ids": [
+          "concept_pangenome_graph",
+          "concept_variation_graph"
+        ],
+        "module_ids": [
+          "module_pangenome_graph_construction",
+          "module_graph_normalization",
+          "module_graph_indexing_query"
+        ],
+        "tool_ids": [
+          "tool_pggb",
+          "tool_vg",
+          "tool_minigraph_cactus"
+        ],
+        "stage_ids": [
+          "stage_graph_integrate"
+        ],
+        "output_ids": [
+          "output_pangenome_graph",
+          "output_phased",
+          "output_t2t"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_hprc_pangenome"
+        ]
+      }
     },
     {
       "id": "pipeline_purge_dups_cleanup",
@@ -28120,7 +30789,39 @@
       ],
       "source_ids": [
         "purge_dups_docs"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_heterozygous"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [
+          "read_hifi"
+        ],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_dup_purging"
+        ],
+        "concept_ids": [
+          "failure_false_duplication",
+          "failure_overpurging"
+        ],
+        "module_ids": [
+          "module_haplotig_purging"
+        ],
+        "tool_ids": [
+          "tool_purge_dups",
+          "tool_busco"
+        ],
+        "stage_ids": [
+          "stage_dedup"
+        ],
+        "output_ids": [
+          "output_deduplicated"
+        ],
+        "metric_ids": [],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_purge_haplotigs_cleanup",
@@ -28172,7 +30873,45 @@
       ],
       "source_ids": [
         "purge_haplotigs_2018"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_redundancy_reduction"
+        ],
+        "property_ids": [
+          "prop_high_heterozygosity"
+        ],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_fragmented_draft",
+          "support_read_depth_profile"
+        ],
+        "algorithm_ids": [
+          "algorithm_dup_purging"
+        ],
+        "concept_ids": [
+          "concept_redundant_contig",
+          "failure_false_duplication",
+          "failure_overpurging"
+        ],
+        "module_ids": [
+          "module_haplotig_purging"
+        ],
+        "tool_ids": [
+          "tool_purge_haplotigs",
+          "tool_busco"
+        ],
+        "stage_ids": [
+          "stage_dedup"
+        ],
+        "output_ids": [
+          "output_deduplicated"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_arabidopsis"
+        ]
+      }
     },
     {
       "id": "pipeline_quast_structural_qc",
@@ -28218,7 +30957,42 @@
       "source_ids": [
         "quast_2013",
         "maize_2017"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_structural"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_reference_genome"
+        ],
+        "algorithm_ids": [
+          "algorithm_reference_alignment_qc"
+        ],
+        "concept_ids": [
+          "failure_misscaffolding"
+        ],
+        "module_ids": [
+          "module_misassembly_detection"
+        ],
+        "tool_ids": [
+          "tool_quast"
+        ],
+        "stage_ids": [
+          "stage_qc"
+        ],
+        "output_ids": [
+          "output_misassembly_report"
+        ],
+        "metric_ids": [
+          "metric_misassembly_rate",
+          "metric_ng50"
+        ],
+        "case_ids": [
+          "case_maize"
+        ]
+      }
     },
     {
       "id": "pipeline_ragout_reference_scaffold",
@@ -28268,7 +31042,44 @@
       "source_ids": [
         "ragout_2014",
         "ragout_repo"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_reference_guided"
+        ],
+        "property_ids": [
+          "prop_microbial_genome"
+        ],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_reference_genome",
+          "support_fragmented_draft"
+        ],
+        "algorithm_ids": [
+          "algorithm_multi_reference_scaffolding"
+        ],
+        "concept_ids": [
+          "concept_synteny_block"
+        ],
+        "module_ids": [
+          "module_multi_reference_synteny"
+        ],
+        "tool_ids": [
+          "tool_ragout"
+        ],
+        "stage_ids": [
+          "stage_anchor"
+        ],
+        "output_ids": [
+          "output_pseudomolecules"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": [
+          "case_klebsiella_baa2146"
+        ]
+      }
     },
     {
       "id": "pipeline_ragtag_reference_guided",
@@ -28319,7 +31130,42 @@
       "source_ids": [
         "ragtag_2022",
         "ragtag_repo"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_reference_guided"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_reference_genome"
+        ],
+        "algorithm_ids": [
+          "algorithm_reference_guided_scaffolding"
+        ],
+        "concept_ids": [
+          "concept_pseudomolecule"
+        ],
+        "module_ids": [
+          "module_reference_guided_ordering",
+          "module_reference_guided_patching"
+        ],
+        "tool_ids": [
+          "tool_ragtag",
+          "tool_quast"
+        ],
+        "stage_ids": [
+          "stage_anchor",
+          "stage_gap_close"
+        ],
+        "output_ids": [
+          "output_pseudomolecules"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_rascaf_transcript_scaffold",
@@ -28388,7 +31234,47 @@
       ],
       "source_ids": [
         "rascaf_2016"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_transcript_guided_scaffolding"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_fragmented_draft",
+          "support_rna_seq"
+        ],
+        "algorithm_ids": [
+          "algorithm_transcript_guided_scaffolding"
+        ],
+        "concept_ids": [
+          "concept_exon_block_graph"
+        ],
+        "module_ids": [
+          "module_exon_block_path_scaffolding",
+          "module_gene_model_merging"
+        ],
+        "tool_ids": [
+          "tool_rascaf",
+          "tool_busco",
+          "tool_quast"
+        ],
+        "stage_ids": [
+          "stage_anchor",
+          "stage_annotate"
+        ],
+        "output_ids": [
+          "output_scaffold_draft",
+          "output_gene_complete"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": [
+          "case_rosaceae_drafts"
+        ]
+      }
     },
     {
       "id": "pipeline_redundans_dedup",
@@ -28438,7 +31324,44 @@
       ],
       "source_ids": [
         "redundans_2016"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_redundancy_reduction"
+        ],
+        "property_ids": [
+          "prop_high_heterozygosity"
+        ],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_fragmented_draft",
+          "support_read_depth_profile"
+        ],
+        "algorithm_ids": [
+          "algorithm_dup_purging"
+        ],
+        "concept_ids": [
+          "concept_redundant_contig",
+          "failure_false_duplication"
+        ],
+        "module_ids": [
+          "module_haplotig_purging"
+        ],
+        "tool_ids": [
+          "tool_redundans",
+          "tool_busco"
+        ],
+        "stage_ids": [
+          "stage_dedup"
+        ],
+        "output_ids": [
+          "output_deduplicated"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_arabidopsis"
+        ]
+      }
     },
     {
       "id": "pipeline_scspades_minimetagenome",
@@ -28495,7 +31418,47 @@
       "source_ids": [
         "spades_sc_2013",
         "spades_sc_docs"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_mini_metagenome_assembly"
+        ],
+        "property_ids": [
+          "prop_mda_amplification_bias",
+          "prop_chimeric_mda_reads"
+        ],
+        "primary_input_ids": [
+          "read_paired_end"
+        ],
+        "support_data_ids": [
+          "support_mini_metagenome_pool"
+        ],
+        "algorithm_ids": [
+          "algorithm_mini_metagenome_pool_assembly"
+        ],
+        "concept_ids": [
+          "concept_mini_metagenome"
+        ],
+        "module_ids": [
+          "module_minimetagenome_pool_resolution"
+        ],
+        "tool_ids": [
+          "tool_singlecell_spades",
+          "tool_quast"
+        ],
+        "stage_ids": [
+          "stage_graph"
+        ],
+        "output_ids": [
+          "output_mini_metagenome_assembly"
+        ],
+        "metric_ids": [
+          "metric_n50"
+        ],
+        "case_ids": [
+          "case_mini_metagenome_pool"
+        ]
+      }
     },
     {
       "id": "pipeline_sealer_gapclose",
@@ -28540,7 +31503,43 @@
       ],
       "source_ids": [
         "sealer_2015"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_finishing"
+        ],
+        "property_ids": [
+          "prop_high_repeat_content"
+        ],
+        "primary_input_ids": [
+          "read_paired_end"
+        ],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_bloom_gap_closing"
+        ],
+        "concept_ids": [
+          "concept_gap"
+        ],
+        "module_ids": [
+          "module_gap_closing"
+        ],
+        "tool_ids": [
+          "tool_sealer"
+        ],
+        "stage_ids": [
+          "stage_gap_close"
+        ],
+        "output_ids": [
+          "output_gap_closed"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": [
+          "case_spruce"
+        ]
+      }
     },
     {
       "id": "pipeline_semibin2_longread",
@@ -28599,7 +31598,49 @@
       "source_ids": [
         "semibin2_2023",
         "checkm_2015"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_mag_recovery"
+        ],
+        "property_ids": [
+          "prop_uneven_coverage",
+          "prop_low_abundance_taxa"
+        ],
+        "primary_input_ids": [
+          "read_ont_long_ul"
+        ],
+        "support_data_ids": [
+          "support_fragmented_draft"
+        ],
+        "algorithm_ids": [
+          "algorithm_self_supervised_binning"
+        ],
+        "concept_ids": [
+          "concept_latent_bin_embedding",
+          "concept_mag"
+        ],
+        "module_ids": [
+          "module_self_supervised_contig_embedding"
+        ],
+        "tool_ids": [
+          "tool_semibin2",
+          "tool_checkm"
+        ],
+        "stage_ids": [
+          "stage_bin"
+        ],
+        "output_ids": [
+          "output_metagenome_contigs",
+          "output_mag_bins"
+        ],
+        "metric_ids": [
+          "metric_bin_completeness"
+        ],
+        "case_ids": [
+          "case_marine_sediment"
+        ]
+      }
     },
     {
       "id": "pipeline_seqwish_smoothxg_pangenome",
@@ -28668,7 +31709,48 @@
         "seqwish_2023",
         "seqwish_repo",
         "smoothxg_repo"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_pangenome"
+        ],
+        "property_ids": [
+          "prop_segmental_duplications"
+        ],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_multiple_assemblies",
+          "support_pairwise_assembly_alignments",
+          "support_gfa_graph_file"
+        ],
+        "algorithm_ids": [
+          "algorithm_pangenome_graph"
+        ],
+        "concept_ids": [
+          "concept_pangenome_graph",
+          "concept_variation_graph"
+        ],
+        "module_ids": [
+          "module_pangenome_graph_construction",
+          "module_graph_normalization"
+        ],
+        "tool_ids": [
+          "tool_seqwish",
+          "tool_smoothxg",
+          "tool_odgi",
+          "tool_vg"
+        ],
+        "stage_ids": [
+          "stage_graph_integrate"
+        ],
+        "output_ids": [
+          "output_pangenome_graph"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_hprc_pangenome"
+        ]
+      }
     },
     {
       "id": "pipeline_shasta",
@@ -28729,7 +31811,48 @@
         "shasta_2020",
         "assembly_review_2024",
         "pecat_2024"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_de_novo"
+        ],
+        "property_ids": [
+          "prop_diploid"
+        ],
+        "primary_input_ids": [
+          "read_ont_simplex"
+        ],
+        "support_data_ids": [
+          "support_ont_duplex"
+        ],
+        "algorithm_ids": [
+          "algorithm_marker"
+        ],
+        "concept_ids": [
+          "failure_consensus_drift"
+        ],
+        "module_ids": [
+          "module_marker_compression",
+          "module_graph_cleanup",
+          "module_consensus_refinement",
+          "module_error_correction"
+        ],
+        "tool_ids": [
+          "tool_shasta"
+        ],
+        "stage_ids": [
+          "stage_overlap",
+          "stage_graph",
+          "stage_consensus"
+        ],
+        "output_ids": [
+          "output_draft"
+        ],
+        "metric_ids": [
+          "metric_qv"
+        ],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_singlecell_spades",
@@ -28794,7 +31917,49 @@
       "source_ids": [
         "spades_sc_2013",
         "spades_sc_docs"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_single_cell_assembly"
+        ],
+        "property_ids": [
+          "prop_mda_amplification_bias",
+          "prop_chimeric_mda_reads"
+        ],
+        "primary_input_ids": [
+          "read_paired_end"
+        ],
+        "support_data_ids": [
+          "support_mda_amplified_dna"
+        ],
+        "algorithm_ids": [
+          "algorithm_mda_chimera_aware_dbg"
+        ],
+        "concept_ids": [
+          "concept_chimeric_edge",
+          "concept_sag"
+        ],
+        "module_ids": [
+          "module_chimeric_edge_pruning"
+        ],
+        "tool_ids": [
+          "tool_singlecell_spades",
+          "tool_quast"
+        ],
+        "stage_ids": [
+          "stage_graph"
+        ],
+        "output_ids": [
+          "output_single_cell_draft"
+        ],
+        "metric_ids": [
+          "metric_n50",
+          "metric_misassembly_rate"
+        ],
+        "case_ids": [
+          "case_single_cell_bacterial_sag"
+        ]
+      }
     },
     {
       "id": "pipeline_sspace_longread_scaffold",
@@ -28835,7 +32000,39 @@
       ],
       "source_ids": [
         "sspace_longread_2014"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_draft_scaffolding"
+        ],
+        "property_ids": [
+          "prop_microbial_genome"
+        ],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_pacbio_long"
+        ],
+        "algorithm_ids": [
+          "algorithm_long_read_scaffolding"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_long_read_link_scaffolding"
+        ],
+        "tool_ids": [
+          "tool_sspace_longread"
+        ],
+        "stage_ids": [
+          "stage_anchor"
+        ],
+        "output_ids": [
+          "output_scaffold_draft"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_sugar_pine",
@@ -28908,7 +32105,47 @@
       ],
       "source_ids": [
         "sugar_pine_2016"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_giant"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [
+          "read_short_wgs"
+        ],
+        "support_data_ids": [
+          "support_haploid_tissue",
+          "support_fosmid_pools",
+          "support_high_mem_hpc"
+        ],
+        "algorithm_ids": [
+          "algorithm_super_read_hybrid"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_haploid_sampling",
+          "module_fosmid_pool_assembly",
+          "module_super_read_compression",
+          "module_memory_partitioning",
+          "module_graph_cleanup",
+          "module_consensus_refinement"
+        ],
+        "tool_ids": [
+          "tool_masurca"
+        ],
+        "stage_ids": [
+          "stage_graph",
+          "stage_repeat",
+          "stage_consensus",
+          "stage_polish"
+        ],
+        "output_ids": [
+          "output_draft"
+        ],
+        "metric_ids": [],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_tgsgapcloser_finish",
@@ -28950,7 +32187,39 @@
       ],
       "source_ids": [
         "tgs_gapcloser_2020"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_finishing"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [
+          "read_ont_long_ul"
+        ],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_gap_bridging"
+        ],
+        "concept_ids": [
+          "concept_gap"
+        ],
+        "module_ids": [
+          "module_gap_closing"
+        ],
+        "tool_ids": [
+          "tool_tgsgapcloser"
+        ],
+        "stage_ids": [
+          "stage_gap_close"
+        ],
+        "output_ids": [
+          "output_gap_closed"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_tigmint_arcs",
@@ -29023,7 +32292,51 @@
         "tigmint_repo",
         "arcs_2018",
         "arcs_repo"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_structural"
+        ],
+        "property_ids": [
+          "prop_high_repeat_content"
+        ],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_fragmented_draft",
+          "support_linked_reads"
+        ],
+        "algorithm_ids": [
+          "algorithm_linked_read_correction",
+          "algorithm_linked_read_scaffolding"
+        ],
+        "concept_ids": [
+          "concept_molecule_span",
+          "failure_misscaffolding"
+        ],
+        "module_ids": [
+          "module_linked_read_cutting",
+          "module_linked_read_kmer_scaffolding"
+        ],
+        "tool_ids": [
+          "tool_tigmint",
+          "tool_arcs",
+          "tool_quast"
+        ],
+        "stage_ids": [
+          "stage_dedup",
+          "stage_anchor"
+        ],
+        "output_ids": [
+          "output_scaffold_draft"
+        ],
+        "metric_ids": [
+          "metric_misassembly_rate",
+          "metric_ng50"
+        ],
+        "case_ids": [
+          "case_maize"
+        ]
+      }
     },
     {
       "id": "pipeline_trio_binning",
@@ -29072,7 +32385,42 @@
       "source_ids": [
         "trio_binning_2018",
         "hg002_ccs_2019"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_heterozygous"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [
+          "read_clr"
+        ],
+        "support_data_ids": [
+          "support_trio"
+        ],
+        "algorithm_ids": [
+          "algorithm_trio_binning"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_haplotype_partitioning"
+        ],
+        "tool_ids": [
+          "tool_triocanu"
+        ],
+        "stage_ids": [
+          "stage_phase",
+          "stage_consensus"
+        ],
+        "output_ids": [
+          "output_phased"
+        ],
+        "metric_ids": [
+          "metric_switch_error"
+        ],
+        "case_ids": [
+          "case_hg002"
+        ]
+      }
     },
     {
       "id": "pipeline_unicycler_hybrid",
@@ -29124,7 +32472,44 @@
       ],
       "source_ids": [
         "unicycler_2017"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_hybrid_assembly"
+        ],
+        "property_ids": [
+          "prop_microbial_genome"
+        ],
+        "primary_input_ids": [
+          "read_paired_end",
+          "read_ont_simplex"
+        ],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_hybrid_graph_assembly"
+        ],
+        "concept_ids": [
+          "concept_complete_replicon"
+        ],
+        "module_ids": [
+          "module_hybrid_graph_bridging"
+        ],
+        "tool_ids": [
+          "tool_unicycler",
+          "tool_busco",
+          "tool_quast"
+        ],
+        "stage_ids": [
+          "stage_graph"
+        ],
+        "output_ids": [
+          "output_complete_replicons"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_vamb_binning",
@@ -29185,7 +32570,48 @@
       "source_ids": [
         "vamb_2021",
         "checkm_2015"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_mag_recovery"
+        ],
+        "property_ids": [
+          "prop_strain_heterogeneity"
+        ],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_fragmented_draft",
+          "support_multisample_coverage_profiles"
+        ],
+        "algorithm_ids": [
+          "algorithm_deep_latent_binning",
+          "algorithm_composition_coverage_binning"
+        ],
+        "concept_ids": [
+          "concept_latent_bin_embedding",
+          "concept_mag"
+        ],
+        "module_ids": [
+          "module_latent_bin_embedding"
+        ],
+        "tool_ids": [
+          "tool_vamb",
+          "tool_checkm"
+        ],
+        "stage_ids": [
+          "stage_bin"
+        ],
+        "output_ids": [
+          "output_metagenome_contigs",
+          "output_mag_bins"
+        ],
+        "metric_ids": [
+          "metric_bin_completeness"
+        ],
+        "case_ids": [
+          "case_human_gut_microbiome"
+        ]
+      }
     },
     {
       "id": "pipeline_verkko_hifi_ul",
@@ -29261,7 +32687,50 @@
         "verkko_2023",
         "assembly_review_2024",
         "chm13_2022"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_t2t"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [
+          "read_hifi"
+        ],
+        "support_data_ids": [
+          "support_ont_ul",
+          "support_strandseq"
+        ],
+        "algorithm_ids": [
+          "algorithm_mdbg"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_variable_k_refinement",
+          "module_ultra_long_bridging",
+          "module_scaffolding",
+          "module_graph_cleanup",
+          "module_consensus_refinement"
+        ],
+        "tool_ids": [
+          "tool_verkko"
+        ],
+        "stage_ids": [
+          "stage_graph",
+          "stage_repeat",
+          "stage_phase",
+          "stage_consensus",
+          "stage_polish"
+        ],
+        "output_ids": [
+          "output_t2t"
+        ],
+        "metric_ids": [
+          "metric_telomere_recovery"
+        ],
+        "case_ids": [
+          "case_chm13"
+        ]
+      }
     },
     {
       "id": "pipeline_virsorter2_recovery",
@@ -29318,7 +32787,43 @@
       "source_ids": [
         "virsorter2_2021",
         "checkv_2021"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_viral_genome_recovery"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_viral_candidate_contigs",
+          "support_viral_hmm_panel"
+        ],
+        "algorithm_ids": [
+          "algorithm_viral_sequence_classification"
+        ],
+        "concept_ids": [
+          "concept_viral_hallmark_gene",
+          "concept_uvig"
+        ],
+        "module_ids": [
+          "module_viral_hallmark_screening"
+        ],
+        "tool_ids": [
+          "tool_virsorter2",
+          "tool_checkv"
+        ],
+        "stage_ids": [
+          "stage_screen"
+        ],
+        "output_ids": [
+          "output_metagenome_contigs",
+          "output_viral_contigs"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_global_ocean_virome"
+        ]
+      }
     },
     {
       "id": "pipeline_wtdbg2_long_reads",
@@ -29357,7 +32862,36 @@
       ],
       "source_ids": [
         "wtdbg2_2020"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_de_novo"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [
+          "read_ont_simplex"
+        ],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_fuzzy_bruijn"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_fuzzy_bruijn_layout"
+        ],
+        "tool_ids": [
+          "tool_wtdbg2"
+        ],
+        "stage_ids": [
+          "stage_graph",
+          "stage_consensus"
+        ],
+        "output_ids": [
+          "output_draft"
+        ],
+        "metric_ids": [],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_yahs_hic_scaffold",
@@ -29397,13 +32931,58 @@
       ],
       "source_ids": [
         "yahs_2023"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_chromosome_scaffold"
+        ],
+        "property_ids": [
+          "prop_high_repeat_content"
+        ],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_hic"
+        ],
+        "algorithm_ids": [
+          "algorithm_hic_scaffolding"
+        ],
+        "concept_ids": [],
+        "module_ids": [
+          "module_hic_contact_scaffolding"
+        ],
+        "tool_ids": [
+          "tool_yahs"
+        ],
+        "stage_ids": [
+          "stage_anchor"
+        ],
+        "output_ids": [
+          "output_chr_anchor"
+        ],
+        "metric_ids": [
+          "metric_ng50"
+        ],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_hifiasm_meta_metagenome",
       "label": "hifiasm-meta HiFi metagenome assembly",
       "tagline": "Assemble HiFi metagenomes with strain-aware graph cleaning and circular-genome recovery.",
       "description": "hifiasm-meta extends hifiasm for HiFi metagenomes by protecting low-abundance strains, pruning overlaps with coverage information, and recovering many complete circular genomes directly from complex communities.",
+      "focus": "HiFi metagenome assembly",
+      "step_ids": [
+        "goal_metagenome_assembly",
+        "read_hifi",
+        "algorithm_hifi_metagenome_string_graph",
+        "concept_microdiversity",
+        "module_hifi_metagenome_graph_cleaning",
+        "tool_hifiasm_meta",
+        "stage_graph",
+        "output_metagenome_contigs",
+        "output_complete_replicons",
+        "case_hifi_gut_metagenome"
+      ],
       "node_ids": [
         "goal_metagenome_assembly",
         "read_hifi",
@@ -29419,18 +32998,6 @@
         "output_complete_replicons",
         "prop_uneven_coverage",
         "prop_strain_heterogeneity",
-        "case_hifi_gut_metagenome"
-      ],
-      "step_ids": [
-        "goal_metagenome_assembly",
-        "read_hifi",
-        "algorithm_hifi_metagenome_string_graph",
-        "concept_microdiversity",
-        "module_hifi_metagenome_graph_cleaning",
-        "tool_hifiasm_meta",
-        "stage_graph",
-        "output_metagenome_contigs",
-        "output_complete_replicons",
         "case_hifi_gut_metagenome"
       ],
       "edge_ids": [
@@ -29459,13 +33026,64 @@
         "hifiasm_meta_2022",
         "hifiasm_repo"
       ],
-      "focus": "HiFi metagenome assembly"
+      "components": {
+        "goal_ids": [
+          "goal_metagenome_assembly"
+        ],
+        "property_ids": [
+          "prop_uneven_coverage",
+          "prop_strain_heterogeneity"
+        ],
+        "primary_input_ids": [
+          "read_hifi"
+        ],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_hifi_metagenome_string_graph"
+        ],
+        "concept_ids": [
+          "concept_microdiversity",
+          "concept_circular_metagenome_genome"
+        ],
+        "module_ids": [
+          "module_hifi_metagenome_graph_cleaning"
+        ],
+        "tool_ids": [
+          "tool_hifiasm_meta",
+          "tool_checkm",
+          "tool_gtdbtk"
+        ],
+        "stage_ids": [
+          "stage_graph"
+        ],
+        "output_ids": [
+          "output_metagenome_contigs",
+          "output_complete_replicons"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_hifi_gut_metagenome"
+        ]
+      }
     },
     {
       "id": "pipeline_metamdbg_hifi_metagenome",
       "label": "metaMDBG HiFi metagenome assembly",
       "tagline": "Assemble accurate long-read metagenomes in minimizer space.",
       "description": "metaMDBG builds a minimizer-space de Bruijn graph with abundance-aware filtering to recover more circular genomes and better long-read metagenome assemblies from PacBio HiFi data.",
+      "focus": "Minimizer-space HiFi metagenome assembly",
+      "step_ids": [
+        "goal_metagenome_assembly",
+        "read_hifi",
+        "algorithm_minimizer_space_metagenome_dbg",
+        "concept_minimizer_space_graph",
+        "module_minimizer_space_metagenome_assembly",
+        "tool_metamdbg",
+        "stage_graph",
+        "output_metagenome_contigs",
+        "output_complete_replicons",
+        "case_hifi_gut_metagenome"
+      ],
       "node_ids": [
         "goal_metagenome_assembly",
         "read_hifi",
@@ -29480,18 +33098,6 @@
         "output_complete_replicons",
         "prop_uneven_coverage",
         "prop_strain_heterogeneity",
-        "case_hifi_gut_metagenome"
-      ],
-      "step_ids": [
-        "goal_metagenome_assembly",
-        "read_hifi",
-        "algorithm_minimizer_space_metagenome_dbg",
-        "concept_minimizer_space_graph",
-        "module_minimizer_space_metagenome_assembly",
-        "tool_metamdbg",
-        "stage_graph",
-        "output_metagenome_contigs",
-        "output_complete_replicons",
         "case_hifi_gut_metagenome"
       ],
       "edge_ids": [
@@ -29519,13 +33125,64 @@
         "metamdbg_2024",
         "metamdbg_repo"
       ],
-      "focus": "Minimizer-space HiFi metagenome assembly"
+      "components": {
+        "goal_ids": [
+          "goal_metagenome_assembly"
+        ],
+        "property_ids": [
+          "prop_uneven_coverage",
+          "prop_strain_heterogeneity"
+        ],
+        "primary_input_ids": [
+          "read_hifi"
+        ],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_minimizer_space_metagenome_dbg"
+        ],
+        "concept_ids": [
+          "concept_minimizer_space_graph",
+          "concept_circular_metagenome_genome"
+        ],
+        "module_ids": [
+          "module_minimizer_space_metagenome_assembly"
+        ],
+        "tool_ids": [
+          "tool_metamdbg",
+          "tool_checkm"
+        ],
+        "stage_ids": [
+          "stage_graph"
+        ],
+        "output_ids": [
+          "output_metagenome_contigs",
+          "output_complete_replicons"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_hifi_gut_metagenome"
+        ]
+      }
     },
     {
       "id": "pipeline_vibrant_viral_curation",
       "label": "VIBRANT viral curation",
       "tagline": "Recover, annotate, and quality-rank viral contigs with annotation-guided curation.",
       "description": "VIBRANT uses protein-signature annotation, learned viral scoring, and post-classification curation to recover viral contigs, estimate their quality, and highlight viral community function.",
+      "focus": "Viral annotation-guided recovery and QC",
+      "step_ids": [
+        "goal_viral_genome_recovery",
+        "goal_viral_genome_evaluation",
+        "support_viral_candidate_contigs",
+        "algorithm_viral_annotation_curation",
+        "concept_v_score",
+        "module_viral_annotation_curation",
+        "tool_vibrant",
+        "stage_screen",
+        "output_viral_contigs",
+        "output_viral_quality_report",
+        "case_global_ocean_virome"
+      ],
       "node_ids": [
         "goal_viral_genome_recovery",
         "goal_viral_genome_evaluation",
@@ -29534,19 +33191,6 @@
         "concept_v_score",
         "concept_complete_viral_genome",
         "concept_provirus",
-        "module_viral_annotation_curation",
-        "tool_vibrant",
-        "stage_screen",
-        "output_viral_contigs",
-        "output_viral_quality_report",
-        "case_global_ocean_virome"
-      ],
-      "step_ids": [
-        "goal_viral_genome_recovery",
-        "goal_viral_genome_evaluation",
-        "support_viral_candidate_contigs",
-        "algorithm_viral_annotation_curation",
-        "concept_v_score",
         "module_viral_annotation_curation",
         "tool_vibrant",
         "stage_screen",
@@ -29578,7 +33222,42 @@
         "vibrant_2020",
         "vibrant_repo"
       ],
-      "focus": "Viral annotation-guided recovery and QC"
+      "components": {
+        "goal_ids": [
+          "goal_viral_genome_recovery",
+          "goal_viral_genome_evaluation"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_viral_candidate_contigs"
+        ],
+        "algorithm_ids": [
+          "algorithm_viral_annotation_curation"
+        ],
+        "concept_ids": [
+          "concept_v_score",
+          "concept_complete_viral_genome",
+          "concept_provirus"
+        ],
+        "module_ids": [
+          "module_viral_annotation_curation"
+        ],
+        "tool_ids": [
+          "tool_vibrant"
+        ],
+        "stage_ids": [
+          "stage_screen"
+        ],
+        "output_ids": [
+          "output_viral_contigs",
+          "output_viral_quality_report"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_global_ocean_virome"
+        ]
+      }
     },
     {
       "id": "pipeline_phables_phage_resolution",
@@ -29586,6 +33265,19 @@
       "tagline": "Resolve high-quality phage genomes from fragmented assembly graphs.",
       "description": "Phables extracts and resolves bacteriophage genomes from metagenome assembly-graph components, improving recovery beyond flat contig classification alone.",
       "focus": "Phage assembly-graph resolution",
+      "step_ids": [
+        "goal_viral_genome_recovery",
+        "support_gfa_graph_file",
+        "support_phage_marker_db",
+        "algorithm_phage_component_resolution",
+        "concept_phage_component",
+        "module_phage_component_resolution",
+        "tool_phables",
+        "stage_graph",
+        "output_viral_contigs",
+        "output_viral_quality_report",
+        "case_global_ocean_virome"
+      ],
       "node_ids": [
         "goal_viral_genome_recovery",
         "support_gfa_graph_file",
@@ -29595,19 +33287,6 @@
         "module_phage_component_resolution",
         "tool_phables",
         "tool_checkv",
-        "stage_graph",
-        "output_viral_contigs",
-        "output_viral_quality_report",
-        "case_global_ocean_virome"
-      ],
-      "step_ids": [
-        "goal_viral_genome_recovery",
-        "support_gfa_graph_file",
-        "support_phage_marker_db",
-        "algorithm_phage_component_resolution",
-        "concept_phage_component",
-        "module_phage_component_resolution",
-        "tool_phables",
         "stage_graph",
         "output_viral_contigs",
         "output_viral_quality_report",
@@ -29636,7 +33315,42 @@
         "phables_2023",
         "phables_repo",
         "checkv_2021"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_viral_genome_recovery"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_gfa_graph_file",
+          "support_phage_marker_db"
+        ],
+        "algorithm_ids": [
+          "algorithm_phage_component_resolution"
+        ],
+        "concept_ids": [
+          "concept_phage_component"
+        ],
+        "module_ids": [
+          "module_phage_component_resolution"
+        ],
+        "tool_ids": [
+          "tool_phables",
+          "tool_checkv"
+        ],
+        "stage_ids": [
+          "stage_graph"
+        ],
+        "output_ids": [
+          "output_viral_contigs",
+          "output_viral_quality_report"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_global_ocean_virome"
+        ]
+      }
     },
     {
       "id": "pipeline_genomad_mobile_elements",
@@ -29644,6 +33358,20 @@
       "tagline": "Classify mobile elements and detect proviruses at metagenome scale.",
       "description": "geNomad combines marker models and neural sequence classification to recover viral contigs, detect proviruses, and annotate mobile genetic elements.",
       "focus": "Mobile-element classification",
+      "step_ids": [
+        "goal_viral_genome_recovery",
+        "goal_viral_genome_evaluation",
+        "support_viral_candidate_contigs",
+        "support_phage_marker_db",
+        "algorithm_mobile_element_classification",
+        "concept_provirus",
+        "module_mobile_element_classification",
+        "tool_genomad",
+        "stage_screen",
+        "output_viral_contigs",
+        "output_viral_quality_report",
+        "case_human_gut_microbiome"
+      ],
       "node_ids": [
         "goal_viral_genome_recovery",
         "goal_viral_genome_evaluation",
@@ -29655,20 +33383,6 @@
         "module_mobile_element_classification",
         "tool_genomad",
         "tool_checkv",
-        "stage_screen",
-        "output_viral_contigs",
-        "output_viral_quality_report",
-        "case_human_gut_microbiome"
-      ],
-      "step_ids": [
-        "goal_viral_genome_recovery",
-        "goal_viral_genome_evaluation",
-        "support_viral_candidate_contigs",
-        "support_phage_marker_db",
-        "algorithm_mobile_element_classification",
-        "concept_provirus",
-        "module_mobile_element_classification",
-        "tool_genomad",
         "stage_screen",
         "output_viral_contigs",
         "output_viral_quality_report",
@@ -29701,7 +33415,44 @@
         "genomad_2024",
         "genomad_repo",
         "checkv_2021"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_viral_genome_recovery",
+          "goal_viral_genome_evaluation"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_viral_candidate_contigs",
+          "support_phage_marker_db"
+        ],
+        "algorithm_ids": [
+          "algorithm_mobile_element_classification"
+        ],
+        "concept_ids": [
+          "concept_provirus",
+          "concept_viral_hallmark_gene"
+        ],
+        "module_ids": [
+          "module_mobile_element_classification"
+        ],
+        "tool_ids": [
+          "tool_genomad",
+          "tool_checkv"
+        ],
+        "stage_ids": [
+          "stage_screen"
+        ],
+        "output_ids": [
+          "output_viral_contigs",
+          "output_viral_quality_report"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_human_gut_microbiome"
+        ]
+      }
     },
     {
       "id": "pipeline_iphop_host_prediction",
@@ -29709,6 +33460,18 @@
       "tagline": "Link uncultivated viral genomes to likely bacterial or archaeal hosts.",
       "description": "iPHoP integrates multiple signals to maximize reliable host prediction for metagenome-derived viral genomes while controlling false discovery rate.",
       "focus": "Viral host prediction",
+      "step_ids": [
+        "goal_viral_host_prediction",
+        "support_viral_candidate_contigs",
+        "support_host_genome_catalog",
+        "algorithm_viral_host_prediction",
+        "concept_virus_host_link",
+        "module_host_link_scoring",
+        "tool_iphop",
+        "stage_qc",
+        "output_host_predictions",
+        "case_human_gut_microbiome"
+      ],
       "node_ids": [
         "goal_viral_host_prediction",
         "support_viral_candidate_contigs",
@@ -29718,18 +33481,6 @@
         "module_host_link_scoring",
         "tool_iphop",
         "tool_gtdbtk",
-        "stage_qc",
-        "output_host_predictions",
-        "case_human_gut_microbiome"
-      ],
-      "step_ids": [
-        "goal_viral_host_prediction",
-        "support_viral_candidate_contigs",
-        "support_host_genome_catalog",
-        "algorithm_viral_host_prediction",
-        "concept_virus_host_link",
-        "module_host_link_scoring",
-        "tool_iphop",
         "stage_qc",
         "output_host_predictions",
         "case_human_gut_microbiome"
@@ -29755,7 +33506,41 @@
       ],
       "source_ids": [
         "iphop_2023"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_viral_host_prediction"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_viral_candidate_contigs",
+          "support_host_genome_catalog"
+        ],
+        "algorithm_ids": [
+          "algorithm_viral_host_prediction"
+        ],
+        "concept_ids": [
+          "concept_virus_host_link"
+        ],
+        "module_ids": [
+          "module_host_link_scoring"
+        ],
+        "tool_ids": [
+          "tool_iphop",
+          "tool_gtdbtk"
+        ],
+        "stage_ids": [
+          "stage_qc"
+        ],
+        "output_ids": [
+          "output_host_predictions"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_human_gut_microbiome"
+        ]
+      }
     },
     {
       "id": "pipeline_pasa_evm_annotation",
@@ -29763,6 +33548,25 @@
       "tagline": "Refine gene models with transcript assemblies and evidence-weighted consensus.",
       "description": "PASA assembles transcript alignments into improved gene structures, while EVidenceModeler combines transcript, protein, and ab initio evidence into a consensus annotation.",
       "focus": "Transcript-backed annotation update",
+      "step_ids": [
+        "goal_genome_annotation_update",
+        "support_fragmented_draft",
+        "support_transcript_assemblies",
+        "support_full_length_cdna",
+        "algorithm_spliced_alignment_assembly",
+        "algorithm_evidence_consensus_annotation",
+        "concept_maximal_transcript_assembly",
+        "concept_alt_splice_isoform",
+        "module_spliced_alignment_assembly",
+        "module_annotation_consensus_weighting",
+        "module_annotation_update",
+        "tool_pasa",
+        "tool_evm",
+        "stage_annotate",
+        "output_gene_models",
+        "output_gene_complete",
+        "case_arabidopsis"
+      ],
       "node_ids": [
         "goal_genome_annotation_update",
         "support_fragmented_draft",
@@ -29778,25 +33582,6 @@
         "tool_pasa",
         "tool_evm",
         "tool_busco",
-        "stage_annotate",
-        "output_gene_models",
-        "output_gene_complete",
-        "case_arabidopsis"
-      ],
-      "step_ids": [
-        "goal_genome_annotation_update",
-        "support_fragmented_draft",
-        "support_transcript_assemblies",
-        "support_full_length_cdna",
-        "algorithm_spliced_alignment_assembly",
-        "algorithm_evidence_consensus_annotation",
-        "concept_maximal_transcript_assembly",
-        "concept_alt_splice_isoform",
-        "module_spliced_alignment_assembly",
-        "module_annotation_consensus_weighting",
-        "module_annotation_update",
-        "tool_pasa",
-        "tool_evm",
         "stage_annotate",
         "output_gene_models",
         "output_gene_complete",
@@ -29840,7 +33625,48 @@
         "pasa_2003",
         "evm_2008",
         "pasa_repo"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_genome_annotation_update"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_fragmented_draft",
+          "support_transcript_assemblies",
+          "support_full_length_cdna"
+        ],
+        "algorithm_ids": [
+          "algorithm_spliced_alignment_assembly",
+          "algorithm_evidence_consensus_annotation"
+        ],
+        "concept_ids": [
+          "concept_maximal_transcript_assembly",
+          "concept_alt_splice_isoform"
+        ],
+        "module_ids": [
+          "module_spliced_alignment_assembly",
+          "module_annotation_consensus_weighting",
+          "module_annotation_update"
+        ],
+        "tool_ids": [
+          "tool_pasa",
+          "tool_evm",
+          "tool_busco"
+        ],
+        "stage_ids": [
+          "stage_annotate"
+        ],
+        "output_ids": [
+          "output_gene_models",
+          "output_gene_complete"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_arabidopsis"
+        ]
+      }
     },
     {
       "id": "pipeline_velvet_sc_singlecell",
@@ -29848,6 +33674,18 @@
       "tagline": "Retain low-coverage paths in single-cell de Bruijn graphs.",
       "description": "Velvet-SC modifies de Bruijn graph pruning to preserve real low-coverage sequence in highly uneven single-cell datasets.",
       "focus": "Legacy single-cell assembly",
+      "step_ids": [
+        "goal_single_cell_assembly",
+        "read_paired_end",
+        "support_mda_amplified_dna",
+        "algorithm_variable_coverage_dbg",
+        "concept_variable_coverage_path",
+        "module_variable_coverage_pruning",
+        "tool_velvet_sc",
+        "stage_graph",
+        "output_single_cell_draft",
+        "case_single_cell_bacterial_sag"
+      ],
       "node_ids": [
         "goal_single_cell_assembly",
         "read_paired_end",
@@ -29862,18 +33700,6 @@
         "prop_mda_amplification_bias",
         "metric_n50",
         "metric_misassembly_rate",
-        "case_single_cell_bacterial_sag"
-      ],
-      "step_ids": [
-        "goal_single_cell_assembly",
-        "read_paired_end",
-        "support_mda_amplified_dna",
-        "algorithm_variable_coverage_dbg",
-        "concept_variable_coverage_path",
-        "module_variable_coverage_pruning",
-        "tool_velvet_sc",
-        "stage_graph",
-        "output_single_cell_draft",
         "case_single_cell_bacterial_sag"
       ],
       "edge_ids": [
@@ -29899,7 +33725,47 @@
       ],
       "source_ids": [
         "velvet_sc_2012"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_single_cell_assembly"
+        ],
+        "property_ids": [
+          "prop_mda_amplification_bias"
+        ],
+        "primary_input_ids": [
+          "read_paired_end"
+        ],
+        "support_data_ids": [
+          "support_mda_amplified_dna"
+        ],
+        "algorithm_ids": [
+          "algorithm_variable_coverage_dbg"
+        ],
+        "concept_ids": [
+          "concept_variable_coverage_path"
+        ],
+        "module_ids": [
+          "module_variable_coverage_pruning"
+        ],
+        "tool_ids": [
+          "tool_velvet_sc",
+          "tool_quast"
+        ],
+        "stage_ids": [
+          "stage_graph"
+        ],
+        "output_ids": [
+          "output_single_cell_draft"
+        ],
+        "metric_ids": [
+          "metric_n50",
+          "metric_misassembly_rate"
+        ],
+        "case_ids": [
+          "case_single_cell_bacterial_sag"
+        ]
+      }
     },
     {
       "id": "pipeline_hyda_singlecell_coassembly",
@@ -29907,6 +33773,18 @@
       "tagline": "Co-assemble related single cells with colored graph labels.",
       "description": "HyDA uses colored de Bruijn graphs to combine related single-cell libraries while preserving source-specific graph evidence.",
       "focus": "Single-cell co-assembly",
+      "step_ids": [
+        "goal_single_cell_assembly",
+        "read_paired_end",
+        "support_related_single_cells",
+        "algorithm_colored_dbg_coassembly",
+        "concept_colored_dbg",
+        "module_colored_dbg_coassembly",
+        "tool_hyda",
+        "stage_graph",
+        "output_single_cell_draft",
+        "case_single_cell_bacterial_sag"
+      ],
       "node_ids": [
         "goal_single_cell_assembly",
         "read_paired_end",
@@ -29919,18 +33797,6 @@
         "stage_graph",
         "output_single_cell_draft",
         "prop_chimeric_mda_reads",
-        "case_single_cell_bacterial_sag"
-      ],
-      "step_ids": [
-        "goal_single_cell_assembly",
-        "read_paired_end",
-        "support_related_single_cells",
-        "algorithm_colored_dbg_coassembly",
-        "concept_colored_dbg",
-        "module_colored_dbg_coassembly",
-        "tool_hyda",
-        "stage_graph",
-        "output_single_cell_draft",
         "case_single_cell_bacterial_sag"
       ],
       "edge_ids": [
@@ -29951,7 +33817,44 @@
       ],
       "source_ids": [
         "hyda_2016"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_single_cell_assembly"
+        ],
+        "property_ids": [
+          "prop_chimeric_mda_reads"
+        ],
+        "primary_input_ids": [
+          "read_paired_end"
+        ],
+        "support_data_ids": [
+          "support_related_single_cells"
+        ],
+        "algorithm_ids": [
+          "algorithm_colored_dbg_coassembly"
+        ],
+        "concept_ids": [
+          "concept_colored_dbg"
+        ],
+        "module_ids": [
+          "module_colored_dbg_coassembly"
+        ],
+        "tool_ids": [
+          "tool_hyda",
+          "tool_quast"
+        ],
+        "stage_ids": [
+          "stage_graph"
+        ],
+        "output_ids": [
+          "output_single_cell_draft"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_single_cell_bacterial_sag"
+        ]
+      }
     },
     {
       "id": "pipeline_eukrep_eukaryotic_recovery",
@@ -29959,6 +33862,16 @@
       "tagline": "Separate eukaryotic contigs from mixed metagenome assemblies.",
       "description": "EukRep classifies assembled metagenome contigs as eukaryotic, enabling downstream eukaryotic genome recovery and annotation.",
       "focus": "Eukaryotic metagenome recovery",
+      "step_ids": [
+        "goal_eukaryotic_metagenome_recovery",
+        "algorithm_eukaryotic_sequence_classification",
+        "concept_eukaryotic_contig",
+        "module_eukaryotic_contig_classification",
+        "tool_eukrep",
+        "stage_screen",
+        "output_eukaryotic_contigs",
+        "case_crystal_geyser"
+      ],
       "node_ids": [
         "goal_eukaryotic_metagenome_recovery",
         "output_metagenome_contigs",
@@ -29967,16 +33880,6 @@
         "module_eukaryotic_contig_classification",
         "tool_eukrep",
         "tool_eukcc",
-        "stage_screen",
-        "output_eukaryotic_contigs",
-        "case_crystal_geyser"
-      ],
-      "step_ids": [
-        "goal_eukaryotic_metagenome_recovery",
-        "algorithm_eukaryotic_sequence_classification",
-        "concept_eukaryotic_contig",
-        "module_eukaryotic_contig_classification",
-        "tool_eukrep",
         "stage_screen",
         "output_eukaryotic_contigs",
         "case_crystal_geyser"
@@ -29999,7 +33902,39 @@
         "eukrep_2018",
         "eukrep_repo",
         "eukcc_2020"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_eukaryotic_metagenome_recovery"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_eukaryotic_sequence_classification"
+        ],
+        "concept_ids": [
+          "concept_eukaryotic_contig"
+        ],
+        "module_ids": [
+          "module_eukaryotic_contig_classification"
+        ],
+        "tool_ids": [
+          "tool_eukrep",
+          "tool_eukcc"
+        ],
+        "stage_ids": [
+          "stage_screen"
+        ],
+        "output_ids": [
+          "output_metagenome_contigs",
+          "output_eukaryotic_contigs"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_crystal_geyser"
+        ]
+      }
     },
     {
       "id": "pipeline_metaeuk_eukaryotic_annotation",
@@ -30007,6 +33942,17 @@
       "tagline": "Discover genes on fragmented eukaryotic metagenome contigs at scale.",
       "description": "MetaEuk performs sensitive translated-search-based gene discovery on eukaryotic metagenome contigs using large protein reference databases.",
       "focus": "Eukaryotic metagenome annotation",
+      "step_ids": [
+        "goal_eukaryotic_metagenome_annotation",
+        "support_euk_protein_db",
+        "algorithm_eukaryotic_metagenome_gene_discovery",
+        "concept_eukaryotic_gene_model",
+        "module_eukaryotic_gene_discovery",
+        "tool_metaeuk",
+        "stage_annotate",
+        "output_gene_models",
+        "case_tara_oceans_eukaryome"
+      ],
       "node_ids": [
         "goal_eukaryotic_metagenome_annotation",
         "output_eukaryotic_contigs",
@@ -30016,17 +33962,6 @@
         "module_eukaryotic_gene_discovery",
         "tool_metaeuk",
         "tool_busco",
-        "stage_annotate",
-        "output_gene_models",
-        "case_tara_oceans_eukaryome"
-      ],
-      "step_ids": [
-        "goal_eukaryotic_metagenome_annotation",
-        "support_euk_protein_db",
-        "algorithm_eukaryotic_metagenome_gene_discovery",
-        "concept_eukaryotic_gene_model",
-        "module_eukaryotic_gene_discovery",
-        "tool_metaeuk",
         "stage_annotate",
         "output_gene_models",
         "case_tara_oceans_eukaryome"
@@ -30051,7 +33986,41 @@
       "source_ids": [
         "metaeuk_2020",
         "metaeuk_repo"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_eukaryotic_metagenome_annotation"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_euk_protein_db"
+        ],
+        "algorithm_ids": [
+          "algorithm_eukaryotic_metagenome_gene_discovery"
+        ],
+        "concept_ids": [
+          "concept_eukaryotic_gene_model"
+        ],
+        "module_ids": [
+          "module_eukaryotic_gene_discovery"
+        ],
+        "tool_ids": [
+          "tool_metaeuk",
+          "tool_busco"
+        ],
+        "stage_ids": [
+          "stage_annotate"
+        ],
+        "output_ids": [
+          "output_eukaryotic_contigs",
+          "output_gene_models"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_tara_oceans_eukaryome"
+        ]
+      }
     },
     {
       "id": "pipeline_binny_mag_refinement",
@@ -30059,6 +34028,18 @@
       "tagline": "Refine bins with iterative clustering and marker-based evaluation.",
       "description": "binny iteratively clusters contigs with coverage and k-mer features, then accepts refined MAGs using lineage-marker completeness and purity checks.",
       "focus": "Iterative MAG refinement",
+      "step_ids": [
+        "goal_mag_curation",
+        "support_recovered_bins",
+        "support_multisample_coverage_profiles",
+        "algorithm_iterative_marker_guided_refinement",
+        "concept_marker_consensus_bin",
+        "module_iterative_bin_refinement",
+        "tool_binny",
+        "stage_bin",
+        "output_curated_mag_set",
+        "case_human_gut_microbiome"
+      ],
       "node_ids": [
         "goal_mag_curation",
         "support_recovered_bins",
@@ -30072,18 +34053,6 @@
         "output_curated_mag_set",
         "metric_bin_completeness",
         "metric_bin_contamination",
-        "case_human_gut_microbiome"
-      ],
-      "step_ids": [
-        "goal_mag_curation",
-        "support_recovered_bins",
-        "support_multisample_coverage_profiles",
-        "algorithm_iterative_marker_guided_refinement",
-        "concept_marker_consensus_bin",
-        "module_iterative_bin_refinement",
-        "tool_binny",
-        "stage_bin",
-        "output_curated_mag_set",
         "case_human_gut_microbiome"
       ],
       "edge_ids": [
@@ -30108,7 +34077,44 @@
       "source_ids": [
         "binny_2022",
         "binny_repo"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_mag_curation"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_recovered_bins",
+          "support_multisample_coverage_profiles"
+        ],
+        "algorithm_ids": [
+          "algorithm_iterative_marker_guided_refinement"
+        ],
+        "concept_ids": [
+          "concept_marker_consensus_bin"
+        ],
+        "module_ids": [
+          "module_iterative_bin_refinement"
+        ],
+        "tool_ids": [
+          "tool_binny",
+          "tool_checkm"
+        ],
+        "stage_ids": [
+          "stage_bin"
+        ],
+        "output_ids": [
+          "output_curated_mag_set"
+        ],
+        "metric_ids": [
+          "metric_bin_completeness",
+          "metric_bin_contamination"
+        ],
+        "case_ids": [
+          "case_human_gut_microbiome"
+        ]
+      }
     },
     {
       "id": "pipeline_graphaligner_graph_inspection",
@@ -30116,6 +34122,19 @@
       "tagline": "Align long reads directly to sequence graphs for curation and debugging.",
       "description": "GraphAligner maps long reads to graph structures to inspect tangled regions, validate graph traversals, and support graph-aware debugging.",
       "focus": "Sequence-to-graph alignment",
+      "step_ids": [
+        "goal_graph_inspection",
+        "read_ont_long_ul",
+        "support_gfa_graph_file",
+        "algorithm_sequence_to_graph_alignment",
+        "concept_graph_alignment",
+        "concept_gfa_graph",
+        "module_sequence_to_graph_alignment",
+        "tool_graphaligner",
+        "stage_align",
+        "output_graph_inspection_view",
+        "case_hg002"
+      ],
       "node_ids": [
         "goal_graph_inspection",
         "support_gfa_graph_file",
@@ -30126,19 +34145,6 @@
         "module_sequence_to_graph_alignment",
         "tool_graphaligner",
         "tool_bandage",
-        "stage_align",
-        "output_graph_inspection_view",
-        "case_hg002"
-      ],
-      "step_ids": [
-        "goal_graph_inspection",
-        "read_ont_long_ul",
-        "support_gfa_graph_file",
-        "algorithm_sequence_to_graph_alignment",
-        "concept_graph_alignment",
-        "concept_gfa_graph",
-        "module_sequence_to_graph_alignment",
-        "tool_graphaligner",
         "stage_align",
         "output_graph_inspection_view",
         "case_hg002"
@@ -30163,7 +34169,43 @@
       "source_ids": [
         "graphaligner_2020",
         "graphaligner_repo"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_graph_inspection"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [
+          "read_ont_long_ul"
+        ],
+        "support_data_ids": [
+          "support_gfa_graph_file"
+        ],
+        "algorithm_ids": [
+          "algorithm_sequence_to_graph_alignment"
+        ],
+        "concept_ids": [
+          "concept_graph_alignment",
+          "concept_gfa_graph"
+        ],
+        "module_ids": [
+          "module_sequence_to_graph_alignment"
+        ],
+        "tool_ids": [
+          "tool_graphaligner",
+          "tool_bandage"
+        ],
+        "stage_ids": [
+          "stage_align"
+        ],
+        "output_ids": [
+          "output_graph_inspection_view"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_hg002"
+        ]
+      }
     },
     {
       "id": "pipeline_dorado_basecalling",
@@ -30171,7 +34213,7 @@
       "tagline": "Decode raw ONT signal with neural simplex and duplex models.",
       "description": "Dorado turns raw nanopore signal into basecalled reads with neural models and supports duplex decoding for higher-accuracy output.",
       "focus": "Neural nanopore basecalling",
-      "node_ids": [
+      "step_ids": [
         "goal_neural_basecalling",
         "support_raw_signal_ont",
         "support_ont_duplex",
@@ -30184,7 +34226,7 @@
         "stage_decode",
         "output_basecalled_reads"
       ],
-      "step_ids": [
+      "node_ids": [
         "goal_neural_basecalling",
         "support_raw_signal_ont",
         "support_ont_duplex",
@@ -30218,7 +34260,40 @@
       "source_ids": [
         "dorado_repo",
         "dorado_site"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_neural_basecalling"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_raw_signal_ont",
+          "support_ont_duplex"
+        ],
+        "algorithm_ids": [
+          "algorithm_neural_basecalling"
+        ],
+        "concept_ids": [
+          "concept_raw_current_signal",
+          "concept_duplex_basecalling"
+        ],
+        "module_ids": [
+          "module_neural_signal_decoding",
+          "module_duplex_consensus_decoding"
+        ],
+        "tool_ids": [
+          "tool_dorado"
+        ],
+        "stage_ids": [
+          "stage_decode"
+        ],
+        "output_ids": [
+          "output_basecalled_reads"
+        ],
+        "metric_ids": [],
+        "case_ids": []
+      }
     },
     {
       "id": "pipeline_deepconsensus_correction",
@@ -30226,6 +34301,18 @@
       "tagline": "Correct PacBio CCS reads with a gap-aware transformer.",
       "description": "DeepConsensus applies gap-aware transformer models to PacBio CCS/HiFi data, improving read quality before downstream assembly and variant calling.",
       "focus": "Transformer long-read correction",
+      "step_ids": [
+        "goal_long_read_read_correction",
+        "read_hifi",
+        "support_pacbio_subreads",
+        "algorithm_transformer_hifi_correction",
+        "concept_gap_aware_transformer",
+        "module_transformer_read_correction",
+        "tool_deepconsensus",
+        "stage_correct",
+        "output_corrected_reads",
+        "case_hifi_gut_metagenome"
+      ],
       "node_ids": [
         "goal_long_read_read_correction",
         "read_hifi",
@@ -30235,18 +34322,6 @@
         "module_transformer_read_correction",
         "tool_deepconsensus",
         "tool_hifiasm",
-        "stage_correct",
-        "output_corrected_reads",
-        "case_hifi_gut_metagenome"
-      ],
-      "step_ids": [
-        "goal_long_read_read_correction",
-        "read_hifi",
-        "support_pacbio_subreads",
-        "algorithm_transformer_hifi_correction",
-        "concept_gap_aware_transformer",
-        "module_transformer_read_correction",
-        "tool_deepconsensus",
         "stage_correct",
         "output_corrected_reads",
         "case_hifi_gut_metagenome"
@@ -30270,7 +34345,42 @@
       ],
       "source_ids": [
         "deepconsensus_repo"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_long_read_read_correction"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [
+          "read_hifi"
+        ],
+        "support_data_ids": [
+          "support_pacbio_subreads"
+        ],
+        "algorithm_ids": [
+          "algorithm_transformer_hifi_correction"
+        ],
+        "concept_ids": [
+          "concept_gap_aware_transformer"
+        ],
+        "module_ids": [
+          "module_transformer_read_correction"
+        ],
+        "tool_ids": [
+          "tool_deepconsensus",
+          "tool_hifiasm"
+        ],
+        "stage_ids": [
+          "stage_correct"
+        ],
+        "output_ids": [
+          "output_corrected_reads"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_hifi_gut_metagenome"
+        ]
+      }
     },
     {
       "id": "pipeline_deepvariant_variant_qc",
@@ -30278,6 +34388,17 @@
       "tagline": "Call long-read variants from pileup-image tensors.",
       "description": "DeepVariant uses learned pileup-image representations of alignments to call variants and is widely used for HG002-style long-read benchmarking and QC.",
       "focus": "Neural pileup variant calling",
+      "step_ids": [
+        "goal_long_read_variant_calling",
+        "support_reference_genome",
+        "algorithm_pileup_tensor_variant_calling",
+        "concept_pileup_image_tensor",
+        "module_pileup_tensor_classification",
+        "tool_deepvariant",
+        "stage_qc",
+        "output_variant_calls",
+        "case_hg002"
+      ],
       "node_ids": [
         "goal_long_read_variant_calling",
         "support_reference_genome",
@@ -30286,17 +34407,6 @@
         "module_pileup_tensor_classification",
         "tool_deepvariant",
         "tool_merqury",
-        "stage_qc",
-        "output_variant_calls",
-        "case_hg002"
-      ],
-      "step_ids": [
-        "goal_long_read_variant_calling",
-        "support_reference_genome",
-        "algorithm_pileup_tensor_variant_calling",
-        "concept_pileup_image_tensor",
-        "module_pileup_tensor_classification",
-        "tool_deepvariant",
         "stage_qc",
         "output_variant_calls",
         "case_hg002"
@@ -30318,7 +34428,40 @@
       ],
       "source_ids": [
         "deepvariant_repo"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_long_read_variant_calling"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_reference_genome"
+        ],
+        "algorithm_ids": [
+          "algorithm_pileup_tensor_variant_calling"
+        ],
+        "concept_ids": [
+          "concept_pileup_image_tensor"
+        ],
+        "module_ids": [
+          "module_pileup_tensor_classification"
+        ],
+        "tool_ids": [
+          "tool_deepvariant",
+          "tool_merqury"
+        ],
+        "stage_ids": [
+          "stage_qc"
+        ],
+        "output_ids": [
+          "output_variant_calls"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_hg002"
+        ]
+      }
     },
     {
       "id": "pipeline_clair3_variant_qc",
@@ -30326,6 +34469,17 @@
       "tagline": "Resolve hard long-read candidates with pileup plus full alignment.",
       "description": "Clair3 combines fast pileup calling with a neural full-alignment model for difficult long-read variant candidates.",
       "focus": "Hybrid neural variant calling",
+      "step_ids": [
+        "goal_long_read_variant_calling",
+        "support_reference_genome",
+        "algorithm_hybrid_longread_variant_calling",
+        "concept_pileup_image_tensor",
+        "module_hybrid_variant_resolution",
+        "tool_clair3",
+        "stage_qc",
+        "output_variant_calls",
+        "case_hg002"
+      ],
       "node_ids": [
         "goal_long_read_variant_calling",
         "support_reference_genome",
@@ -30334,17 +34488,6 @@
         "module_hybrid_variant_resolution",
         "tool_clair3",
         "tool_merqury",
-        "stage_qc",
-        "output_variant_calls",
-        "case_hg002"
-      ],
-      "step_ids": [
-        "goal_long_read_variant_calling",
-        "support_reference_genome",
-        "algorithm_hybrid_longread_variant_calling",
-        "concept_pileup_image_tensor",
-        "module_hybrid_variant_resolution",
-        "tool_clair3",
         "stage_qc",
         "output_variant_calls",
         "case_hg002"
@@ -30366,7 +34509,40 @@
       ],
       "source_ids": [
         "clair3_repo"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_long_read_variant_calling"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [
+          "support_reference_genome"
+        ],
+        "algorithm_ids": [
+          "algorithm_hybrid_longread_variant_calling"
+        ],
+        "concept_ids": [
+          "concept_pileup_image_tensor"
+        ],
+        "module_ids": [
+          "module_hybrid_variant_resolution"
+        ],
+        "tool_ids": [
+          "tool_clair3",
+          "tool_merqury"
+        ],
+        "stage_ids": [
+          "stage_qc"
+        ],
+        "output_ids": [
+          "output_variant_calls"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_hg002"
+        ]
+      }
     },
     {
       "id": "pipeline_deepvirfinder_recovery",
@@ -30374,6 +34550,16 @@
       "tagline": "Score viral contigs directly from sequence with deep learning.",
       "description": "DeepVirFinder uses convolutional neural networks to detect viral sequences directly from metagenomic contigs without relying only on marker genes.",
       "focus": "Deep viral sequence classification",
+      "step_ids": [
+        "goal_viral_genome_recovery",
+        "algorithm_deep_viral_cnn_classification",
+        "concept_neural_sequence_classifier",
+        "module_cnn_viral_scoring",
+        "tool_deepvirfinder",
+        "stage_screen",
+        "output_viral_contigs",
+        "case_human_gut_microbiome"
+      ],
       "node_ids": [
         "goal_viral_genome_recovery",
         "output_metagenome_contigs",
@@ -30382,16 +34568,6 @@
         "module_cnn_viral_scoring",
         "tool_deepvirfinder",
         "tool_checkv",
-        "stage_screen",
-        "output_viral_contigs",
-        "case_human_gut_microbiome"
-      ],
-      "step_ids": [
-        "goal_viral_genome_recovery",
-        "algorithm_deep_viral_cnn_classification",
-        "concept_neural_sequence_classifier",
-        "module_cnn_viral_scoring",
-        "tool_deepvirfinder",
         "stage_screen",
         "output_viral_contigs",
         "case_human_gut_microbiome"
@@ -30414,7 +34590,39 @@
         "deepvirfinder_2020",
         "deepvirfinder_repo",
         "checkv_2021"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_viral_genome_recovery"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_deep_viral_cnn_classification"
+        ],
+        "concept_ids": [
+          "concept_neural_sequence_classifier"
+        ],
+        "module_ids": [
+          "module_cnn_viral_scoring"
+        ],
+        "tool_ids": [
+          "tool_deepvirfinder",
+          "tool_checkv"
+        ],
+        "stage_ids": [
+          "stage_screen"
+        ],
+        "output_ids": [
+          "output_metagenome_contigs",
+          "output_viral_contigs"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_human_gut_microbiome"
+        ]
+      }
     },
     {
       "id": "pipeline_tiara_deep_euk_recovery",
@@ -30422,6 +34630,16 @@
       "tagline": "Use deep learning to separate eukaryotic and organellar contigs.",
       "description": "Tiara uses staged neural models to classify eukaryotic and organellar contigs from mixed metagenome assemblies.",
       "focus": "Deep eukaryotic sequence classification",
+      "step_ids": [
+        "goal_eukaryotic_metagenome_recovery",
+        "algorithm_deep_eukaryotic_classifier",
+        "concept_neural_sequence_classifier",
+        "module_deep_euk_classifier",
+        "tool_tiara",
+        "stage_screen",
+        "output_eukaryotic_contigs",
+        "case_tara_oceans_eukaryome"
+      ],
       "node_ids": [
         "goal_eukaryotic_metagenome_recovery",
         "output_metagenome_contigs",
@@ -30430,16 +34648,6 @@
         "module_deep_euk_classifier",
         "tool_tiara",
         "tool_eukcc",
-        "stage_screen",
-        "output_eukaryotic_contigs",
-        "case_tara_oceans_eukaryome"
-      ],
-      "step_ids": [
-        "goal_eukaryotic_metagenome_recovery",
-        "algorithm_deep_eukaryotic_classifier",
-        "concept_neural_sequence_classifier",
-        "module_deep_euk_classifier",
-        "tool_tiara",
         "stage_screen",
         "output_eukaryotic_contigs",
         "case_tara_oceans_eukaryome"
@@ -30462,7 +34670,39 @@
         "tiara_2021",
         "tiara_repo",
         "eukcc_2020"
-      ]
+      ],
+      "components": {
+        "goal_ids": [
+          "goal_eukaryotic_metagenome_recovery"
+        ],
+        "property_ids": [],
+        "primary_input_ids": [],
+        "support_data_ids": [],
+        "algorithm_ids": [
+          "algorithm_deep_eukaryotic_classifier"
+        ],
+        "concept_ids": [
+          "concept_neural_sequence_classifier"
+        ],
+        "module_ids": [
+          "module_deep_euk_classifier"
+        ],
+        "tool_ids": [
+          "tool_tiara",
+          "tool_eukcc"
+        ],
+        "stage_ids": [
+          "stage_screen"
+        ],
+        "output_ids": [
+          "output_metagenome_contigs",
+          "output_eukaryotic_contigs"
+        ],
+        "metric_ids": [],
+        "case_ids": [
+          "case_tara_oceans_eukaryome"
+        ]
+      }
     }
   ],
   "sources": [
@@ -30548,7 +34788,7 @@
     },
     {
       "id": "blobtoolkit_2020",
-      "label": "BlobToolKit – Interactive Quality Assessment of Genome Assemblies (G3, 2020)",
+      "label": "BlobToolKit \u2013 Interactive Quality Assessment of Genome Assemblies (G3, 2020)",
       "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7144090/"
     },
     {

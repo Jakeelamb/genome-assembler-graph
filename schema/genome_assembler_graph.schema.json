@@ -71,7 +71,7 @@
     },
     "pipeline": {
       "type": "object",
-      "required": ["id", "label", "tagline", "description", "focus", "step_ids", "node_ids", "edge_ids", "source_ids"],
+      "required": ["id", "label", "tagline", "description", "focus", "step_ids", "node_ids", "edge_ids", "source_ids", "components"],
       "properties": {
         "id": { "type": "string" },
         "label": { "type": "string" },
@@ -81,7 +81,40 @@
         "step_ids": { "$ref": "#/$defs/id_list" },
         "node_ids": { "$ref": "#/$defs/id_list" },
         "edge_ids": { "$ref": "#/$defs/id_list" },
-        "source_ids": { "$ref": "#/$defs/id_list" }
+        "source_ids": { "$ref": "#/$defs/id_list" },
+        "components": { "$ref": "#/$defs/pipeline_components" }
+      },
+      "additionalProperties": false
+    },
+    "pipeline_components": {
+      "type": "object",
+      "required": [
+        "goal_ids",
+        "property_ids",
+        "primary_input_ids",
+        "support_data_ids",
+        "algorithm_ids",
+        "concept_ids",
+        "module_ids",
+        "tool_ids",
+        "stage_ids",
+        "output_ids",
+        "metric_ids",
+        "case_ids"
+      ],
+      "properties": {
+        "goal_ids": { "$ref": "#/$defs/id_list" },
+        "property_ids": { "$ref": "#/$defs/id_list" },
+        "primary_input_ids": { "$ref": "#/$defs/id_list" },
+        "support_data_ids": { "$ref": "#/$defs/id_list" },
+        "algorithm_ids": { "$ref": "#/$defs/id_list" },
+        "concept_ids": { "$ref": "#/$defs/id_list" },
+        "module_ids": { "$ref": "#/$defs/id_list" },
+        "tool_ids": { "$ref": "#/$defs/id_list" },
+        "stage_ids": { "$ref": "#/$defs/id_list" },
+        "output_ids": { "$ref": "#/$defs/id_list" },
+        "metric_ids": { "$ref": "#/$defs/id_list" },
+        "case_ids": { "$ref": "#/$defs/id_list" }
       },
       "additionalProperties": false
     },

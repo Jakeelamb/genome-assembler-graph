@@ -476,6 +476,17 @@ body {
   line-height: 1.45;
 }
 
+.pipeline-button strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.pipeline-button-meta {
+  display: block;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
 .pipeline-button.is-active {
   border-color: rgba(242, 200, 107, 0.36);
   background:
