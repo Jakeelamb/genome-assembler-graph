@@ -1,8 +1,10 @@
 # Genome Assembler Knowledge Graph
 
-Interactive reference map of genome assembly workflows, from read types and support data to algorithms, reusable modules, tools, outputs, and metrics.
+Interactive reference map of genome assembly workflows, with a shared assembly backbone plus distinct short-read and long-read technology branches.
 
 Live site: `https://jakeelamb.github.io/genome-assembler-graph/`
+
+Best public share link: `https://jakeelamb.github.io/genome-assembler-graph/?view=backbone&scope=assembly_universe`
 
 This repository ships as a lightweight static web app plus a curated graph dataset so you can:
 
