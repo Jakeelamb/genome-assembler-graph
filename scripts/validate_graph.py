@@ -51,6 +51,31 @@ TOOL_PROFILE_REQUIRED_KEYS = (
     *TOOL_PROFILE_FIELDS.keys(),
 )
 
+ALLOWED_EDGE_KINDS = {
+    "applied_to",
+    "augments",
+    "causes",
+    "central_to",
+    "characterized_by",
+    "complicates",
+    "feeds",
+    "implemented_by",
+    "implements",
+    "improves",
+    "often_paired_with",
+    "produces",
+    "requires",
+    "stage",
+    "starts_at",
+    "struggles_with",
+    "suited_for",
+    "superseded_by",
+    "supports",
+    "targets",
+    "uses",
+    "validated_by",
+}
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -117,17 +142,6 @@ def compute_expected_tool_profiles(pipelines: list[dict], node_map: dict[str, di
 
         for tool_id in node_tool_ids:
             append_unique(expected[tool_id]["linked_pipeline_ids"], seen[tool_id]["linked_pipeline_ids"], pipeline_id)
-        for tool_id in step_tool_ids:
-            append_unique(expected[tool_id]["step_pipeline_ids"], seen[tool_id]["step_pipeline_ids"], pipeline_id)
-
-        for tool_id in node_tool_ids:
-            for field in TOOL_PROFILE_COMPONENT_FIELDS:
-                component_ids = components.get(field, [])
-                if not isinstance(component_ids, list):
-                    continue
-                for component_id in component_ids:
-                    append_unique(expected[tool_id][field], seen[tool_id][field], component_id)
-
             for related_tool_id in related_tool_ids:
                 if related_tool_id == tool_id:
                     continue
@@ -137,7 +151,139 @@ def compute_expected_tool_profiles(pipelines: list[dict], node_map: dict[str, di
                     related_tool_id,
                 )
 
+        for tool_id in step_tool_ids:
+            append_unique(expected[tool_id]["step_pipeline_ids"], seen[tool_id]["step_pipeline_ids"], pipeline_id)
+            for field in TOOL_PROFILE_COMPONENT_FIELDS:
+                component_ids = components.get(field, [])
+                if not isinstance(component_ids, list):
+                    continue
+                for component_id in component_ids:
+                    append_unique(expected[tool_id][field], seen[tool_id][field], component_id)
+
     return expected
+
+
+def derive_dependency_pairs(edge: dict, node_map: dict[str, dict]) -> list[tuple[str, str]]:
+    source_id = edge.get("source")
+    target_id = edge.get("target")
+    source_node = node_map.get(source_id)
+    target_node = node_map.get(target_id)
+    if source_node is None or target_node is None:
+        return []
+
+    source_kind = source_node.get("kind")
+    target_kind = target_node.get("kind")
+    pairs: list[tuple[str, str]] = []
+
+    def add_pair(prerequisite_id: str, dependent_id: str) -> None:
+        if prerequisite_id == dependent_id:
+            return
+        pairs.append((prerequisite_id, dependent_id))
+
+    kind = edge.get("kind")
+    if kind == "uses":
+        if source_kind in {"primary", "support"} and target_kind == "algorithm":
+            add_pair(source_id, target_id)
+        elif source_kind == "tool" and target_kind in {"primary", "support"}:
+            add_pair(target_id, source_id)
+        elif source_kind == "goal" and target_kind == "algorithm":
+            add_pair(target_id, source_id)
+    elif kind == "requires":
+        if source_kind == "tool" and target_kind in {"primary", "support"}:
+            add_pair(target_id, source_id)
+        elif source_kind == "goal" and target_kind in {"primary", "support"}:
+            add_pair(target_id, source_id)
+    elif kind == "targets":
+        if source_kind == "goal" and target_kind in {"primary", "support", "property", "algorithm"}:
+            add_pair(target_id, source_id)
+    elif kind in {"central_to", "implements", "implemented_by"}:
+        if (
+            (source_kind == "algorithm" and target_kind == "module")
+            or (source_kind == "algorithm" and target_kind == "concept")
+            or (source_kind == "concept" and target_kind == "module")
+            or (source_kind == "module" and target_kind == "tool")
+        ):
+            add_pair(source_id, target_id)
+    elif kind == "supports":
+        if source_kind == "concept" and target_kind == "module":
+            add_pair(source_id, target_id)
+    elif kind == "augments":
+        if source_kind == "support" and target_kind in {"algorithm", "module"}:
+            add_pair(source_id, target_id)
+        elif source_kind == "goal" and target_kind == "goal":
+            add_pair(source_id, target_id)
+    elif kind == "causes":
+        if target_kind == "concept":
+            add_pair(source_id, target_id)
+    elif kind in {"stage", "starts_at"}:
+        if source_kind in {"tool", "module"} and target_kind == "stage":
+            add_pair(source_id, target_id)
+    elif kind == "produces":
+        if (source_kind, target_kind) in {("stage", "output"), ("output", "metric")}:
+            add_pair(source_id, target_id)
+    elif kind == "improves":
+        if source_kind == "module" and target_kind in {"metric", "output"}:
+            add_pair(source_id, target_id)
+    elif kind == "applied_to":
+        if source_kind == "output" and target_kind == "case":
+            add_pair(source_id, target_id)
+    elif kind == "characterized_by":
+        if source_kind == "case" and target_kind in {"property", "concept"}:
+            add_pair(target_id, source_id)
+        elif source_kind == "output" and target_kind == "concept":
+            add_pair(target_id, source_id)
+    elif kind == "validated_by":
+        if source_kind == "output" and target_kind == "metric":
+            add_pair(source_id, target_id)
+        elif source_kind == "case" and target_kind == "metric":
+            add_pair(target_id, source_id)
+
+    return pairs
+
+
+def build_dependency_graph(edges: list[dict], node_map: dict[str, dict]) -> dict[str, set[str]]:
+    adjacency: dict[str, set[str]] = {node_id: set() for node_id in node_map}
+
+    for edge in edges:
+        for prerequisite_id, dependent_id in derive_dependency_pairs(edge, node_map):
+            adjacency.setdefault(prerequisite_id, set()).add(dependent_id)
+            adjacency.setdefault(dependent_id, set())
+
+    return adjacency
+
+
+def find_cycle(adjacency: dict[str, set[str]]) -> list[str] | None:
+    visiting: set[str] = set()
+    visited: set[str] = set()
+    path: list[str] = []
+
+    def dfs(node_id: str) -> list[str] | None:
+        visiting.add(node_id)
+        path.append(node_id)
+
+        for neighbor_id in adjacency.get(node_id, set()):
+            if neighbor_id in visiting:
+                cycle_start = path.index(neighbor_id)
+                return path[cycle_start:] + [neighbor_id]
+            if neighbor_id in visited:
+                continue
+            cycle = dfs(neighbor_id)
+            if cycle:
+                return cycle
+
+        path.pop()
+        visiting.remove(node_id)
+        visited.add(node_id)
+        return None
+
+    for node_id in adjacency:
+        if node_id in visited:
+            continue
+        cycle = dfs(node_id)
+        if cycle:
+            return cycle
+
+    return None
 
 
 def validate_graph(graph: dict) -> list[str]:
@@ -208,6 +354,7 @@ def validate_graph(graph: dict) -> list[str]:
 
         ensure(edge["source"] in node_map, f"Edge {edge['id']} references unknown source node {edge['source']}", errors)
         ensure(edge["target"] in node_map, f"Edge {edge['id']} references unknown target node {edge['target']}", errors)
+        ensure(edge["kind"] in ALLOWED_EDGE_KINDS, f"Edge {edge['id']} uses unsupported kind {edge['kind']}", errors)
         for source_id in edge.get("source_ids", []):
             ensure(source_id in source_ids, f"Edge {edge['id']} references unknown source {source_id}", errors)
 
@@ -397,6 +544,14 @@ def validate_graph(graph: dict) -> list[str]:
                 errors,
             )
 
+    dependency_graph = build_dependency_graph(graph["edges"], node_map)
+    dependency_cycle = find_cycle(dependency_graph)
+    if dependency_cycle:
+        errors.append(
+            "Dependency DAG contains a cycle: "
+            + " -> ".join(dependency_cycle)
+        )
+
     return errors
 
 
@@ -413,10 +568,15 @@ def main() -> None:
             print(f"- {error}", file=sys.stderr)
         raise SystemExit(1)
 
+    dependency_edge_count = sum(len(targets) for targets in build_dependency_graph(graph["edges"], {
+        node["id"]: node for node in graph["nodes"] if isinstance(node, dict) and "id" in node
+    }).values())
+
     print(
         "Validation passed: "
         f"{len(graph['nodes'])} nodes, "
         f"{len(graph['edges'])} edges, "
+        f"{dependency_edge_count} dependency edges, "
         f"{len(graph['pipelines'])} pipelines, "
         f"{len(graph['sources'])} sources"
     )

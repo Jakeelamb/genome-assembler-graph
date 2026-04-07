@@ -154,7 +154,31 @@
           "type": "string"
         },
         "kind": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "applied_to",
+            "augments",
+            "causes",
+            "central_to",
+            "characterized_by",
+            "complicates",
+            "feeds",
+            "implemented_by",
+            "implements",
+            "improves",
+            "often_paired_with",
+            "produces",
+            "requires",
+            "stage",
+            "starts_at",
+            "struggles_with",
+            "suited_for",
+            "superseded_by",
+            "supports",
+            "targets",
+            "uses",
+            "validated_by"
+          ]
         },
         "source_ids": {
           "$ref": "#/$defs/id_list"

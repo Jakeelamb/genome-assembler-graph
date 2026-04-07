@@ -1,2 +1,5 @@
 .DS_Store
 output/
+.codex
+scripts/__pycache__/
+tmp_search_check.html

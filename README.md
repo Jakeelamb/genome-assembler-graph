@@ -1,16 +1,17 @@
 # Genome Assembler Knowledge Graph
 
-Interactive reference map of genome assembly workflows, from read types and support data to algorithms, reusable modules, tools, outputs, metrics, and case studies.
+Interactive reference map of genome assembly workflows, from read types and support data to algorithms, reusable modules, tools, outputs, and metrics.
 
 Live site: `https://jakeelamb.github.io/genome-assembler-graph/`
 
 This repository ships as a lightweight static web app plus a curated graph dataset so you can:
 
 - inspect the nodes and recorded workflow paths attached to an assembler, support-data type, stage, or output
+- traverse recursive prerequisites and dependents through a clean dependency DAG derived from the curated relation set
 - inspect how curated workflows such as `hifiasm`, `Verkko`, `Flye`, `LJA`, `HiCanu`, and `Shasta` are represented in the graph
 - see where auxiliary data like `ONT ultra-long`, `Hi-C`, and `trio` plug into specific modules and finishing paths
-- inspect typed workflow components such as inputs, support data, algorithms, modules, tools, stages, outputs, metrics, and case studies
-- inspect normalized tool records derived from linked workflows, including grouped inputs, support data, algorithms, modules, outputs, metrics, and case studies
+- inspect typed workflow components such as inputs, support data, algorithms, modules, tools, stages, outputs, and metrics
+- inspect normalized tool records derived from linked workflows, including grouped inputs, support data, algorithms, modules, outputs, and metrics
 - share a node or multi-node selection with a deep link
 - extend the graph into Neo4j, Memgraph, ArangoDB, or a backend API later
 
@@ -93,15 +94,17 @@ The graph is organized into these lanes:
 9. `Pipeline Stage`
 10. `Output`
 11. `Evaluation Metric`
-12. `Case Study`
 
-The initial dataset is intentionally curated rather than exhaustive. The priority is interpretability:
+The current dataset intentionally excludes organism and case-study nodes. The priority is interpretability:
 
 - the graph is small enough to read
+- recursive prerequisite and dependent traversal runs on a dependency-only DAG rather than every stored relation
 - every highlighted path corresponds to a coherent algorithm/module story
 - tools are broken into modular pieces rather than treated as black boxes
 - nodes, pipelines, and pipeline-defining edges carry source citations
 - the graph can be validated before export or UI work
+
+Contextual relations such as pairing, suitability, and validation remain in the dataset, but they do not participate in recursive prerequisite traversal.
 
 ## Pipeline Coverage
 
@@ -121,7 +124,7 @@ It now focuses on algorithmic primitives and functional modules such as haplotyp
 
 ## Next Good Steps
 
-- add organisms, ploidy classes, and chemistry/basecaller versions as first-class nodes
+- add ploidy classes and chemistry/basecaller versions as first-class nodes when they materially change workflow choice
 - add timeline mode to show method evolution
 - add richer Neo4j labels and typed module families for overlap, graph, and finishing subroutines
 - add full edge coverage for source provenance beyond the current pipeline-defining relations

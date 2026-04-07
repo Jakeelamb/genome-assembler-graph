@@ -21,14 +21,21 @@
       <h1>Knowledge Graph Explorer</h1>
     </div>
 
-    <div class="top-bar-section search-section">
-      <label class="sr-only" for="search">Search nodes</label>
+    <div class="top-bar-section search-section" id="search-section">
+      <label class="sr-only" for="search">Find a node</label>
       <input
         id="search"
         type="search"
-        placeholder="Search assemblers, modules, stages, or outputs"
+        placeholder="Find a node or browse the catalog"
         autocomplete="off"
+        aria-controls="search-results"
+        aria-expanded="false"
+        aria-describedby="search-helper"
       >
+      <p id="search-helper" class="sr-only">
+        Search by node label. Selecting a tool opens its tool record and linked workflow path.
+      </p>
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
     </div>
 
     <div class="top-bar-section stats-section">
@@ -106,13 +113,27 @@
 
         <div id="settings-graph-pane" class="settings-pane is-active" role="tabpanel" aria-labelledby="settings-graph-tab">
           <section class="settings-section">
+            <h3>Projection</h3>
+            <p class="section-copy">
+              Full Graph shows the whole dependency DAG. Backbone trims the view to the highest-signal bridge nodes for one workflow family.
+            </p>
+            <label class="settings-label" for="graph-view-select">View mode</label>
+            <select id="graph-view-select" class="settings-select">
+              <option value="full">Full Graph</option>
+              <option value="backbone">Backbone</option>
+            </select>
+            <label class="settings-label" for="backbone-scope-select">Backbone scope</label>
+            <select id="backbone-scope-select" class="settings-select"></select>
+          </section>
+
+          <section class="settings-section">
             <h3>Categories</h3>
             <p class="section-copy">
               When Color by is set to Categories, these colors map the lane palette for the graph. Click a lane below to hide or restore it.
             </p>
             <div id="legend" class="legend"></div>
             <p class="legend-help">
-              Assembly goals, read types, support data, algorithms, concepts, modules, tools, stages, outputs, metrics, and case studies each keep a fixed category color in this mode.
+              Assembly goals, read types, support data, algorithms, concepts, modules, tools, stages, outputs, and metrics each keep a fixed category color in this mode.
             </p>
           </section>
 

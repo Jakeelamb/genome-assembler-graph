@@ -7,6 +7,350 @@ const METRIC_KEYS = [
   "_reachability_ratio",
 ];
 
+const BACKBONE_SCOPE_OPTIONS = [
+  {
+    id: "all",
+    label: "All Assembly",
+    description: "Cross-cutting bridge nodes across the whole curated dependency graph.",
+  },
+  {
+    id: "long_read_de_novo",
+    label: "Long-Read Overview",
+    description: "Umbrella view across long-read assembly core, finishing, and scaffolding families.",
+    includeScopeIds: ["long_read_core", "long_read_finishing", "long_read_scaffolding"],
+  },
+  {
+    id: "long_read_core",
+    label: "Long-Read Core",
+    description: "Graph construction, repeat resolution, phasing, heterozygosity cleanup, and draft assembly from long reads.",
+  },
+  {
+    id: "long_read_finishing",
+    label: "Long-Read Finishing",
+    description: "Polishing, gap closing, and read-correction paths that refine or repair long-read assemblies.",
+  },
+  {
+    id: "long_read_scaffolding",
+    label: "Long-Read Scaffolding",
+    description: "Draft scaffolding, long-range anchoring, and bridge-heavy long-read upgrade workflows.",
+  },
+  {
+    id: "short_read_hybrid",
+    label: "Short-Read Overview",
+    description: "Curated bridge map from short-read graph assembly through finishing, scaffolding, and hybrid upgrade.",
+    includeScopeIds: ["short_read_core", "short_read_finishing", "short_read_scaffolding", "hybrid_upgrade"],
+  },
+  {
+    id: "assembly_universe",
+    label: "Assembly Universe",
+    description: "Shared assembly spine with short-read bridges on the left and long-read bridges on the right.",
+    includeScopeIds: ["short_read_hybrid", "long_read_de_novo"],
+  },
+  {
+    id: "short_read_core",
+    label: "Short-Read Core",
+    description: "De Bruijn graph, single-cell, and short-read-first assembly primitives built around graph construction.",
+  },
+  {
+    id: "short_read_finishing",
+    label: "Short-Read Finishing",
+    description: "Short-read polishing and gap-closing paths that refine assemblies without changing the core assembly strategy.",
+  },
+  {
+    id: "short_read_scaffolding",
+    label: "Short-Read Scaffolding",
+    description: "Paired-end and mate-pair scaffolding workflows that extend fragmented draft assemblies.",
+  },
+  {
+    id: "hybrid_upgrade",
+    label: "Hybrid Upgrade",
+    description: "Short-read plus long-read or special-support upgrade paths that bridge into hybrid assembly and polishing.",
+  },
+  {
+    id: "chromosome_scale",
+    label: "Chromosome Scale",
+    description: "Hi-C, linkage-map, and long-range anchoring workflows.",
+  },
+  {
+    id: "metagenome",
+    label: "Metagenome + MAG",
+    description: "Metagenome assembly, binning, viral recovery, and MAG curation.",
+  },
+  {
+    id: "pangenome",
+    label: "Pangenome",
+    description: "Graph induction, pangenome construction, and graph analytics.",
+  },
+  {
+    id: "organelle",
+    label: "Organelle",
+    description: "Organelle and plastome assembly paths.",
+  },
+  {
+    id: "qc_annotation",
+    label: "QC + Validation",
+    description: "Validation, contamination screening, benchmarking, basecalling, and variant-calling QC.",
+  },
+  {
+    id: "annotation",
+    label: "Annotation",
+    description: "Transcript-backed annotation and eukaryotic gene-model recovery.",
+  },
+];
+
+const DEFAULT_BACKBONE_SCOPE_ID = "all";
+const BACKBONE_BASE_CATEGORY_IDS = new Set([
+  "goal",
+  "primary",
+  "support",
+  "algorithm",
+  "concept",
+  "module",
+  "stage",
+]);
+const BACKBONE_PROJECTION_CATEGORY_IDS = new Set([
+  ...BACKBONE_BASE_CATEGORY_IDS,
+  "tool",
+  "output",
+]);
+const BACKBONE_INTERIOR_KIND_BONUS = {
+  algorithm: 0.12,
+  concept: 0.1,
+  module: 0.12,
+  stage: 0.08,
+  support: 0.04,
+  primary: 0.03,
+  goal: 0.02,
+};
+const BACKBONE_CORE_KIND_CAPS = {
+  goal: 3,
+  primary: 3,
+  support: 3,
+  algorithm: 6,
+  concept: 2,
+  module: 8,
+  stage: 6,
+};
+const BACKBONE_OVERVIEW_KIND_CAPS = {
+  primary: 2,
+  support: 2,
+  algorithm: 3,
+  concept: 1,
+  module: 4,
+  stage: 4,
+};
+const BACKBONE_KEY_KIND_CAPS = {
+  algorithm: 4,
+  module: 3,
+  stage: 2,
+  concept: 2,
+  support: 1,
+  primary: 1,
+  goal: 0,
+};
+const BACKBONE_LANE_ORDER = [
+  "goal",
+  "property",
+  "primary",
+  "support",
+  "algorithm",
+  "concept",
+  "module",
+  "tool",
+  "stage",
+  "output",
+  "metric",
+];
+const BACKBONE_AGGREGATE_SCOPE_CONFIG = {
+  assembly_universe: {
+    layoutMode: "branch_universe",
+    overviewCoreLimit: 14,
+    rootSeedLimit: 0,
+    leafSeedLimit: 0,
+    minSharedChildScopes: 1,
+    keyNodeLimit: 12,
+    recurringNodeLimit: 10,
+    focusKeyLimit: 5,
+    focusRecurringLimit: 5,
+    promotedConnectorLimit: 5,
+    branchScopeIds: {
+      short: "short_read_hybrid",
+      long: "long_read_de_novo",
+    },
+    branchCenters: {
+      short: -360,
+      shared: 0,
+      long: 360,
+    },
+    branchLaneSpacing: 18,
+    forcedNodeIds: [
+      "read_paired_end",
+      "algorithm_variable_coverage_dbg",
+      "stage_graph",
+      "module_graph_cleanup",
+      "stage_consensus",
+      "module_consensus_refinement",
+      "stage_polish",
+      "module_gap_closing",
+      "module_scaffolding",
+      "module_paired_read_scaffolding",
+      "module_hybrid_graph_bridging",
+      "read_hifi",
+      "read_ont_simplex",
+      "algorithm_olc",
+      "module_long_range_phasing",
+      "algorithm_anchor_scaffold",
+    ],
+    keyNodeIds: [
+      "read_paired_end",
+      "algorithm_variable_coverage_dbg",
+      "stage_graph",
+      "module_graph_cleanup",
+      "stage_consensus",
+      "module_consensus_refinement",
+      "stage_polish",
+      "module_gap_closing",
+      "module_scaffolding",
+      "read_hifi",
+      "algorithm_olc",
+      "module_hybrid_graph_bridging",
+    ],
+    recurringNodeIds: [
+      "stage_graph",
+      "module_graph_cleanup",
+      "stage_consensus",
+      "module_consensus_refinement",
+      "stage_polish",
+      "module_gap_closing",
+      "module_scaffolding",
+      "module_paired_read_scaffolding",
+      "module_hybrid_graph_bridging",
+      "algorithm_anchor_scaffold",
+    ],
+    branchOverrides: {
+      read_paired_end: "short",
+      algorithm_variable_coverage_dbg: "short",
+      module_paired_read_scaffolding: "short",
+      module_hybrid_graph_bridging: "shared",
+      stage_graph: "shared",
+      module_graph_cleanup: "shared",
+      stage_consensus: "shared",
+      module_consensus_refinement: "shared",
+      stage_polish: "shared",
+      module_gap_closing: "shared",
+      module_scaffolding: "shared",
+      read_hifi: "long",
+      read_ont_simplex: "long",
+      algorithm_olc: "long",
+      module_long_range_phasing: "long",
+      algorithm_anchor_scaffold: "long",
+    },
+    childPriorityByScopeId: {
+      short_read_hybrid: [
+        "read_paired_end",
+        "algorithm_variable_coverage_dbg",
+        "stage_graph",
+        "module_graph_cleanup",
+        "stage_consensus",
+        "module_consensus_refinement",
+        "module_paired_read_scaffolding",
+        "module_hybrid_graph_bridging",
+      ],
+      long_read_de_novo: [
+        "read_hifi",
+        "read_ont_simplex",
+        "algorithm_olc",
+        "stage_graph",
+        "module_graph_cleanup",
+        "stage_consensus",
+        "module_consensus_refinement",
+        "module_long_range_phasing",
+        "algorithm_anchor_scaffold",
+      ],
+    },
+  },
+  short_read_hybrid: {
+    overviewCoreLimit: 12,
+    rootSeedLimit: 0,
+    leafSeedLimit: 0,
+    minSharedChildScopes: 2,
+    keyNodeLimit: 10,
+    recurringNodeLimit: 8,
+    focusKeyLimit: 4,
+    focusRecurringLimit: 4,
+    promotedConnectorLimit: 4,
+    forcedNodeIds: [
+      "read_paired_end",
+      "stage_graph",
+      "module_graph_cleanup",
+      "algorithm_variable_coverage_dbg",
+      "stage_consensus",
+      "module_consensus_refinement",
+      "stage_polish",
+      "module_short_read_polishing",
+      "module_gap_closing",
+      "support_fragmented_draft",
+      "stage_anchor",
+      "module_paired_read_scaffolding",
+      "module_hybrid_graph_bridging",
+      "algorithm_hybrid_dbg_olc",
+    ],
+    keyNodeIds: [
+      "read_paired_end",
+      "stage_graph",
+      "algorithm_variable_coverage_dbg",
+      "module_graph_cleanup",
+      "stage_consensus",
+      "module_consensus_refinement",
+      "stage_polish",
+      "module_gap_closing",
+      "module_paired_read_scaffolding",
+      "module_hybrid_graph_bridging",
+    ],
+    recurringNodeIds: [
+      "read_paired_end",
+      "stage_graph",
+      "module_graph_cleanup",
+      "stage_polish",
+      "module_short_read_polishing",
+      "module_gap_closing",
+      "module_paired_read_scaffolding",
+      "module_hybrid_graph_bridging",
+    ],
+    childPriorityByScopeId: {
+      short_read_core: [
+        "algorithm_variable_coverage_dbg",
+        "stage_graph",
+        "module_graph_cleanup",
+        "module_memory_partitioning",
+        "module_consensus_refinement",
+      ],
+      short_read_finishing: [
+        "stage_polish",
+        "module_short_read_polishing",
+        "module_gap_closing",
+        "stage_consensus",
+        "module_consensus_refinement",
+      ],
+      short_read_scaffolding: [
+        "support_fragmented_draft",
+        "stage_anchor",
+        "module_paired_read_scaffolding",
+        "algorithm_paired_link_scaffolding",
+        "module_scaffolding",
+      ],
+      hybrid_upgrade: [
+        "module_hybrid_graph_bridging",
+        "algorithm_hybrid_dbg_olc",
+        "module_hybrid_backbone_construction",
+        "module_short_read_polishing",
+        "stage_consensus",
+      ],
+    },
+  },
+};
+const BACKBONE_SCOPE_OPTION_MAP = new Map(BACKBONE_SCOPE_OPTIONS.map((scope) => [scope.id, scope]));
+
 const DEFAULT_NODE_ID = "tool_hifiasm";
 const START_HERE_ITEMS = [
   {
@@ -41,7 +385,7 @@ const PIPELINE_COMPONENT_GROUPS = [
   { title: "Tools", fields: ["tool_ids"] },
   { title: "Stages", fields: ["stage_ids"] },
   { title: "Outputs", fields: ["output_ids"] },
-  { title: "Metrics and case studies", fields: ["metric_ids", "case_ids"] },
+  { title: "Metrics", fields: ["metric_ids", "case_ids"] },
 ];
 
 const TOOL_PROFILE_GROUPS = [
@@ -51,7 +395,7 @@ const TOOL_PROFILE_GROUPS = [
   { title: "Algorithms and concepts", fields: ["algorithm_ids", "concept_ids"] },
   { title: "Modules and stages", fields: ["module_ids", "stage_ids"] },
   { title: "Outputs", fields: ["output_ids"] },
-  { title: "Metrics and case studies", fields: ["metric_ids", "case_ids"] },
+  { title: "Metrics", fields: ["metric_ids", "case_ids"] },
   { title: "Other linked tools", fields: ["related_tool_ids"] },
 ];
 
@@ -62,6 +406,20 @@ const TOOL_TRAIT_FILTER_GROUPS = [
   { field: "goal_ids", title: "Assembly Goals" },
   { field: "output_ids", title: "Outputs" },
 ];
+const TOOL_PROFILE_COMPONENT_FIELDS = [
+  "goal_ids",
+  "property_ids",
+  "primary_input_ids",
+  "support_data_ids",
+  "algorithm_ids",
+  "concept_ids",
+  "module_ids",
+  "stage_ids",
+  "output_ids",
+  "metric_ids",
+  "case_ids",
+];
+const TOOL_PROFILE_FIELDS = [...TOOL_PROFILE_COMPONENT_FIELDS, "related_tool_ids"];
 
 function traitFilterKey(field, nodeId) {
   return `${field}::${nodeId}`;
@@ -93,15 +451,38 @@ const CATEGORY_COLORS = {
   case: "#f6d36f",
 };
 
+const SEARCH_DISCOVERY_GROUPS = [
+  {
+    title: "Tools",
+    ids: ["tool_hifiasm", "tool_verkko", "tool_metaspades", "tool_megahit", "tool_semibin2"],
+  },
+  {
+    title: "Algorithms",
+    ids: ["algorithm_phased_graph", "algorithm_olc", "algorithm_repeat_graph"],
+  },
+  {
+    title: "Outputs",
+    ids: ["output_chr_anchor", "output_phased", "output_mag_bins"],
+  },
+  {
+    title: "Stages",
+    ids: ["stage_graph", "stage_phase", "stage_qc"],
+  },
+];
+
 const state = {
   raw: null,
   prepared: null,
   graph: null,
   rendererMode: null,
   visibleCategories: new Set(),
-  searchQuery: "",
+  searchDraft: "",
+  searchMenuOpen: false,
+  searchActiveIndex: -1,
   selectedNodeIds: new Set(),
   primarySelectionId: null,
+  viewMode: "full",
+  backboneScopeId: DEFAULT_BACKBONE_SCOPE_ID,
   layout: "force",
   nodeColorMode: "category",
   nodeSizeMode: "default",
@@ -119,8 +500,12 @@ const state = {
 
 const refs = {
   graphCanvas: document.querySelector("#graph-canvas"),
+  searchSection: document.querySelector("#search-section"),
   search: document.querySelector("#search"),
+  searchResults: document.querySelector("#search-results"),
   stats: document.querySelector("#stats"),
+  graphViewSelect: document.querySelector("#graph-view-select"),
+  backboneScopeSelect: document.querySelector("#backbone-scope-select"),
   layoutSelect: document.querySelector("#layout-select"),
   recenterBtn: document.querySelector("#recenter-btn"),
   panelsBtn: document.querySelector("#panels-btn"),
@@ -168,6 +553,7 @@ async function boot() {
   state.visibleCategories = new Set(state.prepared.categories.map((category) => category.id));
 
   initUi();
+  renderBackboneScopeOptions();
   renderSettingsFilters();
   try {
     initGraph();
@@ -211,24 +597,93 @@ async function loadGraphData() {
 }
 
 function initUi() {
+  refs.search.addEventListener("focus", () => {
+    state.searchMenuOpen = true;
+    state.searchActiveIndex = currentSearchOptions().length ? 0 : -1;
+    renderSearchResults();
+  });
+
   refs.search.addEventListener("input", (event) => {
-    state.searchQuery = event.target.value.trim().toLowerCase();
-    markDerivedStateDirty();
-    clearSelection();
-    rebuildGraph({ zoom: false });
-    renderPanels();
+    state.searchDraft = event.target.value;
+    state.searchMenuOpen = true;
+    state.searchActiveIndex = currentSearchOptions().length ? 0 : -1;
+    renderSearchResults();
   });
 
   refs.search.addEventListener("keydown", (event) => {
+    const suggestions = currentSearchOptions();
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      if (!suggestions.length) {
+        return;
+      }
+      state.searchMenuOpen = true;
+      state.searchActiveIndex =
+        state.searchActiveIndex < 0 ? 0 : (state.searchActiveIndex + 1) % suggestions.length;
+      renderSearchResults();
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      if (!suggestions.length) {
+        return;
+      }
+      state.searchMenuOpen = true;
+      state.searchActiveIndex =
+        state.searchActiveIndex < 0
+          ? suggestions.length - 1
+          : (state.searchActiveIndex - 1 + suggestions.length) % suggestions.length;
+      renderSearchResults();
+      return;
+    }
+
+    if (event.key === "Enter") {
+      if (!suggestions.length) {
+        return;
+      }
+      event.preventDefault();
+      const index = state.searchActiveIndex >= 0 ? state.searchActiveIndex : 0;
+      commitSearchSelection(suggestions[index].id);
+      return;
+    }
+
     if (event.key !== "Escape") {
       return;
     }
-    refs.search.value = "";
-    state.searchQuery = "";
-    markDerivedStateDirty();
-    rebuildGraph({ zoom: false });
-    renderPanels();
+
+    event.preventDefault();
+    if (state.searchDraft) {
+      refs.search.value = "";
+      state.searchDraft = "";
+      state.searchMenuOpen = true;
+      state.searchActiveIndex = currentSearchOptions().length ? 0 : -1;
+      renderSearchResults();
+      return;
+    }
+
+    state.searchMenuOpen = false;
+    state.searchActiveIndex = -1;
+    renderSearchResults();
     refs.search.blur();
+  });
+
+  refs.searchResults.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-search-target]");
+    if (!button) {
+      return;
+    }
+    commitSearchSelection(button.getAttribute("data-search-target"));
+  });
+
+  document.addEventListener("pointerdown", (event) => {
+    if (refs.searchSection.contains(event.target)) {
+      return;
+    }
+    state.searchMenuOpen = false;
+    state.searchActiveIndex = -1;
+    renderSearchResults();
   });
 
   refs.layoutSelect.addEventListener("change", (event) => {
@@ -240,6 +695,14 @@ function initUi() {
     state.layout = nextLayout;
     applyLayout({ zoom: true });
     syncControls();
+  });
+
+  refs.graphViewSelect.addEventListener("change", (event) => {
+    setViewMode(event.target.value);
+  });
+
+  refs.backboneScopeSelect.addEventListener("change", (event) => {
+    setBackboneScope(event.target.value);
   });
 
   refs.recenterBtn.addEventListener("click", () => {
@@ -293,7 +756,9 @@ function initUi() {
   refs.resetBtn.addEventListener("click", () => {
     const nextLayout = state.layout === "radial" ? "cluster" : state.layout;
     refs.search.value = "";
-    state.searchQuery = "";
+    state.searchDraft = "";
+    state.searchMenuOpen = false;
+    state.searchActiveIndex = -1;
     state.activeTraitFilters = new Set();
     state.visibleCategories = new Set(state.prepared.categories.map((category) => category.id));
     state.nodeColorMode = "category";
@@ -307,6 +772,7 @@ function initUi() {
     refs.layoutSelect.value = nextLayout;
     markDerivedStateDirty();
     renderSettingsFilters();
+    renderSearchResults();
     rebuildGraph({ zoom: false });
     renderPanels();
     recenterGraphView();
@@ -327,6 +793,16 @@ function initUi() {
   });
 }
 
+function renderBackboneScopeOptions() {
+  if (!refs.backboneScopeSelect) {
+    return;
+  }
+
+  refs.backboneScopeSelect.innerHTML = BACKBONE_SCOPE_OPTIONS.map(
+    (scope) => `<option value="${escapeHtml(scope.id)}">${escapeHtml(scope.label)}</option>`
+  ).join("");
+}
+
 function initGraph() {
   initGraph2d();
   state.rendererMode = "2d";
@@ -342,6 +818,8 @@ function initGraph2d() {
     .nodeLabel((node) => tooltipHtml(node))
     .nodeVal((node) => nodeValue(node))
     .nodeColor((node) => nodeColor(node))
+    .nodeCanvasObjectMode(() => "after")
+    .nodeCanvasObject((node, ctx, globalScale) => drawNodeOverlay(node, ctx, globalScale))
     .linkColor((link) => linkColor(link))
     .linkWidth((link) => linkWidth(link))
     .linkDirectionalArrowLength((link) => (isActiveLink(link) ? 6 : 3))
@@ -385,6 +863,266 @@ function resolveComponentNodes(componentMap, nodeMap) {
   );
 }
 
+function appendUniqueId(list, seen, value) {
+  if (!value || seen.has(value)) {
+    return;
+  }
+  seen.add(value);
+  list.push(value);
+}
+
+function emptyToolProfileRecord() {
+  return {
+    linked_pipeline_ids: [],
+    step_pipeline_ids: [],
+    ...Object.fromEntries(TOOL_PROFILE_FIELDS.map((field) => [field, []])),
+  };
+}
+
+function buildDerivedToolProfiles(pipelines, nodeMap, pipelineMap) {
+  const toolIds = [...nodeMap.values()].filter((node) => node.kind === "tool").map((node) => node.id);
+  const profiles = new Map(toolIds.map((toolId) => [toolId, emptyToolProfileRecord()]));
+  const seen = new Map(
+    toolIds.map((toolId) => [
+      toolId,
+      Object.fromEntries(
+        ["linked_pipeline_ids", "step_pipeline_ids", ...TOOL_PROFILE_FIELDS].map((field) => [field, new Set()])
+      ),
+    ])
+  );
+
+  pipelines.forEach((pipeline) => {
+    const linkedToolIds = pipeline.node_ids.filter((nodeId) => nodeMap.get(nodeId)?.kind === "tool");
+    const stepToolIds = pipeline.step_ids.filter((nodeId) => nodeMap.get(nodeId)?.kind === "tool");
+    const relatedToolIds = (pipeline.components?.tool_ids || []).filter((nodeId) => nodeMap.get(nodeId)?.kind === "tool");
+
+    linkedToolIds.forEach((toolId) => {
+      appendUniqueId(
+        profiles.get(toolId).linked_pipeline_ids,
+        seen.get(toolId).linked_pipeline_ids,
+        pipeline.id
+      );
+
+      relatedToolIds.forEach((relatedToolId) => {
+        if (relatedToolId === toolId) {
+          return;
+        }
+        appendUniqueId(
+          profiles.get(toolId).related_tool_ids,
+          seen.get(toolId).related_tool_ids,
+          relatedToolId
+        );
+      });
+    });
+
+    stepToolIds.forEach((toolId) => {
+      appendUniqueId(
+        profiles.get(toolId).step_pipeline_ids,
+        seen.get(toolId).step_pipeline_ids,
+        pipeline.id
+      );
+
+      TOOL_PROFILE_COMPONENT_FIELDS.forEach((field) => {
+        (pipeline.components?.[field] || []).forEach((componentId) => {
+          appendUniqueId(
+            profiles.get(toolId)[field],
+            seen.get(toolId)[field],
+            componentId
+          );
+        });
+      });
+    });
+  });
+
+  return new Map(
+    toolIds.map((toolId) => {
+      const profile = profiles.get(toolId);
+      const componentIds = Object.fromEntries(
+        TOOL_PROFILE_COMPONENT_FIELDS.map((field) => [field, profile[field]])
+      );
+
+      return [
+        toolId,
+        {
+          ...profile,
+          linkedPipelines: profile.linked_pipeline_ids
+            .map((pipelineId) => pipelineMap.get(pipelineId))
+            .filter(Boolean),
+          stepPipelines: profile.step_pipeline_ids
+            .map((pipelineId) => pipelineMap.get(pipelineId))
+            .filter(Boolean),
+          componentNodes: resolveComponentNodes(componentIds, nodeMap),
+        },
+      ];
+    })
+  );
+}
+
+function deriveDependencyPairs(link, nodeMap) {
+  const sourceNode = nodeMap.get(link.sourceId);
+  const targetNode = nodeMap.get(link.targetId);
+  if (!sourceNode || !targetNode) {
+    return [];
+  }
+
+  const sourceKind = sourceNode.kind;
+  const targetKind = targetNode.kind;
+  const pairs = [];
+  const addPair = (sourceId, targetId) => {
+    if (sourceId === targetId) {
+      return;
+    }
+    pairs.push([sourceId, targetId]);
+  };
+
+  switch (link.kind) {
+    case "uses":
+      if ((sourceKind === "primary" || sourceKind === "support") && targetKind === "algorithm") {
+        addPair(link.sourceId, link.targetId);
+      } else if (sourceKind === "tool" && (targetKind === "primary" || targetKind === "support")) {
+        addPair(link.targetId, link.sourceId);
+      } else if (sourceKind === "goal" && targetKind === "algorithm") {
+        addPair(link.targetId, link.sourceId);
+      }
+      break;
+    case "requires":
+      if (sourceKind === "tool" && (targetKind === "primary" || targetKind === "support")) {
+        addPair(link.targetId, link.sourceId);
+      } else if (sourceKind === "goal" && (targetKind === "primary" || targetKind === "support")) {
+        addPair(link.targetId, link.sourceId);
+      }
+      break;
+    case "targets":
+      if (
+        sourceKind === "goal" &&
+        (targetKind === "primary" || targetKind === "support" || targetKind === "property" || targetKind === "algorithm")
+      ) {
+        addPair(link.targetId, link.sourceId);
+      }
+      break;
+    case "central_to":
+    case "implements":
+    case "implemented_by":
+      if (
+        (sourceKind === "algorithm" && targetKind === "module") ||
+        (sourceKind === "algorithm" && targetKind === "concept") ||
+        (sourceKind === "concept" && targetKind === "module") ||
+        (sourceKind === "module" && targetKind === "tool")
+      ) {
+        addPair(link.sourceId, link.targetId);
+      }
+      break;
+    case "supports":
+      if (sourceKind === "concept" && targetKind === "module") {
+        addPair(link.sourceId, link.targetId);
+      }
+      break;
+    case "augments":
+      if (sourceKind === "support" && (targetKind === "algorithm" || targetKind === "module")) {
+        addPair(link.sourceId, link.targetId);
+      } else if (sourceKind === "goal" && targetKind === "goal") {
+        addPair(link.sourceId, link.targetId);
+      }
+      break;
+    case "causes":
+      if (targetKind === "concept") {
+        addPair(link.sourceId, link.targetId);
+      }
+      break;
+    case "stage":
+    case "starts_at":
+      if ((sourceKind === "tool" || sourceKind === "module") && targetKind === "stage") {
+        addPair(link.sourceId, link.targetId);
+      }
+      break;
+    case "produces":
+      if ((sourceKind === "stage" && targetKind === "output") || (sourceKind === "output" && targetKind === "metric")) {
+        addPair(link.sourceId, link.targetId);
+      }
+      break;
+    case "improves":
+      if (sourceKind === "module" && (targetKind === "metric" || targetKind === "output")) {
+        addPair(link.sourceId, link.targetId);
+      }
+      break;
+    case "applied_to":
+      if (sourceKind === "output" && targetKind === "case") {
+        addPair(link.sourceId, link.targetId);
+      }
+      break;
+    case "characterized_by":
+      if (sourceKind === "case" && (targetKind === "property" || targetKind === "concept")) {
+        addPair(link.targetId, link.sourceId);
+      } else if (sourceKind === "output" && targetKind === "concept") {
+        addPair(link.targetId, link.sourceId);
+      }
+      break;
+    case "validated_by":
+      if (sourceKind === "output" && targetKind === "metric") {
+        addPair(link.sourceId, link.targetId);
+      } else if (sourceKind === "case" && targetKind === "metric") {
+        addPair(link.targetId, link.sourceId);
+      }
+      break;
+    default:
+      break;
+  }
+
+  return pairs;
+}
+
+function buildDependencyGraph(rawLinks, nodeMap) {
+  const dependencyLinkMap = new Map();
+  const rawEdgeDependencyIds = new Map();
+
+  rawLinks.forEach((link) => {
+    deriveDependencyPairs(link, nodeMap).forEach(([sourceId, targetId]) => {
+      const dependencyId = `dep_${sourceId}_${targetId}`;
+      let dependencyLink = dependencyLinkMap.get(dependencyId);
+      if (!dependencyLink) {
+        dependencyLink = {
+          id: dependencyId,
+          sourceId,
+          targetId,
+          source: sourceId,
+          target: targetId,
+          curvature: deterministicCurvature(sourceId, targetId),
+          rawEdgeIds: [],
+          relationKinds: [],
+          sources: [],
+        };
+        dependencyLinkMap.set(dependencyId, dependencyLink);
+      }
+
+      if (!dependencyLink.rawEdgeIds.includes(link.id)) {
+        dependencyLink.rawEdgeIds.push(link.id);
+      }
+      if (!dependencyLink.relationKinds.includes(link.kind)) {
+        dependencyLink.relationKinds.push(link.kind);
+      }
+      link.sources.forEach((sourceRef) => {
+        if (!sourceRef || dependencyLink.sources.some((existing) => existing.id === sourceRef.id)) {
+          return;
+        }
+        dependencyLink.sources.push(sourceRef);
+      });
+
+      if (!rawEdgeDependencyIds.has(link.id)) {
+        rawEdgeDependencyIds.set(link.id, []);
+      }
+      if (!rawEdgeDependencyIds.get(link.id).includes(dependencyId)) {
+        rawEdgeDependencyIds.get(link.id).push(dependencyId);
+      }
+    });
+  });
+
+  return {
+    dependencyLinks: [...dependencyLinkMap.values()],
+    dependencyLinkMap,
+    rawEdgeDependencyIds,
+  };
+}
+
 function buildTraitFilterIndex(nodes, nodeMap) {
   const toolNodes = nodes.filter((node) => node.kind === "tool" && node.toolProfile);
   const groups = TOOL_TRAIT_FILTER_GROUPS.map((group) => {
@@ -425,6 +1163,828 @@ function buildTraitFilterIndex(nodes, nodeMap) {
   };
 }
 
+function backboneScopeOption(scopeId) {
+  return BACKBONE_SCOPE_OPTION_MAP.get(scopeId) || null;
+}
+
+function scopeChildScopeIds(scope) {
+  if (!scope) {
+    return [];
+  }
+  return scope.includeScopeIds?.length ? scope.includeScopeIds : [scope.id];
+}
+
+function scopePipelineIds(scope) {
+  if (!scope) {
+    return [];
+  }
+  const visited = new Set();
+  const collectLeafScopeIds = (scopeLike) => {
+    const currentScope =
+      typeof scopeLike === "string"
+        ? backboneScopeOption(scopeLike) || { id: scopeLike }
+        : scopeLike;
+
+    if (!currentScope?.id || visited.has(currentScope.id)) {
+      return [];
+    }
+    visited.add(currentScope.id);
+
+    const childScopeIds = currentScope.includeScopeIds || [];
+    if (!childScopeIds.length) {
+      return [currentScope.id];
+    }
+
+    return uniqueNodeIds(childScopeIds.flatMap((childScopeId) => collectLeafScopeIds(childScopeId)));
+  };
+
+  return collectLeafScopeIds(scope);
+}
+
+function classifyLongReadPipelineScope({ ids, goals, outputs, supports, stages }) {
+  const hasScaffoldingSignal =
+    goals.has("goal_draft_scaffolding") ||
+    goals.has("goal_chromosome_scaffold") ||
+    stages.has("stage_anchor") ||
+    outputs.has("output_scaffold_draft") ||
+    outputs.has("output_chr_anchor") ||
+    outputs.has("output_complete_replicons") ||
+    supports.has("support_fragmented_draft") ||
+    supports.has("support_hic") ||
+    supports.has("support_dense_map") ||
+    supports.has("support_optical_map") ||
+    ids.has("algorithm_anchor_scaffold") ||
+    ids.has("module_long_range_phasing") ||
+    ids.has("module_map_anchoring") ||
+    ids.has("module_alignment_free_linking") ||
+    ids.has("module_long_read_link_scaffolding") ||
+    ids.has("module_real_time_scaffolding");
+
+  if (hasScaffoldingSignal) {
+    return "long_read_scaffolding";
+  }
+
+  const hasCoreAssemblySignal =
+    goals.has("goal_de_novo") ||
+    goals.has("goal_repeat") ||
+    goals.has("goal_phased") ||
+    goals.has("goal_t2t") ||
+    goals.has("goal_heterozygous") ||
+    stages.has("stage_overlap") ||
+    stages.has("stage_graph") ||
+    stages.has("stage_phase") ||
+    outputs.has("output_draft") ||
+    outputs.has("output_phased") ||
+    outputs.has("output_t2t") ||
+    outputs.has("output_deduplicated");
+
+  const hasStrongFinishingSignal =
+    goals.has("goal_finishing") ||
+    stages.has("stage_gap_close") ||
+    stages.has("stage_correct") ||
+    outputs.has("output_gap_closed") ||
+    outputs.has("output_corrected_reads");
+  const hasPolishingOnlySignal = (stages.has("stage_polish") || outputs.has("output_polished")) && !hasCoreAssemblySignal;
+
+  if (hasStrongFinishingSignal || hasPolishingOnlySignal) {
+    return "long_read_finishing";
+  }
+
+  return "long_read_core";
+}
+
+function classifyShortReadPipelineScope({ ids, goals, outputs, reads, supports, stages }) {
+  const primaryReadIds = [...reads].filter((readId) => readId.startsWith("read_"));
+  const hasHybridSignal =
+    goals.has("goal_hybrid_assembly") ||
+    primaryReadIds.length > 1 ||
+    supports.has("support_pacbio_long") ||
+    supports.has("support_haploid_tissue") ||
+    supports.has("support_fosmid_pools") ||
+    ids.has("algorithm_hybrid_dbg_olc") ||
+    ids.has("algorithm_hybrid_graph_assembly") ||
+    ids.has("algorithm_super_read_hybrid") ||
+    ids.has("module_hybrid_graph_bridging") ||
+    ids.has("module_short_read_polishing") && primaryReadIds.length > 1;
+
+  if (hasHybridSignal) {
+    return "hybrid_upgrade";
+  }
+
+  const hasScaffoldingSignal =
+    goals.has("goal_draft_scaffolding") ||
+    stages.has("stage_anchor") ||
+    outputs.has("output_scaffold_draft") ||
+    outputs.has("output_complete_replicons") ||
+    supports.has("support_fragmented_draft") ||
+    supports.has("support_mate_pair") ||
+    ids.has("algorithm_paired_link_scaffolding") ||
+    ids.has("algorithm_exact_scaffolding") ||
+    ids.has("algorithm_graph_motif_scaffolding");
+
+  if (hasScaffoldingSignal) {
+    return "short_read_scaffolding";
+  }
+
+  const hasFinishingSignal =
+    goals.has("goal_finishing") ||
+    stages.has("stage_polish") ||
+    stages.has("stage_gap_close") ||
+    outputs.has("output_polished") ||
+    outputs.has("output_gap_closed") ||
+    ids.has("algorithm_bloom_filter_polishing") ||
+    ids.has("algorithm_bloom_gap_closing") ||
+    ids.has("module_short_read_polishing") ||
+    ids.has("module_gap_closing");
+
+  if (hasFinishingSignal) {
+    return "short_read_finishing";
+  }
+
+  return "short_read_core";
+}
+
+function classifyPipelineScope(pipeline) {
+  const ids = new Set([...(pipeline.step_ids || []), ...(pipeline.node_ids || [])]);
+  const goals = new Set([...ids].filter((id) => id.startsWith("goal_")));
+  const outputs = new Set([...ids].filter((id) => id.startsWith("output_")));
+  const reads = new Set([...ids].filter((id) => id.startsWith("read_")));
+  const supports = new Set([...ids].filter((id) => id.startsWith("support_")));
+  const stages = new Set([...ids].filter((id) => id.startsWith("stage_")));
+  const hasLongReadPrimary = ["read_hifi", "read_ont_simplex", "read_ont_long_ul", "read_clr"].some((readId) =>
+    reads.has(readId)
+  );
+  const hasShortReadPrimary =
+    ["read_paired_end", "read_short_wgs"].some((readId) => reads.has(readId)) || goals.has("goal_hybrid_assembly");
+  const hasLongRangeScaffoldingSupport = ["support_hic", "support_dense_map", "support_optical_map"].some(
+    (supportId) => supports.has(supportId)
+  );
+
+  if (goals.has("goal_pangenome") || outputs.has("output_pangenome_graph")) {
+    return "pangenome";
+  }
+
+  if (goals.has("goal_genome_annotation_update") || goals.has("goal_eukaryotic_metagenome_annotation")) {
+    return "annotation";
+  }
+
+  if (
+    [
+      "goal_validation",
+      "goal_mag_evaluation",
+      "goal_metagenome_evaluation",
+      "goal_viral_genome_evaluation",
+      "goal_eukaryotic_mag_evaluation",
+      "goal_graph_inspection",
+      "goal_long_read_variant_calling",
+      "goal_contamination",
+      "goal_neural_basecalling",
+    ].some((goalId) => goals.has(goalId))
+  ) {
+    return "qc_annotation";
+  }
+
+  if (
+    [
+      "goal_metagenome_assembly",
+      "goal_mag_curation",
+      "goal_mag_recovery",
+      "goal_viral_genome_recovery",
+      "goal_viral_host_prediction",
+      "goal_eukaryotic_metagenome_recovery",
+      "goal_mini_metagenome_assembly",
+    ].some((goalId) => goals.has(goalId)) ||
+    [
+      "output_mag_bins",
+      "output_refined_mag_bins",
+      "output_curated_mag_set",
+      "output_metagenome_contigs",
+      "output_strain_resolved_drafts",
+      "output_viral_bins",
+    ].some((outputId) => outputs.has(outputId)) ||
+    ids.has("concept_mag") ||
+    ids.has("concept_contig_bin") ||
+    ids.has("stage_bin")
+  ) {
+    return "metagenome";
+  }
+
+  if (goals.has("goal_organelle_assembly") || goals.has("goal_plastome_assembly")) {
+    return "organelle";
+  }
+
+  if (hasShortReadPrimary) {
+    return classifyShortReadPipelineScope({ ids, goals, outputs, reads, supports, stages });
+  }
+
+  if (hasLongReadPrimary) {
+    return classifyLongReadPipelineScope({ ids, goals, outputs, supports, stages });
+  }
+
+  if (goals.has("goal_chromosome_scaffold") || hasLongRangeScaffoldingSupport || outputs.has("output_chr_anchor")) {
+    return "chromosome_scale";
+  }
+
+  return "all";
+}
+
+function clampCount(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function uniqueNodeIds(nodeIds) {
+  return [...new Set(nodeIds.filter(Boolean))];
+}
+
+function pickCappedNodeIds(rankedNodeIds, nodeMap, kindCaps, limit = 10) {
+  const picked = [];
+  const pickedSet = new Set();
+  const kindCounts = new Map();
+
+  rankedNodeIds.forEach((nodeId) => {
+    if (picked.length >= limit) {
+      return;
+    }
+    const node = nodeMap.get(nodeId);
+    if (!node || node.kind === "goal") {
+      return;
+    }
+    const cap = kindCaps[node.kind];
+    const count = kindCounts.get(node.kind) || 0;
+    if (cap != null && count >= cap) {
+      return;
+    }
+    picked.push(nodeId);
+    pickedSet.add(nodeId);
+    kindCounts.set(node.kind, count + 1);
+  });
+
+  rankedNodeIds.forEach((nodeId) => {
+    if (picked.length >= limit || pickedSet.has(nodeId)) {
+      return;
+    }
+    const node = nodeMap.get(nodeId);
+    if (!node || node.kind === "goal") {
+      return;
+    }
+    picked.push(nodeId);
+    pickedSet.add(nodeId);
+  });
+
+  return picked;
+}
+
+function pickBackboneKeyNodeIds(rankedNodeIds, nodeMap, limit = 10) {
+  return pickCappedNodeIds(rankedNodeIds, nodeMap, BACKBONE_KEY_KIND_CAPS, limit);
+}
+
+function pickBackboneCoreNodeIds(rankedNodeIds, nodeMap, limit = 24) {
+  return pickCappedNodeIds(rankedNodeIds, nodeMap, BACKBONE_CORE_KIND_CAPS, limit);
+}
+
+function buildBackboneScope(scope, nodes, pipelines, dependencyLinks) {
+  const pipelineIds = new Set(pipelines.map((pipeline) => pipeline.id));
+  const pipelineStepSequences = new Map(
+    pipelines.map((pipeline) => [
+      pipeline.id,
+      (pipeline.step_ids || []).filter(
+        (nodeId) => nodes.has(nodeId) && BACKBONE_PROJECTION_CATEGORY_IDS.has(nodes.get(nodeId)?.categoryId)
+      ),
+    ])
+  );
+  const scopeNodeIds = new Set();
+  const pipelineCounts = new Map();
+  const stepCounts = new Map();
+
+  pipelines.forEach((pipeline) => {
+    pipeline.nodeSet.forEach((nodeId) => {
+      scopeNodeIds.add(nodeId);
+      pipelineCounts.set(nodeId, (pipelineCounts.get(nodeId) || 0) + 1);
+    });
+    pipeline.stepSet.forEach((nodeId) => {
+      stepCounts.set(nodeId, (stepCounts.get(nodeId) || 0) + 1);
+    });
+  });
+
+  const allowedNodeIds = new Set(
+    [...scopeNodeIds].filter((nodeId) => BACKBONE_BASE_CATEGORY_IDS.has(nodes.get(nodeId)?.categoryId))
+  );
+  const projectableNodeIds = new Set(
+    [...scopeNodeIds].filter((nodeId) => BACKBONE_PROJECTION_CATEGORY_IDS.has(nodes.get(nodeId)?.categoryId))
+  );
+  const allowedNodes = [...allowedNodeIds].map((nodeId) => nodes.get(nodeId)).filter(Boolean);
+  const workflowParentMap = new Map([...projectableNodeIds].map((nodeId) => [nodeId, new Set()]));
+  const workflowChildMap = new Map([...projectableNodeIds].map((nodeId) => [nodeId, new Set()]));
+
+  pipelineStepSequences.forEach((sequence) => {
+    const dedupedSequence = sequence.filter((nodeId, index) => index === 0 || sequence[index - 1] !== nodeId);
+    for (let index = 0; index < dedupedSequence.length - 1; index += 1) {
+      const sourceId = dedupedSequence[index];
+      const targetId = dedupedSequence[index + 1];
+      workflowChildMap.get(sourceId)?.add(targetId);
+      workflowParentMap.get(targetId)?.add(sourceId);
+    }
+  });
+
+  const parents = new Map(allowedNodes.map((node) => [node.id, new Set()]));
+  const children = new Map(allowedNodes.map((node) => [node.id, new Set()]));
+  pipelineStepSequences.forEach((sequence) => {
+    const dedupedAllowedSequence = sequence
+      .filter((nodeId) => allowedNodeIds.has(nodeId))
+      .filter((nodeId, index, arr) => index === 0 || arr[index - 1] !== nodeId);
+
+    for (let index = 0; index < dedupedAllowedSequence.length - 1; index += 1) {
+      const sourceId = dedupedAllowedSequence[index];
+      const targetId = dedupedAllowedSequence[index + 1];
+      children.get(sourceId)?.add(targetId);
+      parents.get(targetId)?.add(sourceId);
+    }
+  });
+
+  const indegrees = new Map(allowedNodes.map((node) => [node.id, parents.get(node.id)?.size || 0]));
+  const queue = [...allowedNodes.map((node) => node.id).filter((nodeId) => (indegrees.get(nodeId) || 0) === 0)].sort(
+    (left, right) => nodes.get(left).label.localeCompare(nodes.get(right).label)
+  );
+  const order = [];
+  while (queue.length) {
+    const currentId = queue.shift();
+    order.push(currentId);
+    [...(children.get(currentId) || [])]
+      .sort((left, right) => nodes.get(left).label.localeCompare(nodes.get(right).label))
+      .forEach((childId) => {
+        indegrees.set(childId, indegrees.get(childId) - 1);
+        if (indegrees.get(childId) === 0) {
+          queue.push(childId);
+        }
+      });
+  }
+
+  const ancestorSets = new Map(allowedNodes.map((node) => [node.id, new Set()]));
+  order.forEach((nodeId) => {
+    (children.get(nodeId) || []).forEach((childId) => {
+      const childAncestors = ancestorSets.get(childId);
+      childAncestors.add(nodeId);
+      ancestorSets.get(nodeId).forEach((ancestorId) => childAncestors.add(ancestorId));
+    });
+  });
+
+  const descendantSets = new Map(allowedNodes.map((node) => [node.id, new Set()]));
+  const leafSets = new Map(allowedNodes.map((node) => [node.id, new Set()]));
+  const rootIds = allowedNodes
+    .filter((node) => (parents.get(node.id)?.size || 0) === 0)
+    .map((node) => node.id);
+  const leafIds = allowedNodes
+    .filter((node) => (children.get(node.id)?.size || 0) === 0)
+    .map((node) => node.id);
+  const totalLeaves = Math.max(leafIds.length, 1);
+  const pipelineTotal = Math.max(pipelines.length, 1);
+
+  [...order].reverse().forEach((nodeId) => {
+    const childIds = children.get(nodeId) || new Set();
+    if (!childIds.size) {
+      leafSets.get(nodeId).add(nodeId);
+      return;
+    }
+    childIds.forEach((childId) => {
+      descendantSets.get(nodeId).add(childId);
+      descendantSets.get(childId).forEach((descendantId) => descendantSets.get(nodeId).add(descendantId));
+      leafSets.get(childId).forEach((leafId) => leafSets.get(nodeId).add(leafId));
+    });
+  });
+
+  const interiorCandidates = [];
+  let maxReachProduct = 0;
+  allowedNodes.forEach((node) => {
+    const reachProduct = ancestorSets.get(node.id).size * descendantSets.get(node.id).size;
+    maxReachProduct = Math.max(maxReachProduct, reachProduct);
+  });
+
+  const nodeStats = new Map(
+    allowedNodes.map((node) => {
+      const ancestorCount = ancestorSets.get(node.id).size;
+      const descendantCount = descendantSets.get(node.id).size;
+      const leafCoverage = leafSets.get(node.id).size;
+      const pipelineCount = pipelineCounts.get(node.id) || 0;
+      const stepCount = stepCounts.get(node.id) || 0;
+      const reachProduct = ancestorCount * descendantCount;
+      const reachScore = maxReachProduct ? reachProduct / maxReachProduct : 0;
+      const leafCoverageRatio = leafCoverage / totalLeaves;
+      const pipelineCoverageRatio = pipelineCount / pipelineTotal;
+      const stepCoverageRatio = stepCount / pipelineTotal;
+      const bonus = BACKBONE_INTERIOR_KIND_BONUS[node.kind] || 0;
+      const score =
+        stepCoverageRatio * 0.42 +
+        pipelineCoverageRatio * 0.28 +
+        reachScore * 0.16 +
+        leafCoverageRatio * 0.08 +
+        (stepCount > 1 || pipelineCount > 2 ? 0.08 : 0) +
+        bonus;
+
+      const stat = {
+        score,
+        ancestorCount,
+        descendantCount,
+        leafCoverage,
+        leafCoverageRatio,
+        pipelineCount,
+        pipelineCoverageRatio,
+        stepCount,
+        stepCoverageRatio,
+        isRoot: ancestorCount === 0,
+        isLeaf: descendantCount === 0,
+      };
+
+      if (ancestorCount > 0 && descendantCount > 0) {
+        interiorCandidates.push({ nodeId: node.id, ...stat });
+      }
+
+      return [node.id, stat];
+    })
+  );
+
+  const isAggregateScope = Boolean(scope.includeScopeIds?.length);
+  const coreTarget = clampCount(
+    Math.round(Math.sqrt(Math.max(allowedNodes.length, 1)) * (isAggregateScope ? 2.35 : 3)),
+    isAggregateScope ? 10 : 12,
+    isAggregateScope ? 28 : 36
+  );
+  const rootTarget = clampCount(Math.round(coreTarget / 4), isAggregateScope ? 2 : 3, isAggregateScope ? 6 : 8);
+  const leafTarget = clampCount(Math.round(coreTarget / 4), isAggregateScope ? 2 : 3, isAggregateScope ? 6 : 8);
+  const rankedInteriorIds = interiorCandidates
+    .sort(
+      (left, right) =>
+        right.score - left.score ||
+        right.stepCount - left.stepCount ||
+        right.pipelineCount - left.pipelineCount ||
+        right.leafCoverage - left.leafCoverage ||
+        nodes.get(left.nodeId).label.localeCompare(nodes.get(right.nodeId).label)
+    )
+    .map((entry) => entry.nodeId);
+  const rootSeedIds = rootIds
+    .slice()
+    .sort(
+      (left, right) =>
+        (nodeStats.get(right).leafCoverageRatio + nodeStats.get(right).pipelineCoverageRatio) -
+          (nodeStats.get(left).leafCoverageRatio + nodeStats.get(left).pipelineCoverageRatio) ||
+        nodes.get(left).label.localeCompare(nodes.get(right).label)
+    )
+    .slice(0, rootTarget);
+  const leafSeedIds = leafIds
+    .slice()
+    .sort(
+      (left, right) =>
+        (nodeStats.get(right).ancestorCount + nodeStats.get(right).pipelineCount) -
+          (nodeStats.get(left).ancestorCount + nodeStats.get(left).pipelineCount) ||
+        nodes.get(left).label.localeCompare(nodes.get(right).label)
+    )
+    .slice(0, leafTarget);
+
+  const recurringRankedIds = allowedNodes
+    .filter((node) => {
+      const stat = nodeStats.get(node.id);
+      return stat.stepCount > 1 || stat.pipelineCount > 2;
+    })
+    .sort(
+      (left, right) =>
+        nodeStats.get(right.id).stepCount - nodeStats.get(left.id).stepCount ||
+        nodeStats.get(right.id).pipelineCount - nodeStats.get(left.id).pipelineCount ||
+        nodeStats.get(right.id).score - nodeStats.get(left.id).score ||
+        left.label.localeCompare(right.label)
+    )
+    .map((node) => node.id);
+  const coreNodeIds = new Set([
+    ...pickBackboneCoreNodeIds(recurringRankedIds.length ? recurringRankedIds : rankedInteriorIds, nodes, coreTarget),
+    ...rootSeedIds,
+    ...leafSeedIds,
+  ]);
+  const recurringNodeIds = pickBackboneKeyNodeIds(
+    allowedNodes
+      .filter((node) => {
+        const stat = nodeStats.get(node.id);
+        return stat.stepCount > 1 || stat.pipelineCount > 1;
+      })
+      .sort(
+        (left, right) =>
+          nodeStats.get(right.id).stepCount - nodeStats.get(left.id).stepCount ||
+          nodeStats.get(right.id).pipelineCount - nodeStats.get(left.id).pipelineCount ||
+          left.label.localeCompare(right.label)
+      )
+      .map((node) => node.id),
+    nodes,
+    8
+  );
+  const baseVisibleIds = new Set(coreNodeIds);
+  pipelineStepSequences.forEach((sequence) => {
+    const allowedSequence = sequence.filter((nodeId) => allowedNodeIds.has(nodeId));
+    const coreIndexes = allowedSequence
+      .map((nodeId, index) => (coreNodeIds.has(nodeId) ? index : -1))
+      .filter((index) => index >= 0);
+
+    coreIndexes.forEach((index) => {
+      if (allowedSequence[index - 1]) {
+        baseVisibleIds.add(allowedSequence[index - 1]);
+      }
+      if (allowedSequence[index + 1]) {
+        baseVisibleIds.add(allowedSequence[index + 1]);
+      }
+    });
+
+    for (let index = 0; index < coreIndexes.length - 1; index += 1) {
+      const start = coreIndexes[index];
+      const end = coreIndexes[index + 1];
+      allowedSequence.slice(start, end + 1).forEach((nodeId) => baseVisibleIds.add(nodeId));
+    }
+  });
+
+  coreNodeIds.forEach((nodeId) => {
+    const stat = nodeStats.get(nodeId);
+    if (stat) {
+      stat.isCore = true;
+    }
+  });
+
+  return {
+    ...scope,
+    pipelineIds,
+    pipelineCount: pipelines.length,
+    pipelineStepSequences,
+    nodeIds: scopeNodeIds,
+    allowedNodeIds,
+    projectableNodeIds,
+    baseVisibleIds,
+    coreNodeIds,
+    rootIds,
+    leafIds,
+    keyNodeIds: pickBackboneKeyNodeIds(recurringRankedIds.length ? recurringRankedIds : rankedInteriorIds, nodes),
+    recurringNodeIds,
+    nodeStats,
+    workflowParentMap,
+    workflowChildMap,
+  };
+}
+
+function buildAggregateBackboneScope(scope, baseScope, childScopes, nodes) {
+  const aggregateConfig = BACKBONE_AGGREGATE_SCOPE_CONFIG[scope.id] || {};
+  const forcedNodeIds = (aggregateConfig.forcedNodeIds || []).filter((nodeId) => baseScope.allowedNodeIds.has(nodeId));
+  const forcedNodeIdSet = new Set(forcedNodeIds);
+  const nodeStats = new Map([...baseScope.nodeStats.entries()].map(([nodeId, stat]) => [nodeId, { ...stat, isCore: false }]));
+  const representativeCounts = new Map();
+  const childScopeCounts = new Map();
+  const candidateIds = new Set();
+  const promotedConnectorIds = new Set();
+
+  childScopes.forEach((childScope) => {
+    const localSeen = new Set();
+    const configuredPriority = (aggregateConfig.childPriorityByScopeId?.[childScope.id] || []).filter((nodeId) =>
+      childScope.allowedNodeIds.has(nodeId)
+    );
+    const childPriority = uniqueNodeIds([
+      ...configuredPriority,
+      ...(childScope.recurringNodeIds || []).slice(0, 5),
+      ...(childScope.keyNodeIds || []).slice(0, 5),
+      ...[...(childScope.coreNodeIds || [])]
+        .sort(
+          (left, right) =>
+            (childScope.nodeStats.get(right)?.score || 0) - (childScope.nodeStats.get(left)?.score || 0) ||
+            nodes.get(left)?.label.localeCompare(nodes.get(right)?.label || "") ||
+            0
+        )
+        .slice(0, 5),
+    ]).filter((nodeId) => baseScope.allowedNodeIds.has(nodeId));
+
+    childPriority.forEach((nodeId) => {
+      candidateIds.add(nodeId);
+      representativeCounts.set(nodeId, (representativeCounts.get(nodeId) || 0) + 1);
+      if (!localSeen.has(nodeId)) {
+        childScopeCounts.set(nodeId, (childScopeCounts.get(nodeId) || 0) + 1);
+        localSeen.add(nodeId);
+      }
+    });
+
+    [...(childScope.keyNodeIds || []).slice(0, 6), ...(childScope.recurringNodeIds || []).slice(0, 6)].forEach((nodeId) => {
+      if (baseScope.allowedNodeIds.has(nodeId)) {
+        promotedConnectorIds.add(nodeId);
+      }
+    });
+  });
+
+  forcedNodeIds.forEach((nodeId) => {
+    candidateIds.add(nodeId);
+    promotedConnectorIds.add(nodeId);
+  });
+
+  const rankNodeIds = (nodeIds) =>
+    nodeIds
+      .filter((nodeId) => baseScope.allowedNodeIds.has(nodeId))
+      .sort(
+        (left, right) =>
+          (childScopeCounts.get(right) || 0) - (childScopeCounts.get(left) || 0) ||
+          (representativeCounts.get(right) || 0) - (representativeCounts.get(left) || 0) ||
+          (nodeStats.get(right)?.stepCount || 0) - (nodeStats.get(left)?.stepCount || 0) ||
+          (nodeStats.get(right)?.pipelineCount || 0) - (nodeStats.get(left)?.pipelineCount || 0) ||
+          (nodeStats.get(right)?.score || 0) - (nodeStats.get(left)?.score || 0) ||
+          nodes.get(left).label.localeCompare(nodes.get(right).label)
+      );
+
+  const rankedCandidateIds = rankNodeIds([...candidateIds]);
+  const minSharedChildScopes = aggregateConfig.minSharedChildScopes || 1;
+  const bridgeCandidateIds = rankedCandidateIds.filter(
+    (nodeId) => forcedNodeIdSet.has(nodeId) || (childScopeCounts.get(nodeId) || 0) >= minSharedChildScopes
+  );
+  const candidatePoolIds = bridgeCandidateIds.length ? bridgeCandidateIds : rankedCandidateIds;
+  const rootSeedIds = aggregateConfig.rootSeedLimit === 0
+    ? []
+    : rankNodeIds(childScopes.flatMap((childScope) => childScope.rootIds || []))
+        .filter((nodeId) => forcedNodeIdSet.has(nodeId) || (childScopeCounts.get(nodeId) || 0) >= minSharedChildScopes)
+        .slice(0, aggregateConfig.rootSeedLimit || 2);
+  const leafSeedIds = aggregateConfig.leafSeedLimit === 0
+    ? []
+    : rankNodeIds(childScopes.flatMap((childScope) => childScope.leafIds || []))
+        .filter((nodeId) => forcedNodeIdSet.has(nodeId) || (childScopeCounts.get(nodeId) || 0) >= minSharedChildScopes)
+        .slice(0, aggregateConfig.leafSeedLimit || 2);
+  const guaranteedFamilyIds = childScopes
+    .map((childScope) =>
+      rankNodeIds([
+        ...((aggregateConfig.childPriorityByScopeId?.[childScope.id] || []).filter((nodeId) => childScope.allowedNodeIds.has(nodeId))),
+        ...(childScope.recurringNodeIds || []).slice(0, 4),
+        ...(childScope.keyNodeIds || []).slice(0, 4),
+        ...[...(childScope.coreNodeIds || [])],
+      ])[0]
+    )
+    .filter(Boolean);
+  const overviewCoreLimit =
+    aggregateConfig.overviewCoreLimit ||
+    clampCount(Math.round(Math.sqrt(Math.max(candidatePoolIds.length, 1)) * 2.4), 10, 18);
+  const coreNodeIds = new Set([
+    ...forcedNodeIds,
+    ...rootSeedIds,
+    ...guaranteedFamilyIds,
+    ...pickCappedNodeIds(candidatePoolIds, nodes, BACKBONE_OVERVIEW_KIND_CAPS, overviewCoreLimit),
+    ...leafSeedIds,
+  ]);
+  const keyNodeIds = uniqueNodeIds([
+    ...((aggregateConfig.keyNodeIds || []).filter((nodeId) => coreNodeIds.has(nodeId) || baseScope.allowedNodeIds.has(nodeId))),
+    ...pickBackboneKeyNodeIds(uniqueNodeIds([...forcedNodeIds, ...candidatePoolIds]), nodes, aggregateConfig.keyNodeLimit || 10),
+  ]).slice(0, aggregateConfig.keyNodeLimit || 10);
+  const recurringNodeIds = uniqueNodeIds([
+    ...((aggregateConfig.recurringNodeIds || []).filter((nodeId) => baseScope.allowedNodeIds.has(nodeId))),
+    ...pickBackboneKeyNodeIds(
+      uniqueNodeIds([
+        ...forcedNodeIds,
+        ...[...candidateIds].sort(
+          (left, right) =>
+            (childScopeCounts.get(right) || 0) - (childScopeCounts.get(left) || 0) ||
+            (nodeStats.get(right)?.stepCount || 0) - (nodeStats.get(left)?.stepCount || 0) ||
+            (nodeStats.get(right)?.pipelineCount || 0) - (nodeStats.get(left)?.pipelineCount || 0) ||
+            nodes.get(left).label.localeCompare(nodes.get(right).label)
+        ),
+      ]),
+      nodes,
+      aggregateConfig.recurringNodeLimit || 8
+    ),
+  ]).slice(0, aggregateConfig.recurringNodeLimit || 8);
+  const promotedConnectorLimit = aggregateConfig.promotedConnectorLimit || 6;
+  const promotedConnectorIdSet = new Set(rankNodeIds([...promotedConnectorIds]).slice(0, promotedConnectorLimit));
+  const focusNodeIds = new Set([
+    ...coreNodeIds,
+    ...forcedNodeIds,
+    ...keyNodeIds.slice(0, aggregateConfig.focusKeyLimit || 6),
+    ...recurringNodeIds.slice(0, aggregateConfig.focusRecurringLimit || 6),
+  ]);
+  const baseVisibleIds = new Set(coreNodeIds);
+
+  baseScope.pipelineStepSequences.forEach((sequence) => {
+    const allowedSequence = sequence.filter((nodeId) => baseScope.allowedNodeIds.has(nodeId));
+    const focusIndexes = allowedSequence
+      .map((nodeId, index) => (focusNodeIds.has(nodeId) ? index : -1))
+      .filter((index) => index >= 0);
+
+    for (let index = 0; index < focusIndexes.length - 1; index += 1) {
+      const start = focusIndexes[index];
+      const end = focusIndexes[index + 1];
+      allowedSequence.slice(start, end + 1).forEach((nodeId) => {
+        const stat = nodeStats.get(nodeId);
+        if (
+          focusNodeIds.has(nodeId) ||
+          promotedConnectorIdSet.has(nodeId) ||
+          (stat && (stat.stepCount >= 2 || stat.pipelineCount >= 2))
+        ) {
+          baseVisibleIds.add(nodeId);
+        }
+      });
+    }
+  });
+
+  [...coreNodeIds].forEach((nodeId) => {
+    (baseScope.workflowParentMap.get(nodeId) || []).forEach((parentId) => {
+      const stat = nodeStats.get(parentId);
+      if (
+        forcedNodeIdSet.has(parentId) ||
+        promotedConnectorIdSet.has(parentId) ||
+        (stat && (stat.stepCount > 1 || stat.pipelineCount > 1))
+      ) {
+        baseVisibleIds.add(parentId);
+      }
+    });
+    (baseScope.workflowChildMap.get(nodeId) || []).forEach((childId) => {
+      const stat = nodeStats.get(childId);
+      if (
+        forcedNodeIdSet.has(childId) ||
+        promotedConnectorIdSet.has(childId) ||
+        (stat && (stat.stepCount > 1 || stat.pipelineCount > 1))
+      ) {
+        baseVisibleIds.add(childId);
+      }
+    });
+  });
+
+  [...nodeStats.keys()].forEach((nodeId) => {
+    nodeStats.get(nodeId).isCore = coreNodeIds.has(nodeId);
+  });
+
+  const nodeBranchMap = new Map();
+  if (aggregateConfig.layoutMode === "branch_universe") {
+    const branchScopeMap = new Map(childScopes.map((childScope) => [childScope.id, childScope]));
+    const branchOverrides = aggregateConfig.branchOverrides || {};
+
+    baseScope.nodeIds.forEach((nodeId) => {
+      const branchOverride = branchOverrides[nodeId];
+      if (branchOverride) {
+        nodeBranchMap.set(nodeId, branchOverride);
+        return;
+      }
+
+      const inShort = branchScopeMap.get(aggregateConfig.branchScopeIds?.short)?.nodeIds.has(nodeId) || false;
+      const inLong = branchScopeMap.get(aggregateConfig.branchScopeIds?.long)?.nodeIds.has(nodeId) || false;
+      nodeBranchMap.set(nodeId, inShort && inLong ? "shared" : inShort ? "short" : inLong ? "long" : "shared");
+    });
+  }
+
+  return {
+    ...baseScope,
+    ...scope,
+    baseVisibleIds,
+    coreNodeIds,
+    keyNodeIds,
+    recurringNodeIds,
+    nodeStats,
+    layoutMode: aggregateConfig.layoutMode || null,
+    nodeBranchMap,
+    branchCenters: aggregateConfig.branchCenters || null,
+    branchLaneSpacing: aggregateConfig.branchLaneSpacing || 18,
+  };
+}
+
+function buildBackboneIndex(nodes, nodeMap, dependencyLinks, pipelines) {
+  const scopedPipelines = new Map(BACKBONE_SCOPE_OPTIONS.map((scope) => [scope.id, []]));
+  const nodeScopeCountMap = new Map(nodes.map((node) => [node.id, new Map()]));
+
+  pipelines.forEach((pipeline) => {
+    const scopeId = classifyPipelineScope(pipeline);
+    pipeline.scopeId = scopeId;
+    if (scopedPipelines.has(scopeId)) {
+      scopedPipelines.get(scopeId).push(pipeline);
+    }
+
+    pipeline.nodeSet.forEach((nodeId) => {
+      const scopeCounts = nodeScopeCountMap.get(nodeId);
+      scopeCounts.set(scopeId, (scopeCounts.get(scopeId) || 0) + 1);
+    });
+  });
+
+  const scopeMap = new Map();
+  BACKBONE_SCOPE_OPTIONS.filter((scope) => !scope.includeScopeIds?.length).forEach((scope) => {
+    const pipelinesForScope =
+      scope.id === "all"
+        ? pipelines
+        : scopePipelineIds(scope).flatMap((scopeId) => scopedPipelines.get(scopeId) || []);
+    scopeMap.set(scope.id, buildBackboneScope(scope, nodeMap, pipelinesForScope, dependencyLinks));
+  });
+  BACKBONE_SCOPE_OPTIONS.filter((scope) => scope.includeScopeIds?.length).forEach((scope) => {
+    const pipelinesForScope = scopePipelineIds(scope).flatMap((scopeId) => scopedPipelines.get(scopeId) || []);
+    const baseScope = buildBackboneScope(scope, nodeMap, pipelinesForScope, dependencyLinks);
+    const childScopes = scopeChildScopeIds(scope).map((scopeId) => scopeMap.get(scopeId)).filter(Boolean);
+    scopeMap.set(scope.id, buildAggregateBackboneScope(scope, baseScope, childScopes, nodeMap));
+  });
+
+  const nodePrimaryScopeIdMap = new Map(
+    nodes.map((node) => {
+      const counts = nodeScopeCountMap.get(node.id) || new Map();
+      const scopeId =
+        [...counts.entries()]
+          .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))[0]?.[0] ||
+        DEFAULT_BACKBONE_SCOPE_ID;
+      return [node.id, scopeId];
+    })
+  );
+
+  return {
+    scopeMap,
+    nodePrimaryScopeIdMap,
+    nodeScopeCountMap,
+  };
+}
+
 function prepareData(raw) {
   const laneMap = new Map(raw.lanes.map((lane, index) => [lane.id, { ...lane, index }]));
   const sourceMap = new Map(raw.sources.map((source) => [source.id, source]));
@@ -441,7 +2001,7 @@ function prepareData(raw) {
   }));
 
   const nodeMap = new Map(nodes.map((node) => [node.id, node]));
-  const links = raw.edges
+  const rawLinks = raw.edges
     .filter((edge) => nodeMap.has(edge.source) && nodeMap.has(edge.target))
     .map((edge) => ({
       ...edge,
@@ -453,26 +2013,45 @@ function prepareData(raw) {
       sources: (edge.source_ids || []).map((id) => sourceMap.get(id)).filter(Boolean),
     }));
 
-  links.forEach((link) => {
+  const {
+    dependencyLinks,
+    dependencyLinkMap,
+    rawEdgeDependencyIds,
+  } = buildDependencyGraph(rawLinks, nodeMap);
+
+  dependencyLinks.forEach((link) => {
     nodeMap.get(link.source).to.push(link.target);
     nodeMap.get(link.target).from.push(link.source);
   });
 
-  const edgeMap = new Map(links.map((link) => [link.id, link]));
+  const edgeMap = new Map(rawLinks.map((link) => [link.id, link]));
   const pipelines = raw.pipelines.map((pipeline) => {
     const resolvedNodeIds = pipeline.node_ids.filter((nodeId) => nodeMap.has(nodeId));
     const resolvedStepIds = (pipeline.step_ids || []).filter((nodeId) => nodeMap.has(nodeId));
     const resolvedEdgeIds = (pipeline.edge_ids || []).filter((edgeId) => edgeMap.has(edgeId));
+    const dependencyEdgeIds = [];
+    const dependencyEdgeSeen = new Set();
+    resolvedEdgeIds.forEach((edgeId) => {
+      (rawEdgeDependencyIds.get(edgeId) || []).forEach((dependencyEdgeId) => {
+        if (dependencyEdgeSeen.has(dependencyEdgeId)) {
+          return;
+        }
+        dependencyEdgeSeen.add(dependencyEdgeId);
+        dependencyEdgeIds.push(dependencyEdgeId);
+      });
+    });
     const componentNodes = resolveComponentNodes(pipeline.components, nodeMap);
     return {
       ...pipeline,
       nodes: resolvedNodeIds.map((nodeId) => nodeMap.get(nodeId)),
       stepNodes: resolvedStepIds.map((nodeId) => nodeMap.get(nodeId)),
       edges: resolvedEdgeIds.map((edgeId) => edgeMap.get(edgeId)),
+      dependencyLinks: dependencyEdgeIds.map((dependencyEdgeId) => dependencyLinkMap.get(dependencyEdgeId)).filter(Boolean),
       componentNodes,
       nodeSet: new Set(resolvedNodeIds),
       stepSet: new Set(resolvedStepIds),
       edgeSet: new Set(resolvedEdgeIds),
+      dependencyEdgeSet: new Set(dependencyEdgeIds),
       sources: resolveSourceRefs(pipeline.source_ids, sourceMap),
     };
   });
@@ -487,27 +2066,17 @@ function prepareData(raw) {
     });
   });
 
+  const derivedToolProfiles = buildDerivedToolProfiles(pipelines, nodeMap, pipelineMap);
   nodes.forEach((node) => {
-    if (node.kind !== "tool" || !node.tool_profile) {
+    if (node.kind !== "tool") {
       return;
     }
+    node.toolProfile = derivedToolProfiles.get(node.id) || null;
+  });
 
-    const componentIds = Object.fromEntries(
-      Object.entries(node.tool_profile).filter(
-        ([field]) => field.endsWith("_ids") && field !== "linked_pipeline_ids" && field !== "step_pipeline_ids"
-      )
-    );
-
-    node.toolProfile = {
-      ...node.tool_profile,
-      linkedPipelines: (node.tool_profile.linked_pipeline_ids || [])
-        .map((pipelineId) => pipelineMap.get(pipelineId))
-        .filter(Boolean),
-      stepPipelines: (node.tool_profile.step_pipeline_ids || [])
-        .map((pipelineId) => pipelineMap.get(pipelineId))
-        .filter(Boolean),
-      componentNodes: resolveComponentNodes(componentIds, nodeMap),
-    };
+  const backbone = buildBackboneIndex(nodes, nodeMap, dependencyLinks, pipelines);
+  nodes.forEach((node) => {
+    node.backbonePrimaryScopeId = backbone.nodePrimaryScopeIdMap.get(node.id) || DEFAULT_BACKBONE_SCOPE_ID;
   });
 
   const depthMemo = new Map();
@@ -533,24 +2102,6 @@ function prepareData(raw) {
     node._prerequisite_ratio = node.ancestorIds.size / denominator;
     node._reachability_ratio = reachability.size / denominator;
     node.defaultVal = 1.4 + normalizeByMetric(node._reachability_ratio, 0, 1) * 5.6;
-    node.searchText = [
-      node.label,
-      node.definition,
-      node.kindLabel,
-      node.category,
-      ...node.pipelines.map((pipeline) => pipeline.label),
-      ...node.pipelines.flatMap((pipeline) =>
-        Object.values(pipeline.componentNodes)
-          .flat()
-          .map((componentNode) => componentNode.label)
-      ),
-      ...(node.toolProfile?.linkedPipelines || []).map((pipeline) => pipeline.label),
-      ...Object.values(node.toolProfile?.componentNodes || {})
-        .flat()
-        .map((componentNode) => componentNode.label),
-    ]
-      .join(" ")
-      .toLowerCase();
   });
 
   const categories = raw.lanes.map((lane) => ({
@@ -575,7 +2126,9 @@ function prepareData(raw) {
   return {
     nodes,
     nodeMap,
-    links,
+    rawLinks,
+    dependencyLinks,
+    dependencyLinkMap,
     edgeMap,
     sourceMap,
     pipelines,
@@ -584,6 +2137,7 @@ function prepareData(raw) {
     metricRanges,
     traitFilterGroups: traitFilterIndex.groups,
     traitFilterItemMap: traitFilterIndex.itemMap,
+    backbone,
   };
 }
 
@@ -647,7 +2201,9 @@ function applyLayout({ zoom = false } = {}) {
     }
   });
 
-  state.graph.cooldownTicks(0).d3ReheatSimulation().refresh();
+  state.graph.cooldownTicks(0);
+  state.graph.d3ReheatSimulation();
+  state.graph.refresh?.();
   if (zoom) {
     window.setTimeout(() => focusGraphCore({ duration: 700, positions }), 60);
   }
@@ -657,13 +2213,7 @@ function currentGraphData() {
   const derived = ensureDerivedState();
   return {
     nodes: derived.visibleNodes,
-    links: state.prepared.links
-      .filter((link) => derived.visibleNodeIds.has(link.sourceId) && derived.visibleNodeIds.has(link.targetId))
-      .map((link) => ({
-        ...link,
-        source: link.sourceId,
-        target: link.targetId,
-      })),
+    links: derived.visibleLinks,
   };
 }
 
@@ -788,18 +2338,78 @@ function emptySelectionContext() {
   };
 }
 
-function computeSelectionContext() {
+function collectReachableWithinAdjacency(startId, adjacencyMap, allowedNodeIds = null) {
+  const visited = new Set();
+  if (!adjacencyMap?.has(startId)) {
+    return visited;
+  }
+
+  const stack = [...adjacencyMap.get(startId)];
+  while (stack.length) {
+    const currentId = stack.pop();
+    if (visited.has(currentId)) {
+      continue;
+    }
+    if (allowedNodeIds && !allowedNodeIds.has(currentId)) {
+      continue;
+    }
+    visited.add(currentId);
+    const neighbors = adjacencyMap.get(currentId);
+    if (!neighbors) {
+      continue;
+    }
+    neighbors.forEach((neighborId) => {
+      if (!visited.has(neighborId)) {
+        stack.push(neighborId);
+      }
+    });
+  }
+
+  return visited;
+}
+
+function collectReachableThroughNodeMap(startId, direction, allowedNodeIds = null) {
+  const visited = new Set();
+  const startNode = state.prepared?.nodeMap.get(startId);
+  if (!startNode) {
+    return visited;
+  }
+
+  const stack = [...(startNode[direction] || [])];
+  while (stack.length) {
+    const currentId = stack.pop();
+    if (visited.has(currentId)) {
+      continue;
+    }
+    if (allowedNodeIds && !allowedNodeIds.has(currentId)) {
+      continue;
+    }
+    visited.add(currentId);
+    const currentNode = state.prepared.nodeMap.get(currentId);
+    if (!currentNode) {
+      continue;
+    }
+    (currentNode[direction] || []).forEach((neighborId) => {
+      if (!visited.has(neighborId)) {
+        stack.push(neighborId);
+      }
+    });
+  }
+
+  return visited;
+}
+
+function computeSelectionContext(allowedNodeIds = null, parentMap = null, childMap = null) {
   const selected = new Set(state.selectedNodeIds);
   const prerequisites = new Set();
   const dependents = new Set();
 
   selected.forEach((id) => {
-    const node = state.prepared.nodeMap.get(id);
-    if (!node) {
+    if (allowedNodeIds && !allowedNodeIds.has(id)) {
       return;
     }
-    node.ancestorIds.forEach((ancestorId) => prerequisites.add(ancestorId));
-    node.descendantIds.forEach((descendantId) => dependents.add(descendantId));
+    collectReachableWithinAdjacency(id, parentMap, allowedNodeIds).forEach((ancestorId) => prerequisites.add(ancestorId));
+    collectReachableWithinAdjacency(id, childMap, allowedNodeIds).forEach((descendantId) => dependents.add(descendantId));
   });
 
   selected.forEach((id) => {
@@ -816,6 +2426,124 @@ function computeSelectionContext() {
   };
 }
 
+function emptyBackboneState() {
+  return {
+    scope: null,
+    projectionNodeIds: new Set(),
+    coreNodeIds: new Set(),
+  };
+}
+
+function currentBackboneScope() {
+  return (
+    state.prepared?.backbone?.scopeMap.get(state.backboneScopeId) ||
+    state.prepared?.backbone?.scopeMap.get(DEFAULT_BACKBONE_SCOPE_ID) ||
+    null
+  );
+}
+
+function backboneBranchLabel(node, scope = currentBackboneScope()) {
+  const branchId = scope?.nodeBranchMap?.get(node.id);
+  return branchId ? sentenceCase(branchId) : "";
+}
+
+function computeBackboneState() {
+  const scope = currentBackboneScope();
+  if (!scope) {
+    return emptyBackboneState();
+  }
+
+  const projectionNodeIds = new Set(scope.baseVisibleIds);
+
+  state.selectedNodeIds.forEach((nodeId) => {
+    projectionNodeIds.add(nodeId);
+    collectReachableWithinAdjacency(nodeId, scope.workflowParentMap, scope.projectableNodeIds).forEach((ancestorId) =>
+      projectionNodeIds.add(ancestorId)
+    );
+    collectReachableWithinAdjacency(nodeId, scope.workflowChildMap, scope.projectableNodeIds).forEach((descendantId) =>
+      projectionNodeIds.add(descendantId)
+    );
+  });
+
+  if (state.activePipelineId && scope.pipelineIds.has(state.activePipelineId)) {
+    (scope.pipelineStepSequences.get(state.activePipelineId) || []).forEach((nodeId) => projectionNodeIds.add(nodeId));
+  }
+
+  return {
+    scope,
+    projectionNodeIds,
+    coreNodeIds: new Set(scope.coreNodeIds),
+  };
+}
+
+function buildAdjacencyMaps(nodes, links) {
+  const parentMap = new Map(nodes.map((node) => [node.id, new Set()]));
+  const childMap = new Map(nodes.map((node) => [node.id, new Set()]));
+
+  links.forEach((link) => {
+    const sourceId = getLinkSourceId(link);
+    const targetId = getLinkTargetId(link);
+    if (!parentMap.has(targetId) || !childMap.has(sourceId)) {
+      return;
+    }
+    parentMap.get(targetId).add(sourceId);
+    childMap.get(sourceId).add(targetId);
+  });
+
+  return {
+    parentMap,
+    childMap,
+  };
+}
+
+function buildBackboneProjectionLinks(scope, visibleNodeIds) {
+  if (!scope) {
+    return [];
+  }
+
+  const linkMap = new Map();
+
+  scope.pipelineStepSequences.forEach((sequence, pipelineId) => {
+    const visibleSequence = sequence.filter((nodeId) => visibleNodeIds.has(nodeId));
+    const compressedSequence = visibleSequence.filter(
+      (nodeId, index) => index === 0 || visibleSequence[index - 1] !== nodeId
+    );
+
+    for (let index = 0; index < compressedSequence.length - 1; index += 1) {
+      const sourceId = compressedSequence[index];
+      const targetId = compressedSequence[index + 1];
+      if (!sourceId || !targetId || sourceId === targetId) {
+        continue;
+      }
+
+      const linkId = `backbone_${sourceId}_${targetId}`;
+      if (!linkMap.has(linkId)) {
+        linkMap.set(linkId, {
+          id: linkId,
+          sourceId,
+          targetId,
+          source: sourceId,
+          target: targetId,
+          count: 0,
+          pipelineIds: [],
+          curvature: deterministicCurvature(sourceId, targetId),
+          relationKinds: ["workflow_step_path"],
+          sources: [],
+          isBackboneProjection: true,
+        });
+      }
+
+      const link = linkMap.get(linkId);
+      link.count += 1;
+      if (!link.pipelineIds.includes(pipelineId)) {
+        link.pipelineIds.push(pipelineId);
+      }
+    }
+  });
+
+  return [...linkMap.values()];
+}
+
 function markDerivedStateDirty() {
   state.derivedDirty = true;
 }
@@ -823,9 +2551,14 @@ function markDerivedStateDirty() {
 function ensureDerivedState() {
   if (!state.prepared) {
     return {
+      projectedNodes: [],
+      projectionNodeIds: new Set(),
       visibleNodes: [],
       visibleNodeIds: new Set(),
-      matchingNodeIds: new Set(),
+      visibleLinks: [],
+      parentMap: new Map(),
+      childMap: new Map(),
+      backboneState: emptyBackboneState(),
       selectionContext: emptySelectionContext(),
       activePipeline: null,
       traitFilterState: emptyTraitFilterState(),
@@ -836,24 +2569,44 @@ function ensureDerivedState() {
     return state.derived;
   }
 
-  const visibleNodes = state.prepared.nodes.filter((node) => state.visibleCategories.has(node.categoryId));
+  const backboneState = state.viewMode === "backbone" ? computeBackboneState() : emptyBackboneState();
+  const projectionNodeIds =
+    state.viewMode === "backbone"
+      ? backboneState.projectionNodeIds
+      : new Set(state.prepared.nodes.map((node) => node.id));
+  const projectedNodes = state.prepared.nodes.filter((node) => projectionNodeIds.has(node.id));
+  const visibleNodes = projectedNodes.filter((node) => state.visibleCategories.has(node.categoryId));
   const visibleNodeIds = new Set(visibleNodes.map((node) => node.id));
-  const matchingNodeIds = new Set();
-
-  if (state.searchQuery) {
-    visibleNodes.forEach((node) => {
-      if (node.searchText.includes(state.searchQuery)) {
-        matchingNodeIds.add(node.id);
-      }
-    });
-  }
+  const projectedLinks =
+    state.viewMode === "backbone"
+      ? buildBackboneProjectionLinks(backboneState.scope, projectionNodeIds)
+      : state.prepared.dependencyLinks.map((link) => ({
+          ...link,
+          source: link.sourceId,
+          target: link.targetId,
+        }));
+  const visibleLinks = projectedLinks.filter(
+    (link) => visibleNodeIds.has(getLinkSourceId(link)) && visibleNodeIds.has(getLinkTargetId(link))
+  );
+  const { parentMap, childMap } = buildAdjacencyMaps(visibleNodes, visibleLinks);
+  const activePipeline =
+    state.activePipelineId &&
+    state.prepared.pipelineMap.has(state.activePipelineId) &&
+    (state.viewMode !== "backbone" || backboneState.scope?.pipelineIds.has(state.activePipelineId))
+      ? state.prepared.pipelineMap.get(state.activePipelineId)
+      : null;
 
   state.derived = {
+    projectedNodes,
+    projectionNodeIds,
     visibleNodes,
     visibleNodeIds,
-    matchingNodeIds,
-    selectionContext: computeSelectionContext(),
-    activePipeline: state.activePipelineId ? state.prepared.pipelineMap.get(state.activePipelineId) || null : null,
+    visibleLinks,
+    parentMap,
+    childMap,
+    backboneState,
+    selectionContext: computeSelectionContext(visibleNodeIds, parentMap, childMap),
+    activePipeline,
     traitFilterState: computeTraitFilterState(),
   };
   state.derivedDirty = false;
@@ -947,6 +2700,222 @@ function toggleTraitFilter(key) {
   syncUrlState();
 }
 
+function searchDiscoveryGroups() {
+  if (!state.prepared) {
+    return [];
+  }
+
+  const groups = SEARCH_DISCOVERY_GROUPS.map((group) => ({
+    ...group,
+    nodes: group.ids.map((id) => state.prepared.nodeMap.get(id)).filter(Boolean),
+  })).filter((group) => group.nodes.length);
+
+  if (state.viewMode === "backbone") {
+    const scope = currentBackboneScope();
+    const keystoneNodes = (scope?.keyNodeIds || [])
+      .map((id) => state.prepared.nodeMap.get(id))
+      .filter(Boolean);
+    if (keystoneNodes.length) {
+      groups.unshift({
+        title: `${scope.label} keystones`,
+        nodes: keystoneNodes,
+      });
+    }
+  }
+
+  return groups;
+}
+
+function currentSearchOptions() {
+  const query = state.searchDraft.trim().toLowerCase();
+  return query ? currentSearchSuggestions(query) : searchDiscoveryGroups().flatMap((group) => group.nodes);
+}
+
+function currentSearchSuggestions(query = state.searchDraft.trim().toLowerCase()) {
+  if (!state.prepared || !query) {
+    return [];
+  }
+
+  return state.prepared.nodes
+    .map((node) => ({ node, score: searchSuggestionScore(node, query) }))
+    .filter((entry) => entry.score > 0)
+    .sort((left, right) => right.score - left.score || left.node.label.localeCompare(right.node.label))
+    .slice(0, 12)
+    .map((entry) => entry.node);
+}
+
+function searchSuggestionScore(node, query) {
+  const label = node.label.toLowerCase();
+  const kind = node.kindLabel.toLowerCase();
+  const category = node.category.toLowerCase();
+  const definition = (node.definition || "").toLowerCase();
+  const words = label.split(/[^a-z0-9]+/).filter(Boolean);
+  let score = 0;
+
+  if (label === query) {
+    score = 1000;
+  } else if (label.startsWith(query)) {
+    score = 860;
+  } else if (words.some((word) => word.startsWith(query))) {
+    score = 760;
+  } else if (label.includes(query)) {
+    score = 620;
+  } else if (kind.includes(query)) {
+    score = 280;
+  } else if (category.includes(query)) {
+    score = 240;
+  } else if (definition.includes(query)) {
+    score = 120;
+  } else {
+    return 0;
+  }
+
+  if (node.kind === "tool") {
+    score += 24;
+  }
+
+  return score;
+}
+
+function searchResultMeta(node) {
+  return `${node.kindLabel} · ${node.category}`;
+}
+
+function searchResultDetail(node) {
+  if (node.kind === "tool" && node.toolProfile) {
+    const algorithmCount =
+      (node.toolProfile.componentNodes.algorithm_ids?.length || 0) +
+      (node.toolProfile.componentNodes.concept_ids?.length || 0);
+    const moduleStageCount =
+      (node.toolProfile.componentNodes.module_ids?.length || 0) +
+      (node.toolProfile.componentNodes.stage_ids?.length || 0);
+    return [
+      `${node.toolProfile.linkedPipelines.length} linked workflows`,
+      algorithmCount ? `${algorithmCount} linked algorithms or concepts` : "",
+      moduleStageCount ? `${moduleStageCount} modules or stages` : "",
+    ]
+      .filter(Boolean)
+      .join(" · ");
+  }
+
+  return [
+    node.pipelines.length ? `${node.pipelines.length} linked workflows` : "",
+    node.from.length ? `${node.from.length} direct prerequisites` : "",
+    node.to.length ? `${node.to.length} direct dependents` : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+function searchResultButtonHtml(node, index) {
+  const active = index === state.searchActiveIndex;
+  const detail = searchResultDetail(node);
+  return `
+    <button
+      type="button"
+      role="option"
+      aria-selected="${active ? "true" : "false"}"
+      class="search-result-item ${active ? "is-active" : ""}"
+      data-search-target="${escapeHtml(node.id)}"
+    >
+      <strong>${escapeHtml(node.label)}</strong>
+      <span class="search-result-meta">${escapeHtml(searchResultMeta(node))}</span>
+      ${detail ? `<span class="search-result-detail">${escapeHtml(detail)}</span>` : ""}
+    </button>
+  `;
+}
+
+function searchResultsHtml() {
+  const query = state.searchDraft.trim();
+
+  if (!query) {
+    const groups = searchDiscoveryGroups();
+    if (!groups.length) {
+      return `
+        <div class="search-results-header">Browse the catalog</div>
+        <div class="search-results-empty">No search suggestions are available yet.</div>
+      `;
+    }
+
+    let activeIndex = 0;
+    const sectionsHtml = groups
+      .map((group) => {
+        const buttons = group.nodes.map((node) => searchResultButtonHtml(node, activeIndex++)).join("");
+        return `
+          <section class="search-results-section">
+            <div class="search-results-title">${escapeHtml(group.title)}</div>
+            <div class="search-results-list">${buttons}</div>
+          </section>
+        `;
+      })
+      .join("");
+
+    return `
+      <div class="search-results-header">Browse the catalog</div>
+      <div class="search-results-copy">
+        Start typing to search all ${state.prepared.nodes.length} nodes by label. Selecting a tool opens its factual tool record and linked workflow path.
+      </div>
+      ${sectionsHtml}
+    `;
+  }
+
+  const suggestions = currentSearchSuggestions(query.toLowerCase());
+  if (!suggestions.length) {
+    return `
+      <div class="search-results-header">Matching nodes</div>
+      <div class="search-results-empty">No nodes matched that label. Try a tool name, an algorithm, a stage, or an output.</div>
+    `;
+  }
+
+  return `
+    <div class="search-results-header">Matching nodes (${suggestions.length})</div>
+    <div class="search-results-copy">
+      Results are ranked by node label first. Select a node to open its record, references, and linked workflow path.
+    </div>
+    <div class="search-results-list">
+      ${suggestions.map((node, index) => searchResultButtonHtml(node, index)).join("")}
+    </div>
+  `;
+}
+
+function renderSearchResults() {
+  if (!refs.searchResults) {
+    return;
+  }
+
+  const open = state.searchMenuOpen;
+  refs.searchResults.hidden = !open;
+  refs.search.setAttribute("aria-expanded", String(open));
+  if (!open) {
+    refs.searchResults.innerHTML = "";
+    return;
+  }
+
+  refs.searchResults.innerHTML = searchResultsHtml();
+}
+
+function commitSearchSelection(nodeId) {
+  if (!nodeId || !state.prepared.nodeMap.has(nodeId)) {
+    return;
+  }
+
+  const node = state.prepared.nodeMap.get(nodeId);
+  refs.search.value = node.label;
+  state.searchDraft = node.label;
+  state.searchMenuOpen = false;
+  state.searchActiveIndex = -1;
+
+  if (!state.visibleCategories.has(node.categoryId)) {
+    state.visibleCategories.add(node.categoryId);
+    markDerivedStateDirty();
+    rebuildGraph({ zoom: false });
+  }
+
+  setPanelsHidden(false);
+  renderSearchResults();
+  selectSingleNode(nodeId);
+}
+
 function clearTraitFilters() {
   if (!state.activeTraitFilters.size) {
     return;
@@ -959,8 +2928,21 @@ function clearTraitFilters() {
   syncUrlState();
 }
 
+function currentCategoryCounts() {
+  const projectedNodeIds = ensureDerivedState().projectionNodeIds;
+  return new Map(
+    state.prepared.categories.map((category) => [
+      category.id,
+      state.prepared.nodes.filter(
+        (node) => projectedNodeIds.has(node.id) && node.categoryId === category.id
+      ).length,
+    ])
+  );
+}
+
 function renderLegend() {
   refs.legend.innerHTML = "";
+  const counts = currentCategoryCounts();
 
   state.prepared.categories.forEach((category) => {
     const item = document.createElement("button");
@@ -973,7 +2955,7 @@ function renderLegend() {
     item.innerHTML = `
       <span class="legend-dot" style="background:${escapeHtml(category.color)}"></span>
       <span class="legend-label">${escapeHtml(category.label)}</span>
-      <span class="legend-count">${category.count}</span>
+      <span class="legend-count">${counts.get(category.id) || 0}</span>
     `;
 
     item.addEventListener("click", () => {
@@ -1011,12 +2993,14 @@ function renderStats(graphData = currentGraphData()) {
 
   const totalNodes = graphData.nodes.length;
   const totalEdges = graphData.links.length;
-  const matches = matchingNodeIds().size;
   const selected = state.selectedNodeIds.size;
   const traitFilters = toolTraitFilterState();
   const parts = [`${totalNodes} nodes`, `${totalEdges} edges`];
-  if (state.searchQuery) {
-    parts.push(`${matches} matches`);
+  if (state.viewMode === "backbone") {
+    const scope = ensureDerivedState().backboneState.scope;
+    if (scope) {
+      parts.unshift(`Backbone: ${scope.label}`);
+    }
   }
   if (selected) {
     parts.push(`${selected} selected`);
@@ -1062,9 +3046,135 @@ function renderAnalyticsPanel() {
   bindPanelActions();
 }
 
+function currentProjectionMetrics() {
+  const nodes = currentVisibleNodes();
+  if (!nodes.length) {
+    return { roots: 0, leaves: 0, maxDepth: 0 };
+  }
+
+  const derived = ensureDerivedState();
+  const depthMap = computeProjectionDepthMap(nodes, derived.parentMap, derived.childMap);
+  return {
+    roots: nodes.filter((node) => (derived.parentMap.get(node.id)?.size || 0) === 0).length,
+    leaves: nodes.filter((node) => (derived.childMap.get(node.id)?.size || 0) === 0).length,
+    maxDepth: Math.max(...nodes.map((node) => depthMap.get(node.id) || 0)),
+  };
+}
+
+function backboneKeyNodeButtonsHtml(scope) {
+  const keyNodes = (scope?.keyNodeIds || [])
+    .map((nodeId) => {
+      const node = state.prepared.nodeMap.get(nodeId);
+      const stat = scope.nodeStats.get(nodeId);
+      if (!node || !stat) {
+        return "";
+      }
+      return `
+        <button type="button" data-node-target="${escapeHtml(node.id)}">
+          <strong>${escapeHtml(node.label)}</strong><br>
+          ${escapeHtml(
+            `${stat.ancestorCount} upstream · ${stat.descendantCount} downstream · ${stat.pipelineCount} workflows`
+          )}
+        </button>
+      `;
+    })
+    .filter(Boolean)
+    .join("");
+
+  return keyNodes ? `<div class="action-grid">${keyNodes}</div>` : `<p class="info-copy">No keystone nodes are available in this scope yet.</p>`;
+}
+
+function backboneRecurringNodeButtonsHtml(scope) {
+  const nodesHtml = (scope?.recurringNodeIds || [])
+    .map((nodeId) => {
+      const node = state.prepared.nodeMap.get(nodeId);
+      const stat = scope.nodeStats.get(nodeId);
+      if (!node || !stat) {
+        return "";
+      }
+      return `
+        <button type="button" data-node-target="${escapeHtml(node.id)}">
+          <strong>${escapeHtml(node.label)}</strong><br>
+          ${escapeHtml(`${stat.stepCount} step workflows · ${stat.pipelineCount} scoped workflows`)}
+        </button>
+      `;
+    })
+    .filter(Boolean)
+    .join("");
+
+  return nodesHtml ? `<div class="action-grid">${nodesHtml}</div>` : `<p class="info-copy">No recurring workflow hubs are available in this scope yet.</p>`;
+}
+
 function overviewInfoHtml() {
+  if (state.viewMode === "backbone") {
+    const derived = ensureDerivedState();
+    const scope = derived.backboneState.scope;
+    const graphData = currentGraphData();
+    return `
+      <div class="detail-stack">
+        <div>
+          <h2 class="detail-heading">Backbone view of genome assembly.</h2>
+          <p class="info-copy">
+            This projection trims the graph to the most reusable bridge nodes in
+            <strong>${escapeHtml(scope.label)}</strong>. Lower nodes act as prerequisites, while higher nodes
+            capture downstream assembly structure and goals.
+          </p>
+        </div>
+
+        <div class="summary-grid">
+          <div class="summary-card"><strong>${graphData.nodes.length}</strong><span>Visible backbone nodes</span></div>
+          <div class="summary-card"><strong>${scope.coreNodeIds.size}</strong><span>Keystone nodes</span></div>
+          <div class="summary-card"><strong>${scope.pipelineCount}</strong><span>Scoped workflows</span></div>
+          <div class="summary-card"><strong>${graphData.links.length}</strong><span>Visible workflow edges</span></div>
+        </div>
+
+        <section class="info-section">
+          <h3>Scope</h3>
+          <p class="info-copy">${escapeHtml(scope.description)}</p>
+        </section>
+
+        <section class="info-section">
+          <h3>Keystone Nodes</h3>
+          <p class="info-copy">
+            These nodes score highest as bridges between fundamental prerequisites and downstream workflow structure in the current scope.
+          </p>
+          ${backboneKeyNodeButtonsHtml(scope)}
+        </section>
+
+        <section class="info-section">
+          <h3>Recurring Workflow Hubs</h3>
+          <p class="info-copy">
+            These nodes show up most often as actual workflow steps or repeated prerequisites inside the current scope.
+          </p>
+          ${backboneRecurringNodeButtonsHtml(scope)}
+        </section>
+
+        <section class="info-section">
+          <h3>How To Read It</h3>
+          <p class="info-copy">
+            ${
+              scope.layoutMode === "branch_universe"
+                ? `This scope places short-read bridges on the left, the shared assembly spine in the center, and long-read bridges on the right.
+            Backbone mode still only draws edges that follow recorded workflow-step order, so the combined map reads like one universe with two technology branches instead of a generic force cloud.`
+                : `Backbone mode keeps recurring workflow primitives visible by default and only draws edges that follow the
+            ordered step sequences inside the selected scope. The hierarchical layout pins those nodes into workflow lanes
+            so the rendered links follow the actual assembly story instead of a generic force cloud.`
+            }
+          </p>
+        </section>
+
+        <section class="spotlight-card">
+          <p>
+            Select a keystone node such as graph construction, graph cleanup, consensus refinement, or scaffolding to reveal its prerequisite cone and downstream influence.
+          </p>
+        </section>
+      </div>
+    `;
+  }
+
   const nodes = state.prepared.nodes.length;
-  const edges = state.prepared.links.length;
+  const edges = state.prepared.dependencyLinks.length;
+  const rawRelations = state.prepared.rawLinks.length;
   const pipelines = state.raw.pipelines.length;
   return `
     <div class="detail-stack">
@@ -1072,14 +3182,15 @@ function overviewInfoHtml() {
         <h2 class="detail-heading">Interactive map of genome assembly workflows.</h2>
         <p class="info-copy">
           This explorer maps how genome assembly workflows connect reads, support data, algorithms,
-          reusable modules, tools, stages, outputs, metrics, and case studies. Select a node to inspect
+          reusable modules, tools, stages, outputs, and metrics. Select a node to inspect
           linked workflow paths and the graph components attached to them.
         </p>
       </div>
 
       <div class="summary-grid">
         <div class="summary-card"><strong>${nodes}</strong><span>Curated nodes</span></div>
-        <div class="summary-card"><strong>${edges}</strong><span>Directed edges</span></div>
+        <div class="summary-card"><strong>${edges}</strong><span>Dependency DAG edges</span></div>
+        <div class="summary-card"><strong>${rawRelations}</strong><span>Curated relations</span></div>
         <div class="summary-card"><strong>${pipelines}</strong><span>Curated workflows</span></div>
       </div>
 
@@ -1095,8 +3206,17 @@ function overviewInfoHtml() {
         <h3>How To Read It</h3>
         <p class="info-copy">
           Nodes represent assembly goals, read types, support data, algorithms, reusable modules,
-          tools, pipeline stages, outputs, metrics, and case studies. Click a node to inspect its
+          tools, pipeline stages, outputs, and metrics. Click a node to inspect its
           prerequisites and dependents, or shift-click to build a comparison set.
+        </p>
+      </section>
+
+      <section class="info-section">
+        <h3>How The Dataset Is Built</h3>
+        <p class="info-copy">
+          The explorer keeps the full curated relation set, but recursive prerequisite traversal now runs on a
+          dependency-only DAG derived from those relations. Pairing, suitability, validation, and other contextual
+          links still live in the workflow records and node details, but they no longer pollute dependency paths.
         </p>
       </section>
 
@@ -1124,23 +3244,93 @@ function overviewInfoHtml() {
 }
 
 function overviewAnalyticsHtml() {
-  const roots = state.prepared.nodes.filter((node) => node.from.length === 0).length;
-  const leaves = state.prepared.nodes.filter((node) => node.to.length === 0).length;
-  const maxDepth = Math.max(...state.prepared.nodes.map((node) => node.depth));
+  const metrics = currentProjectionMetrics();
+  const categoryCounts = currentCategoryCounts();
+
+  if (state.viewMode === "backbone") {
+    const scope = ensureDerivedState().backboneState.scope;
+    return `
+      <div class="analytics-body">
+        <div class="badge-row">
+          <span class="info-badge">Root nodes: ${metrics.roots}</span>
+          <span class="info-badge">Leaf nodes: ${metrics.leaves}</span>
+          <span class="info-badge">Max depth: ${metrics.maxDepth}</span>
+          <span class="info-badge">Scope: ${escapeHtml(scope.label)}</span>
+        </div>
+
+        <section class="analytics-block">
+          <h3>Projection Rules</h3>
+          <p class="analytics-copy">
+            ${
+              scope.layoutMode === "branch_universe"
+                ? `This universe view keeps only the bridge nodes needed to connect the short-read branch, the shared assembly spine,
+            and the long-read branch. In hierarchical layout, those branches stay separated horizontally while the shared center keeps the combined path legible.`
+                : `Backbone mode now starts from recurring workflow hubs inside the selected scope, then adds only the connector
+            nodes needed to preserve adjacent step order. In hierarchical layout, each category stays in a fixed workflow
+            lane so the visible edges track the actual path being shown.`
+            }
+          </p>
+        </section>
+
+        <section class="analytics-block">
+          <h3>Keystone Ranking</h3>
+          ${backboneKeyNodeButtonsHtml(scope)}
+        </section>
+
+        <section class="analytics-block">
+          <h3>Recurring Workflow Hubs</h3>
+          ${backboneRecurringNodeButtonsHtml(scope)}
+        </section>
+
+        ${toolTraitFilterSummaryHtml()}
+
+        <section class="analytics-block">
+          <h3>Path Highlighting</h3>
+          <div class="toggle-grid">
+            <label class="toggle-option">
+              <input id="toggle-prerequisites" type="checkbox" ${state.showPrerequisites ? "checked" : ""}>
+              <span>Show prerequisites</span>
+            </label>
+            <label class="toggle-option">
+              <input id="toggle-dependents" type="checkbox" ${state.showDependents ? "checked" : ""}>
+              <span>Show dependents</span>
+            </label>
+          </div>
+        </section>
+
+        <section class="analytics-block">
+          <h3>Coverage</h3>
+          <div class="metrics-grid">
+            ${state.prepared.categories
+              .map(
+                (category) => `
+                  <div class="metric-card">
+                    <strong>${categoryCounts.get(category.id) || 0}</strong>
+                    <span>${escapeHtml(category.label)}</span>
+                  </div>
+                `
+              )
+              .join("")}
+          </div>
+        </section>
+      </div>
+    `;
+  }
 
   return `
     <div class="analytics-body">
       <div class="badge-row">
-        <span class="info-badge">Root nodes: ${roots}</span>
-        <span class="info-badge">Leaf nodes: ${leaves}</span>
-        <span class="info-badge">Max depth: ${maxDepth}</span>
+        <span class="info-badge">Root nodes: ${metrics.roots}</span>
+        <span class="info-badge">Leaf nodes: ${metrics.leaves}</span>
+        <span class="info-badge">Max depth: ${metrics.maxDepth}</span>
       </div>
 
       <section class="analytics-block">
         <h3>Explorer State</h3>
         <p class="analytics-copy">
-          Search dims the graph to matching concepts. Category toggles remove whole lanes.
-          Radial layout unlocks when a node is selected or double-clicked.
+          Search works as a node finder with browse sections and ranked label matches. Recursive prerequisites and
+          dependents now come from the dependency DAG only, so selecting a node no longer floods the graph through
+          pairing, validation, or other contextual relation types.
         </p>
       </section>
 
@@ -1167,7 +3357,7 @@ function overviewAnalyticsHtml() {
             .map(
               (category) => `
                 <div class="metric-card">
-                  <strong>${category.count}</strong>
+                  <strong>${categoryCounts.get(category.id) || 0}</strong>
                   <span>${escapeHtml(category.label)}</span>
                 </div>
               `
@@ -1182,6 +3372,8 @@ function overviewAnalyticsHtml() {
 function nodeInfoHtml(node) {
   const currentPipeline = activePipelineForNode(node);
   const toolProfile = toolProfileForNode(node);
+  const backboneScope = state.viewMode === "backbone" ? ensureDerivedState().backboneState.scope : null;
+  const backboneStat = backboneScope?.nodeStats.get(node.id) || null;
   const landingIntro =
     state.selectionSource === "default" && node.id === DEFAULT_NODE_ID
       ? `
@@ -1209,14 +3401,15 @@ function nodeInfoHtml(node) {
         <section class="info-section">
           <h3>Linked Workflows</h3>
           <p class="info-copy">
-            Choose a workflow entry linked to this node. The graph highlights the nodes and edges recorded for
-            that path in the dataset.
+            Choose a workflow entry linked to this node. The graph highlights the recorded path nodes and any
+            compatible workflow-step edges for that workflow record.
           </p>
           ${pipelineChooserHtml(node, currentPipeline)}
         </section>
       `
       : "";
   const pipelineBreakdown = currentPipeline ? pipelineBreakdownHtml(currentPipeline) : "";
+  const branchLabel = backboneBranchLabel(node, backboneScope);
 
   return `
     <div class="detail-stack">
@@ -1236,11 +3429,43 @@ function nodeInfoHtml(node) {
       <section class="info-section">
         <h3>Role In The Graph</h3>
         <p class="info-copy">
-          ${escapeHtml(node.label)} is tracked as a ${escapeHtml(node.kindLabel.toLowerCase())}
+          ${
+            state.viewMode === "backbone"
+              ? `${escapeHtml(node.label)} is shown as a ${escapeHtml(node.kindLabel.toLowerCase())}
+          inside the ${
+            branchLabel && backboneScope?.layoutMode === "branch_universe"
+              ? `${escapeHtml(branchLabel.toLowerCase())} branch and ${escapeHtml(node.category)} lane`
+              : `${escapeHtml(node.category)} lane`
+          } of the ${escapeHtml(backboneScope.label)} backbone, with
+          ${projectionDirectNeighbors(node.id, "from").length} direct prerequisites and ${projectionDirectNeighbors(node.id, "to").length} direct dependents
+          in the visible workflow projection.`
+              : `${escapeHtml(node.label)} is tracked as a ${escapeHtml(node.kindLabel.toLowerCase())}
           inside the ${escapeHtml(node.category)} lane, with
-          ${node.ancestorIds.size} recursive prerequisites and ${node.descendantIds.size} recursive dependents.
+          ${node.ancestorIds.size} recursive prerequisites and ${node.descendantIds.size} recursive dependents
+          in the dependency DAG.`
+          }
         </p>
       </section>
+
+      ${
+        backboneStat
+          ? `
+            <section class="info-section">
+              <h3>Backbone Role</h3>
+              <p class="info-copy">
+                In the ${escapeHtml(backboneScope.label)} backbone, ${escapeHtml(node.label)} has
+                ${backboneStat.ancestorCount} upstream nodes, ${backboneStat.descendantCount} downstream nodes,
+                and appears in ${backboneStat.pipelineCount} scoped workflows.
+                ${
+                  backboneStat.isCore
+                    ? " It is currently treated as a keystone bridge node."
+                    : " It is currently shown as supporting context around the keystone layer."
+                }
+              </p>
+            </section>
+          `
+          : ""
+      }
 
       ${toolRecord}
       ${referenceSection}
@@ -1268,12 +3493,14 @@ function nodeInfoHtml(node) {
 function nodeAnalyticsHtml(node) {
   const currentPipeline = activePipelineForNode(node);
   const toolProfile = toolProfileForNode(node);
+  const backboneScope = state.viewMode === "backbone" ? ensureDerivedState().backboneState.scope : null;
+  const backboneStat = backboneScope?.nodeStats.get(node.id) || null;
   return `
     <div class="analytics-body">
       <div class="badge-row">
         <span class="info-badge">Depth: ${node.depth}</span>
-        <span class="info-badge">Direct prerequisites: ${node.from.length}</span>
-        <span class="info-badge">Direct dependents: ${node.to.length}</span>
+        <span class="info-badge">Direct prerequisites: ${projectionDirectNeighbors(node.id, "from").length}</span>
+        <span class="info-badge">Direct dependents: ${projectionDirectNeighbors(node.id, "to").length}</span>
         ${
           currentPipeline
             ? `<span class="info-badge">Path steps: ${currentPipeline.stepNodes.length}</span>`
@@ -1292,6 +3519,24 @@ function nodeAnalyticsHtml(node) {
                 ${metricCardHtml("Nodes in path", String(currentPipeline.nodes.length))}
                 ${metricCardHtml("Edges in path", String(currentPipeline.edges.length))}
                 ${metricCardHtml("Source links", String(currentPipeline.sources.length))}
+              </div>
+            </section>
+          `
+          : ""
+      }
+
+      ${
+        backboneStat
+          ? `
+            <section class="analytics-block">
+              <h3>Backbone Metrics</h3>
+              <div class="metrics-grid">
+                ${metricCardHtml("Backbone score", backboneStat.score.toFixed(3))}
+                ${metricCardHtml("Upstream", String(backboneStat.ancestorCount))}
+                ${metricCardHtml("Downstream", String(backboneStat.descendantCount))}
+                ${metricCardHtml("Scoped workflows", String(backboneStat.pipelineCount))}
+                ${metricCardHtml("Leaf coverage", `${Math.round(backboneStat.leafCoverageRatio * 100)}%`)}
+                ${metricCardHtml("Role", backboneStat.isCore ? "Keystone" : "Context")}
               </div>
             </section>
           `
@@ -1324,12 +3569,12 @@ function nodeAnalyticsHtml(node) {
 
       <section class="analytics-block">
         <h3>Direct Prerequisites</h3>
-        ${relatedButtonsHtml(node.from)}
+        ${relatedButtonsHtml(projectionDirectNeighbors(node.id, "from"))}
       </section>
 
       <section class="analytics-block">
         <h3>Direct Dependents</h3>
-        ${relatedButtonsHtml(node.to)}
+        ${relatedButtonsHtml(projectionDirectNeighbors(node.id, "to"))}
       </section>
 
       <section class="analytics-block">
@@ -1468,7 +3713,8 @@ function toolProfileBreakdownHtml(node, toolProfile) {
     <section class="info-section">
       <h3>Tool Record</h3>
       <p class="info-copy">
-        This record aggregates the linked workflow fields attached to ${escapeHtml(node.label)} in the dataset.
+        This record is derived from workflows where ${escapeHtml(node.label)} appears as an actual step, while linked
+        workflows remain listed separately for context.
       </p>
       <div class="badge-row">
         <span class="info-badge">Linked workflows: ${toolProfile.linkedPipelines.length}</span>
@@ -1654,6 +3900,7 @@ function handleNodeClick(node, event) {
   }
 
   if (event.detail > 1) {
+    ensureBackboneScopeForNode(node);
     if (!state.selectedNodeIds.has(node.id)) {
       state.selectedNodeIds = new Set([node.id]);
       state.primarySelectionId = node.id;
@@ -1661,6 +3908,9 @@ function handleNodeClick(node, event) {
     state.selectionSource = "user";
     state.activePipelineId = defaultPipelineIdForNode(node);
     markDerivedStateDirty();
+    if (state.viewMode === "backbone") {
+      rebuildGraph({ zoom: false });
+    }
     state.layout = "radial";
     syncControls();
     renderPanels();
@@ -1671,6 +3921,7 @@ function handleNodeClick(node, event) {
   }
 
   clickTimer = window.setTimeout(() => {
+    ensureBackboneScopeForNode(node);
     if (event.shiftKey) {
       state.selectedNodeIds.add(node.id);
       state.primarySelectionId = node.id;
@@ -1682,6 +3933,9 @@ function handleNodeClick(node, event) {
     }
     state.selectionSource = "user";
     markDerivedStateDirty();
+    if (state.viewMode === "backbone") {
+      rebuildGraph({ zoom: false });
+    }
 
     if (state.layout === "radial" && !state.primarySelectionId) {
       state.layout = "force";
@@ -1750,10 +4004,92 @@ function refreshGraphStyles() {
     .linkDirectionalParticleColor((link) => linkColor(link));
 }
 
+function currentBackboneNodeStat(nodeId) {
+  return ensureDerivedState().backboneState.scope?.nodeStats.get(nodeId) || null;
+}
+
+function currentBackboneLabelNodeIds() {
+  if (state.viewMode !== "backbone") {
+    return new Set();
+  }
+
+  const ids = new Set(state.selectedNodeIds);
+  const scope = ensureDerivedState().backboneState.scope;
+  if (!scope) {
+    return ids;
+  }
+
+  (scope.keyNodeIds || []).slice(0, 10).forEach((nodeId) => ids.add(nodeId));
+  (scope.recurringNodeIds || []).slice(0, 8).forEach((nodeId) => ids.add(nodeId));
+
+  const pipeline = activePipeline();
+  if (pipeline) {
+    (pipeline.step_ids || []).forEach((nodeId) => ids.add(nodeId));
+  }
+
+  return ids;
+}
+
+function shouldDrawNodeLabel(node, globalScale = 1) {
+  if (state.viewMode !== "backbone" || state.rendererMode !== "2d") {
+    return false;
+  }
+
+  const labelNodeIds = currentBackboneLabelNodeIds();
+  if (!labelNodeIds.has(node.id)) {
+    return false;
+  }
+
+  if (state.layout === "force" && globalScale < 1.35 && !state.selectedNodeIds.has(node.id)) {
+    return false;
+  }
+
+  const stat = currentBackboneNodeStat(node.id);
+  if (!state.selectedNodeIds.has(node.id) && !activePipeline() && !stat?.isCore && globalScale < 1.05) {
+    return false;
+  }
+
+  return true;
+}
+
+function drawNodeOverlay(node, ctx, globalScale) {
+  if (!shouldDrawNodeLabel(node, globalScale)) {
+    return;
+  }
+
+  const scale = Math.max(globalScale || 1, 0.75);
+  const fontSize = (state.selectedNodeIds.has(node.id) ? 14 : 11.5) / scale;
+  const fontWeight = state.selectedNodeIds.has(node.id) ? 700 : 600;
+  const paddingX = 6 / scale;
+  const paddingY = 3.5 / scale;
+  const radius = Math.max(4, Math.sqrt(Math.max(nodeValue(node), 1)) * 2.2);
+  const labelX = node.x + radius + 8 / scale;
+  const labelY = node.y - radius * 0.15;
+
+  ctx.save();
+  ctx.font = `${fontWeight} ${fontSize}px IBM Plex Sans, Avenir Next, sans-serif`;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  const textWidth = ctx.measureText(node.label).width;
+  const boxX = labelX - paddingX;
+  const boxY = labelY - fontSize / 2 - paddingY;
+  const boxWidth = textWidth + paddingX * 2;
+  const boxHeight = fontSize + paddingY * 2;
+
+  ctx.fillStyle = state.selectedNodeIds.has(node.id) ? "rgba(9, 23, 37, 0.9)" : "rgba(9, 23, 37, 0.72)";
+  ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
+  ctx.strokeStyle = state.selectedNodeIds.has(node.id) ? "rgba(242, 200, 107, 0.9)" : "rgba(134, 174, 201, 0.26)";
+  ctx.lineWidth = state.selectedNodeIds.has(node.id) ? 1.3 / scale : 0.8 / scale;
+  ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
+
+  ctx.fillStyle = state.selectedNodeIds.has(node.id) ? "rgba(255, 246, 219, 0.98)" : "rgba(228, 239, 247, 0.92)";
+  ctx.fillText(node.label, labelX, labelY);
+  ctx.restore();
+}
+
 function nodeColor(node) {
   const selected = state.selectedNodeIds.has(node.id);
   const context = selectionContext();
-  const isMatch = isSearchMatch(node);
   const pipeline = activePipeline();
 
   if (selected) {
@@ -1780,8 +4116,14 @@ function nodeColor(node) {
     return "rgba(88, 109, 124, 0.22)";
   }
 
-  if (state.searchQuery && !isMatch) {
-    return "rgba(88, 109, 124, 0.18)";
+  if (state.viewMode === "backbone" && state.nodeColorMode === "category") {
+    const backboneState = ensureDerivedState().backboneState;
+    const stat = currentBackboneNodeStat(node.id);
+    if (!stat) {
+      return colorWithAlpha(categoryColor(node), 0.48);
+    }
+    const alpha = backboneState.coreNodeIds.has(node.id) ? 0.96 : clamp(0.22 + stat.score * 0.62, 0.22, 0.82);
+    return colorWithAlpha(categoryColor(node), alpha);
   }
 
   if (state.nodeColorMode === "category") {
@@ -1811,10 +4153,15 @@ function nodeValue(node) {
       (state.showPrerequisites && context.prerequisites.has(node.id)) ||
       (state.showDependents && context.dependents.has(node.id));
     value *= active ? 1.14 : 0.74;
-  } else if (state.searchQuery && !isSearchMatch(node)) {
-    value *= 0.72;
-  } else if (state.searchQuery) {
-    value *= 1.14;
+  } else if (state.viewMode === "backbone") {
+    const backboneState = ensureDerivedState().backboneState;
+    const stat = currentBackboneNodeStat(node.id);
+    if (stat) {
+      value = state.nodeSizeMode === "default" ? 1.6 + stat.score * 7.2 : value;
+      value *= backboneState.coreNodeIds.has(node.id) ? 1.12 : 0.92;
+    } else {
+      value *= 0.88;
+    }
   }
 
   return value;
@@ -1823,11 +4170,14 @@ function nodeValue(node) {
 function linkColor(link) {
   const sourceId = getLinkSourceId(link);
   const targetId = getLinkTargetId(link);
-  const matches = matchingNodeIds();
   const pipeline = activePipeline();
 
   if (pipeline) {
-    if (pipeline.edgeSet.has(link.id)) {
+    const pipelineActive =
+      state.viewMode === "backbone"
+        ? link.pipelineIds?.includes(pipeline.id)
+        : pipeline.dependencyEdgeSet.has(link.id);
+    if (pipelineActive) {
       return "rgba(242, 200, 107, 0.96)";
     }
     if (pipeline.nodeSet.has(sourceId) && pipeline.nodeSet.has(targetId)) {
@@ -1855,12 +4205,16 @@ function linkColor(link) {
     return "rgba(82, 98, 111, 0.1)";
   }
 
-  if (state.searchQuery && matches.has(sourceId) && matches.has(targetId)) {
-    return "rgba(244, 251, 255, 0.45)";
-  }
-
-  if (state.searchQuery) {
-    return "rgba(82, 98, 111, 0.08)";
+  if (state.viewMode === "backbone") {
+    const backboneState = ensureDerivedState().backboneState;
+    const sourceCore = backboneState.coreNodeIds.has(sourceId);
+    const targetCore = backboneState.coreNodeIds.has(targetId);
+    const edgeStrength = Math.min(Math.log2((link.count || 1) + 1) / 4, 1);
+    const alpha = clamp(0.14 + edgeStrength * 0.34 + (sourceCore && targetCore ? 0.12 : 0), 0.14, 0.76);
+    if (sourceCore && targetCore) {
+      return `rgba(166, 216, 255, ${alpha})`;
+    }
+    return `rgba(102, 127, 148, ${alpha})`;
   }
 
   return "rgba(126, 163, 186, 0.18)";
@@ -1869,7 +4223,11 @@ function linkColor(link) {
 function linkWidth(link) {
   const pipeline = activePipeline();
   if (pipeline) {
-    if (pipeline.edgeSet.has(link.id)) {
+    const pipelineActive =
+      state.viewMode === "backbone"
+        ? link.pipelineIds?.includes(pipeline.id)
+        : pipeline.dependencyEdgeSet.has(link.id);
+    if (pipelineActive) {
       return 3.2;
     }
     return 0.5;
@@ -1879,12 +4237,12 @@ function linkWidth(link) {
     return 2.8;
   }
 
-  const sourceId = getLinkSourceId(link);
-  const targetId = getLinkTargetId(link);
-  const matches = matchingNodeIds();
-
-  if (state.searchQuery && matches.has(sourceId) && matches.has(targetId)) {
-    return 1.2;
+  if (state.viewMode === "backbone") {
+    const backboneState = ensureDerivedState().backboneState;
+    const sourceCore = backboneState.coreNodeIds.has(getLinkSourceId(link));
+    const targetCore = backboneState.coreNodeIds.has(getLinkTargetId(link));
+    const edgeStrength = Math.min(Math.log2((link.count || 1) + 1), 4);
+    return (sourceCore && targetCore ? 0.95 : 0.45) + edgeStrength * 0.42;
   }
 
   return 0.4;
@@ -1893,7 +4251,9 @@ function linkWidth(link) {
 function isActiveLink(link) {
   const pipeline = activePipeline();
   if (pipeline) {
-    return pipeline.edgeSet.has(link.id);
+    return state.viewMode === "backbone"
+      ? Boolean(link.pipelineIds?.includes(pipeline.id))
+      : pipeline.dependencyEdgeSet.has(link.id);
   }
 
   const sourceId = getLinkSourceId(link);
@@ -1929,14 +4289,20 @@ function selectionContext() {
 function uniqueNeighborIds(selection, direction) {
   const current = new Set(selection.map((node) => node.id));
   const ids = new Set();
+  const adjacencyMap = direction === "from" ? ensureDerivedState().parentMap : ensureDerivedState().childMap;
   selection.forEach((node) => {
-    node[direction].forEach((id) => {
+    (adjacencyMap.get(node.id) || []).forEach((id) => {
       if (!current.has(id)) {
         ids.add(id);
       }
     });
   });
   return [...ids];
+}
+
+function projectionDirectNeighbors(nodeId, direction) {
+  const adjacencyMap = direction === "from" ? ensureDerivedState().parentMap : ensureDerivedState().childMap;
+  return [...(adjacencyMap.get(nodeId) || [])];
 }
 
 function relatedButtonsHtml(ids) {
@@ -2132,15 +4498,70 @@ function computeTraitFilterState() {
   };
 }
 
-function matchingNodeIds() {
-  return ensureDerivedState().matchingNodeIds;
+function setViewMode(nextMode) {
+  const mode = nextMode === "backbone" ? "backbone" : "full";
+  if (state.viewMode === mode) {
+    syncControls();
+    return;
+  }
+
+  state.viewMode = mode;
+  if (mode === "backbone" && state.layout === "force") {
+    state.layout = "hierarchical";
+  }
+  if (mode === "backbone") {
+    sanitizeBackboneSelection();
+  }
+  markDerivedStateDirty();
+  rebuildGraph({ zoom: true });
+  renderPanels();
+  syncControls();
+  syncUrlState();
 }
 
-function isSearchMatch(node) {
-  return !state.searchQuery || node.searchText.includes(state.searchQuery);
+function setBackboneScope(nextScopeId) {
+  const scopeId = state.prepared.backbone.scopeMap.has(nextScopeId) ? nextScopeId : DEFAULT_BACKBONE_SCOPE_ID;
+  if (state.backboneScopeId === scopeId) {
+    syncControls();
+    return;
+  }
+
+  state.backboneScopeId = scopeId;
+  sanitizeBackboneSelection();
+  markDerivedStateDirty();
+  rebuildGraph({ zoom: true });
+  renderPanels();
+  syncControls();
+  syncUrlState();
+}
+
+function sanitizeBackboneSelection() {
+  if (state.viewMode !== "backbone") {
+    return;
+  }
+
+  const scope = currentBackboneScope();
+  if (!scope) {
+    return;
+  }
+
+  if (state.activePipelineId && !scope.pipelineIds.has(state.activePipelineId)) {
+    state.activePipelineId = null;
+  }
+
+  if (
+    state.primarySelectionId &&
+    !scope.nodeIds.has(state.primarySelectionId) &&
+    state.selectedNodeIds.size === 1
+  ) {
+    clearSelection();
+  }
 }
 
 function syncControls() {
+  refs.graphViewSelect.value = state.viewMode;
+  refs.backboneScopeSelect.value = state.backboneScopeId;
+  refs.backboneScopeSelect.disabled = state.viewMode !== "backbone";
   refs.layoutSelect.value = state.layout;
   const hidden = panelsAreHidden();
   refs.settingsGraphTab.classList.toggle("is-active", state.settingsTab === "graph");
@@ -2233,17 +4654,30 @@ function clearSelection() {
   state.activePipelineId = null;
   markDerivedStateDirty();
   if (state.layout === "radial") {
-    state.layout = "force";
+    state.layout = state.viewMode === "backbone" ? "hierarchical" : "force";
   }
   syncUrlState();
 }
 
 function applyUrlState() {
   const params = selectionParamsFromLocation();
+  const viewParam = params.get("view");
+  const scopeParam = params.get("scope");
   const nodesParam = params.get("nodes");
   const nodeParam = params.get("node");
   const pipelineParam = params.get("pipeline");
   const traitsParam = params.get("traits");
+
+  if (viewParam === "backbone") {
+    state.viewMode = "backbone";
+    if (state.layout === "force") {
+      state.layout = "hierarchical";
+    }
+  }
+
+  if (scopeParam && state.prepared.backbone.scopeMap.has(scopeParam)) {
+    state.backboneScopeId = scopeParam;
+  }
 
   if (traitsParam) {
     state.activeTraitFilters = new Set(
@@ -2258,6 +4692,10 @@ function applyUrlState() {
 
   if (pipelineParam && state.prepared.pipelineMap.has(pipelineParam)) {
     state.activePipelineId = pipelineParam;
+    if (state.viewMode === "backbone") {
+      state.backboneScopeId =
+        state.prepared.pipelineMap.get(pipelineParam).scopeId || DEFAULT_BACKBONE_SCOPE_ID;
+    }
     markDerivedStateDirty();
   }
 
@@ -2267,6 +4705,9 @@ function applyUrlState() {
       state.selectedNodeIds = new Set(ids);
       state.primarySelectionId = ids[ids.length - 1];
       state.selectionSource = "url";
+      if (state.viewMode === "backbone" && ids.length === 1) {
+        ensureBackboneScopeForNode(state.prepared.nodeMap.get(ids[0]));
+      }
       markDerivedStateDirty();
       if (!state.activePipelineId && ids.length === 1) {
         state.activePipelineId = defaultPipelineIdForNode(state.prepared.nodeMap.get(ids[0]));
@@ -2291,10 +4732,16 @@ function applyUrlState() {
 
 function syncUrlState() {
   const url = new URL(window.location.href);
+  url.searchParams.delete("view");
+  url.searchParams.delete("scope");
   url.searchParams.delete("node");
   url.searchParams.delete("nodes");
   url.searchParams.delete("pipeline");
   url.searchParams.delete("traits");
+  if (state.viewMode === "backbone") {
+    url.searchParams.set("view", "backbone");
+    url.searchParams.set("scope", state.backboneScopeId);
+  }
   if (state.selectedNodeIds.size > 1) {
     url.searchParams.set("nodes", [...state.selectedNodeIds].join(","));
   } else if (state.primarySelectionId) {
@@ -2312,7 +4759,14 @@ function syncUrlState() {
 
 function selectionParamsFromLocation() {
   const searchParams = new URLSearchParams(window.location.search);
-  if (searchParams.has("nodes") || searchParams.has("node")) {
+  if (
+    searchParams.has("nodes") ||
+    searchParams.has("node") ||
+    searchParams.has("pipeline") ||
+    searchParams.has("traits") ||
+    searchParams.has("view") ||
+    searchParams.has("scope")
+  ) {
     return searchParams;
   }
 
@@ -2343,13 +4797,77 @@ function applyLandingSelection() {
   clearUrlSelectionState();
 }
 
+function preferredBackboneScopeIdForNode(node, scope = currentBackboneScope()) {
+  if (!node) {
+    return DEFAULT_BACKBONE_SCOPE_ID;
+  }
+
+  const backbone = state.prepared?.backbone;
+  if (!backbone) {
+    return DEFAULT_BACKBONE_SCOPE_ID;
+  }
+
+  if (scope?.layoutMode === "branch_universe" && scope.nodeBranchMap?.get(node.id) === "shared") {
+    return scope.id;
+  }
+
+  const scopeCounts = backbone.nodeScopeCountMap.get(node.id) || new Map();
+  const directChildScopeIds = scopeChildScopeIds(scope);
+  if (scope?.includeScopeIds?.length && directChildScopeIds.length) {
+    const rankedChildScopeIds = directChildScopeIds
+      .map((scopeId) => ({
+        scopeId,
+        count: scopePipelineIds(scopeId).reduce((total, leafScopeId) => total + (scopeCounts.get(leafScopeId) || 0), 0),
+      }))
+      .filter((entry) => entry.count > 0)
+      .sort((left, right) => right.count - left.count || left.scopeId.localeCompare(right.scopeId));
+
+    if (rankedChildScopeIds.length > 1 && rankedChildScopeIds[0].count === rankedChildScopeIds[1].count) {
+      return scope.id;
+    }
+    if (rankedChildScopeIds.length) {
+      return rankedChildScopeIds[0].scopeId;
+    }
+  }
+
+  return backbone.nodePrimaryScopeIdMap.get(node.id) || DEFAULT_BACKBONE_SCOPE_ID;
+}
+
+function ensureBackboneScopeForNode(node) {
+  if (state.viewMode !== "backbone" || !node) {
+    return;
+  }
+
+  const scope = currentBackboneScope();
+  const nextScopeId = preferredBackboneScopeIdForNode(node, scope);
+  const shouldNarrowAggregateScope =
+    scope &&
+    nextScopeId &&
+    nextScopeId !== scope.id &&
+    (scope.id === "all" ||
+      scopeChildScopeIds(scope).includes(nextScopeId) ||
+      scopePipelineIds(scope).includes(nextScopeId));
+
+  if (scope?.nodeIds.has(node.id) && !shouldNarrowAggregateScope) {
+    return;
+  }
+
+  state.backboneScopeId = state.prepared.backbone.scopeMap.has(nextScopeId)
+    ? nextScopeId
+    : DEFAULT_BACKBONE_SCOPE_ID;
+}
+
 function selectSingleNode(id) {
   const node = state.prepared.nodeMap.get(id);
+  ensureBackboneScopeForNode(node);
   state.selectedNodeIds = new Set([id]);
   state.primarySelectionId = id;
   state.selectionSource = "user";
   state.activePipelineId = defaultPipelineIdForNode(node);
   markDerivedStateDirty();
+  if (state.viewMode === "backbone") {
+    rebuildGraph({ zoom: false });
+  }
   state.layout = state.layout === "radial" ? "radial" : state.layout;
   syncUrlState();
   renderPanels();
@@ -2367,6 +4885,8 @@ function scheduleSelectionFocus() {
 
 function clearUrlSelectionState() {
   const url = new URL(window.location.href);
+  url.searchParams.delete("view");
+  url.searchParams.delete("scope");
   url.searchParams.delete("node");
   url.searchParams.delete("nodes");
   url.searchParams.delete("pipeline");
@@ -2380,6 +4900,9 @@ function activatePipeline(pipelineId) {
   if (!pipeline) {
     return;
   }
+  if (state.viewMode === "backbone") {
+    state.backboneScopeId = pipeline.scopeId || DEFAULT_BACKBONE_SCOPE_ID;
+  }
   state.activePipelineId = pipelineId;
   markDerivedStateDirty();
   if (!state.primarySelectionId || !pipeline.nodeSet.has(state.primarySelectionId)) {
@@ -2390,6 +4913,9 @@ function activatePipeline(pipelineId) {
     }
   }
   state.selectionSource = "user";
+  if (state.viewMode === "backbone") {
+    rebuildGraph({ zoom: false });
+  }
   syncUrlState();
   renderPanels();
   refreshGraphStyles();
@@ -2415,7 +4941,13 @@ function chooseDefaultPipeline(node) {
   if (!node?.pipelines?.length) {
     return null;
   }
-  return sortedPipelinesForNode(node)[0] || null;
+  const activeBackboneScope = state.viewMode === "backbone" ? currentBackboneScope() : null;
+  const allowedScopeIds = activeBackboneScope ? new Set(scopePipelineIds(activeBackboneScope)) : null;
+  const pipelines =
+    state.viewMode === "backbone" && allowedScopeIds
+      ? node.pipelines.filter((pipeline) => allowedScopeIds.has(pipeline.scopeId))
+      : node.pipelines;
+  return (sortedPipelinesForNode({ ...node, pipelines }).find(Boolean) || sortedPipelinesForNode(node)[0] || null);
 }
 
 function defaultPipelineIdForNode(node) {
@@ -2638,15 +5170,189 @@ function computeBetweenness(nodes, nodeMap) {
   return scores;
 }
 
+function computeScopedDepthMap(nodes) {
+  const visibleIds = new Set(nodes.map((node) => node.id));
+  const parentMap = new Map(
+    nodes.map((node) => [node.id, node.from.filter((parentId) => visibleIds.has(parentId))])
+  );
+  const childMap = new Map(
+    nodes.map((node) => [node.id, node.to.filter((childId) => visibleIds.has(childId))])
+  );
+  const indegrees = new Map(nodes.map((node) => [node.id, parentMap.get(node.id).length]));
+  const queue = nodes
+    .map((node) => node.id)
+    .filter((nodeId) => indegrees.get(nodeId) === 0)
+    .sort((left, right) => state.prepared.nodeMap.get(left).label.localeCompare(state.prepared.nodeMap.get(right).label));
+  const depthMap = new Map(nodes.map((node) => [node.id, 0]));
+
+  while (queue.length) {
+    const nodeId = queue.shift();
+    const nodeDepth = depthMap.get(nodeId) || 0;
+    childMap.get(nodeId).forEach((childId) => {
+      depthMap.set(childId, Math.max(depthMap.get(childId) || 0, nodeDepth + 1));
+      indegrees.set(childId, indegrees.get(childId) - 1);
+      if (indegrees.get(childId) === 0) {
+        queue.push(childId);
+      }
+    });
+  }
+
+  return depthMap;
+}
+
+function computeProjectionDepthMap(nodes, parentMap, childMap) {
+  const indegrees = new Map(nodes.map((node) => [node.id, parentMap.get(node.id)?.size || 0]));
+  const queue = nodes
+    .map((node) => node.id)
+    .filter((nodeId) => indegrees.get(nodeId) === 0)
+    .sort((left, right) => state.prepared.nodeMap.get(left).label.localeCompare(state.prepared.nodeMap.get(right).label));
+  const depthMap = new Map(nodes.map((node) => [node.id, 0]));
+
+  while (queue.length) {
+    const nodeId = queue.shift();
+    const nodeDepth = depthMap.get(nodeId) || 0;
+    (childMap.get(nodeId) || []).forEach((childId) => {
+      depthMap.set(childId, Math.max(depthMap.get(childId) || 0, nodeDepth + 1));
+      indegrees.set(childId, indegrees.get(childId) - 1);
+      if (indegrees.get(childId) === 0) {
+        queue.push(childId);
+      }
+    });
+  }
+
+  return depthMap;
+}
+
+function computeUniverseBackboneLayout(nodes, depthMap, scope, derived) {
+  const laneIndexMap = new Map(BACKBONE_LANE_ORDER.map((laneId, index) => [laneId, index]));
+  const visibleLaneIds = [...new Set(nodes.map((node) => node.categoryId))].sort(
+    (left, right) =>
+      (laneIndexMap.get(left) ?? Number.MAX_SAFE_INTEGER) - (laneIndexMap.get(right) ?? Number.MAX_SAFE_INTEGER) ||
+      left.localeCompare(right)
+  );
+  const laneOffsetMap = new Map(
+    visibleLaneIds.map((laneId, index) => [laneId, (index - (visibleLaneIds.length - 1) / 2) * (scope.branchLaneSpacing || 18)])
+  );
+  const branchCenters = new Map(
+    Object.entries(scope.branchCenters || {
+      short: -360,
+      shared: 0,
+      long: 360,
+    })
+  );
+  const groups = new Map();
+  let maxDepth = 0;
+
+  nodes.forEach((node) => {
+    const depth = depthMap.get(node.id) || 0;
+    const branchId = scope.nodeBranchMap?.get(node.id) || "shared";
+    const key = `${branchId}::${node.categoryId}::${depth}`;
+    if (!groups.has(key)) {
+      groups.set(key, {
+        branchId,
+        laneId: node.categoryId,
+        depth,
+        nodes: [],
+      });
+    }
+    groups.get(key).nodes.push(node);
+    maxDepth = Math.max(maxDepth, depth);
+  });
+
+  const positions = new Map();
+  groups.forEach((group) => {
+    group.nodes.sort((left, right) => {
+      const leftScore = derived.backboneState.scope?.nodeStats.get(left.id)?.score || 0;
+      const rightScore = derived.backboneState.scope?.nodeStats.get(right.id)?.score || 0;
+      return rightScore - leftScore || left.label.localeCompare(right.label);
+    });
+
+    const y = (maxDepth / 2 - group.depth) * 92;
+    const branchCenterX = branchCenters.get(group.branchId) || 0;
+    const laneOffsetX = laneOffsetMap.get(group.laneId) || 0;
+    group.nodes.forEach((node, index) => {
+      const offset = (index - (group.nodes.length - 1) / 2) * 24;
+      positions.set(node.id, {
+        x: branchCenterX + laneOffsetX + offset,
+        y,
+        z: (index - (group.nodes.length - 1) / 2) * 12,
+      });
+    });
+  });
+
+  return positions;
+}
+
 function computeHierarchicalLayout(nodes) {
+  const derived = ensureDerivedState();
+  const depthMap =
+    state.viewMode === "backbone"
+      ? computeProjectionDepthMap(nodes, derived.parentMap, derived.childMap)
+      : computeScopedDepthMap(nodes);
+
+  if (state.viewMode === "backbone") {
+    if (derived.backboneState.scope?.layoutMode === "branch_universe") {
+      return computeUniverseBackboneLayout(nodes, depthMap, derived.backboneState.scope, derived);
+    }
+
+    const laneIndexMap = new Map(BACKBONE_LANE_ORDER.map((laneId, index) => [laneId, index]));
+    const visibleLaneIds = [...new Set(nodes.map((node) => node.categoryId))].sort(
+      (left, right) =>
+        (laneIndexMap.get(left) ?? Number.MAX_SAFE_INTEGER) - (laneIndexMap.get(right) ?? Number.MAX_SAFE_INTEGER) ||
+        left.localeCompare(right)
+    );
+    const laneCenterMap = new Map(
+      visibleLaneIds.map((laneId, index) => [laneId, (index - (visibleLaneIds.length - 1) / 2) * 160])
+    );
+    const groups = new Map();
+    let maxDepth = 0;
+
+    nodes.forEach((node) => {
+      const depth = depthMap.get(node.id) || 0;
+      const key = `${node.categoryId}::${depth}`;
+      if (!groups.has(key)) {
+        groups.set(key, {
+          laneId: node.categoryId,
+          depth,
+          nodes: [],
+        });
+      }
+      groups.get(key).nodes.push(node);
+      maxDepth = Math.max(maxDepth, depth);
+    });
+
+    const positions = new Map();
+    groups.forEach((group) => {
+      group.nodes.sort((left, right) => {
+        const leftScore = derived.backboneState.scope?.nodeStats.get(left.id)?.score || 0;
+        const rightScore = derived.backboneState.scope?.nodeStats.get(right.id)?.score || 0;
+        return rightScore - leftScore || left.label.localeCompare(right.label);
+      });
+
+      const y = (maxDepth / 2 - group.depth) * 92;
+      const centerX = laneCenterMap.get(group.laneId) || 0;
+      group.nodes.forEach((node, index) => {
+        const offset = (index - (group.nodes.length - 1) / 2) * 26;
+        positions.set(node.id, {
+          x: centerX + offset,
+          y,
+          z: (index - (group.nodes.length - 1) / 2) * 12,
+        });
+      });
+    });
+
+    return positions;
+  }
+
   const groups = new Map();
   let maxDepth = 0;
   nodes.forEach((node) => {
-    if (!groups.has(node.depth)) {
-      groups.set(node.depth, []);
+    const depth = depthMap.get(node.id) || 0;
+    if (!groups.has(depth)) {
+      groups.set(depth, []);
     }
-    groups.get(node.depth).push(node);
-    maxDepth = Math.max(maxDepth, node.depth);
+    groups.get(depth).push(node);
+    maxDepth = Math.max(maxDepth, depth);
   });
 
   const positions = new Map();
